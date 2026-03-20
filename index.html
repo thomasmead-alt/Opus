@@ -395,7 +395,7 @@ tbody tr:hover { background: #f9fafb; }
 .mapping-table td {
   padding: 6px 10px;
   border-bottom: 1px solid #e5e7eb;
-  vertical-align: middle;
+  vertical-align: top;
 }
 .mapping-table tr:hover { background: #f9fafb; }
 .mapping-table select, .mapping-table input[type="text"] {
@@ -406,27 +406,178 @@ tbody tr:hover { background: #f9fafb; }
   font-family: inherit;
   width: 100%;
 }
-.mapping-table textarea {
-  padding: 4px 8px;
+
+/* ── Transform Pipeline ── */
+.tf-pipeline {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 260px;
+}
+.tf-step {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: 6px;
+  padding: 3px 6px;
   font-size: 0.8rem;
+  position: relative;
+}
+.tf-step:hover { border-color: var(--primary); }
+.tf-step .tf-num {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  min-width: 14px;
+}
+.tf-step .tf-formula {
+  flex: 1;
   font-family: 'SF Mono', Monaco, Consolas, monospace;
-  width: 100%;
-  min-height: 28px;
-  resize: vertical;
+  font-size: 0.8rem;
+  border: none;
+  background: transparent;
+  padding: 3px 4px;
+  outline: none;
+  color: var(--text);
 }
-.transform-tag {
-  display: inline-block;
-  padding: 1px 8px;
-  border-radius: 10px;
+.tf-step .tf-formula:focus { background: #fff; border-radius: 3px; box-shadow: 0 0 0 1px var(--primary); }
+.tf-step .tf-remove {
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  padding: 0 2px;
+  opacity: 0.5;
+}
+.tf-step .tf-remove:hover { opacity: 1; color: var(--critical); }
+.tf-step .tf-move {
+  cursor: grab;
+  color: var(--text-muted);
   font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
+  opacity: 0.4;
 }
-.transform-tag.direct { background: var(--success-bg); color: var(--success); }
-.transform-tag.custom { background: #ede9fe; color: #7c3aed; }
-.transform-tag.lookup { background: var(--info-bg); color: var(--info); }
+.tf-step .tf-move:hover { opacity: 0.8; }
+.tf-add-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  width: fit-content;
+}
+.tf-add-step:hover { border-color: var(--primary); color: var(--primary); }
+
+/* ── Formula Autocomplete ── */
+.tf-ac {
+  position: absolute;
+  top: 100%;
+  left: 20px;
+  z-index: 100;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  max-height: 200px;
+  overflow-y: auto;
+  min-width: 280px;
+  display: none;
+}
+.tf-ac.open { display: block; }
+.tf-ac-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+.tf-ac-item:hover, .tf-ac-item.active { background: var(--bg); }
+.tf-ac-item .tf-ac-fn {
+  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  font-weight: 600;
+  color: var(--primary);
+  min-width: 90px;
+}
+.tf-ac-item .tf-ac-desc { color: var(--text-muted); font-size: 0.75rem; }
+
+/* ── Formula Reference Panel ── */
+.tf-ref-toggle {
+  font-size: 0.8rem;
+  color: var(--primary);
+  cursor: pointer;
+  margin-bottom: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.tf-ref-toggle:hover { text-decoration: underline; }
+.tf-ref-panel {
+  display: none;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  font-size: 0.8rem;
+  max-height: 280px;
+  overflow-y: auto;
+}
+.tf-ref-panel.open { display: block; }
+.tf-ref-cat { font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.3px; color: var(--text-muted); margin: 8px 0 4px; }
+.tf-ref-cat:first-child { margin-top: 0; }
+.tf-ref-entry {
+  display: flex;
+  gap: 8px;
+  padding: 2px 0;
+  align-items: baseline;
+}
+.tf-ref-entry code {
+  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  font-size: 0.78rem;
+  color: var(--primary);
+  min-width: 200px;
+  background: #fff;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+.tf-ref-entry span { color: var(--text-muted); font-size: 0.75rem; }
+
+/* ── Preview column ── */
+.tf-preview {
+  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  font-size: 0.78rem;
+  color: var(--primary);
+}
+.tf-preview-chain {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.tf-preview-step {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+.tf-preview-step .tf-pv { color: var(--text); font-family: 'SF Mono', Monaco, Consolas, monospace; }
+.tf-preview-arrow { color: var(--text-muted); font-size: 0.65rem; }
+.tf-preview-final {
+  font-weight: 600;
+  color: var(--primary);
+  font-size: 0.82rem;
+  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  margin-top: 2px;
+  padding-top: 2px;
+  border-top: 1px solid #e5e7eb;
+}
 
 /* ── External Dataset Panel ── */
 .ext-dataset-panel {
@@ -826,18 +977,66 @@ tbody tr:hover { background: #f9fafb; }
 
     <!-- Mapping Tab -->
     <div id="tab-mapping" style="display:none;">
-      <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:12px;">
-        Map each target field to a source field. Add custom transformations or join external datasets by key.
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:6px;">
+        Map each target field to a source field. Chain multiple Excel-like formula transformations per field.
       </p>
+      <div class="tf-ref-toggle" onclick="document.getElementById('tf-ref-panel').classList.toggle('open')">
+        <span id="tf-ref-arrow">&#9654;</span> Formula Reference
+      </div>
+      <div class="tf-ref-panel" id="tf-ref-panel">
+        <div class="tf-ref-cat">Text</div>
+        <div class="tf-ref-entry"><code>TRIM(value)</code> <span>Remove leading/trailing whitespace</span></div>
+        <div class="tf-ref-entry"><code>UPPER(value)</code> <span>Convert to uppercase</span></div>
+        <div class="tf-ref-entry"><code>LOWER(value)</code> <span>Convert to lowercase</span></div>
+        <div class="tf-ref-entry"><code>PROPER(value)</code> <span>Capitalize first letter of each word</span></div>
+        <div class="tf-ref-entry"><code>LEFT(value, n)</code> <span>First n characters</span></div>
+        <div class="tf-ref-entry"><code>RIGHT(value, n)</code> <span>Last n characters</span></div>
+        <div class="tf-ref-entry"><code>MID(value, start, length)</code> <span>Substring from position (1-based)</span></div>
+        <div class="tf-ref-entry"><code>LEN(value)</code> <span>Length of text</span></div>
+        <div class="tf-ref-entry"><code>REPLACE(value, old, new)</code> <span>Replace all occurrences</span></div>
+        <div class="tf-ref-entry"><code>SUBSTITUTE(value, old, new)</code> <span>Same as REPLACE</span></div>
+        <div class="tf-ref-entry"><code>CLEAN(value)</code> <span>Remove non-printable characters</span></div>
+        <div class="tf-ref-entry"><code>REPT(value, n)</code> <span>Repeat text n times</span></div>
+        <div class="tf-ref-cat">Extract &amp; Split</div>
+        <div class="tf-ref-entry"><code>SPLIT(value, delim, index)</code> <span>Split by delimiter, return part at index (0-based)</span></div>
+        <div class="tf-ref-entry"><code>EXTRACT(value, pattern)</code> <span>Extract first regex match</span></div>
+        <div class="tf-ref-entry"><code>TEXTBEFORE(value, delim)</code> <span>Text before first delimiter</span></div>
+        <div class="tf-ref-entry"><code>TEXTAFTER(value, delim)</code> <span>Text after first delimiter</span></div>
+        <div class="tf-ref-cat">Combine</div>
+        <div class="tf-ref-entry"><code>CONCATENATE(a, b, ...)</code> <span>Join values together</span></div>
+        <div class="tf-ref-entry"><code>CONCAT(a, b, ...)</code> <span>Same as CONCATENATE</span></div>
+        <div class="tf-ref-entry"><code>TEXTJOIN(delim, a, b, ...)</code> <span>Join values with delimiter</span></div>
+        <div class="tf-ref-cat">Numbers</div>
+        <div class="tf-ref-entry"><code>VALUE(text)</code> <span>Convert text to number</span></div>
+        <div class="tf-ref-entry"><code>TEXT(number, format)</code> <span>Format number (e.g. "0.00")</span></div>
+        <div class="tf-ref-entry"><code>ROUND(number, decimals)</code> <span>Round to decimal places</span></div>
+        <div class="tf-ref-entry"><code>ABS(number)</code> <span>Absolute value</span></div>
+        <div class="tf-ref-entry"><code>INT(number)</code> <span>Truncate to integer</span></div>
+        <div class="tf-ref-cat">Date</div>
+        <div class="tf-ref-entry"><code>DATEFORMAT(value, format)</code> <span>Reformat date (YYYYMMDD, DD.MM.YYYY, etc.)</span></div>
+        <div class="tf-ref-entry"><code>YEAR(value)</code> <span>Extract year</span></div>
+        <div class="tf-ref-entry"><code>MONTH(value)</code> <span>Extract month</span></div>
+        <div class="tf-ref-entry"><code>DAY(value)</code> <span>Extract day</span></div>
+        <div class="tf-ref-cat">Logic</div>
+        <div class="tf-ref-entry"><code>IF(cond, then, else)</code> <span>Conditional: IF(value=="", "N/A", value)</span></div>
+        <div class="tf-ref-entry"><code>IFERROR(expr, fallback)</code> <span>Return fallback if expr errors</span></div>
+        <div class="tf-ref-entry"><code>ISBLANK(value)</code> <span>TRUE if empty</span></div>
+        <div class="tf-ref-entry"><code>DEFAULT(value, fallback)</code> <span>Use fallback if value is blank</span></div>
+        <div class="tf-ref-cat">Lookup</div>
+        <div class="tf-ref-entry"><code>LOOKUP(dataset, field)</code> <span>Lookup field from external dataset by composite key</span></div>
+        <div class="tf-ref-cat">Special</div>
+        <div class="tf-ref-entry"><code>LPAD(value, length, char)</code> <span>Left-pad to length with char</span></div>
+        <div class="tf-ref-entry"><code>RPAD(value, length, char)</code> <span>Right-pad to length with char</span></div>
+        <div class="tf-ref-entry"><code>CHANGE(old, new, old2, new2, ...)</code> <span>Map values: if old return new, ...</span></div>
+      </div>
       <div class="table-wrap">
         <table class="mapping-table">
           <thead>
             <tr>
               <th>Target Field</th>
               <th>SAP Field</th>
-              <th>Source Field</th>
-              <th>Transform</th>
-              <th>Transformation / Expression</th>
+              <th>Source</th>
+              <th>Transformation Pipeline</th>
               <th>Preview</th>
             </tr>
           </thead>
@@ -1556,6 +1755,176 @@ function addSchemaField() {
 }
 
 // ── Mapping Editor ──
+// ── Formula Engine ──
+const FORMULA_CATALOG = [
+  { name: 'TRIM', args: 'value', desc: 'Remove whitespace', cat: 'text' },
+  { name: 'UPPER', args: 'value', desc: 'Uppercase', cat: 'text' },
+  { name: 'LOWER', args: 'value', desc: 'Lowercase', cat: 'text' },
+  { name: 'PROPER', args: 'value', desc: 'Title case', cat: 'text' },
+  { name: 'LEFT', args: 'value, n', desc: 'First n chars', cat: 'text' },
+  { name: 'RIGHT', args: 'value, n', desc: 'Last n chars', cat: 'text' },
+  { name: 'MID', args: 'value, start, len', desc: 'Substring (1-based)', cat: 'text' },
+  { name: 'LEN', args: 'value', desc: 'Text length', cat: 'text' },
+  { name: 'REPLACE', args: 'value, old, new', desc: 'Replace all', cat: 'text' },
+  { name: 'SUBSTITUTE', args: 'value, old, new', desc: 'Replace all', cat: 'text' },
+  { name: 'CLEAN', args: 'value', desc: 'Remove non-printable', cat: 'text' },
+  { name: 'REPT', args: 'value, n', desc: 'Repeat text', cat: 'text' },
+  { name: 'SPLIT', args: 'value, delim, idx', desc: 'Split & pick index', cat: 'extract' },
+  { name: 'EXTRACT', args: 'value, pattern', desc: 'Regex extract', cat: 'extract' },
+  { name: 'TEXTBEFORE', args: 'value, delim', desc: 'Text before delim', cat: 'extract' },
+  { name: 'TEXTAFTER', args: 'value, delim', desc: 'Text after delim', cat: 'extract' },
+  { name: 'CONCATENATE', args: 'a, b, ...', desc: 'Join values', cat: 'combine' },
+  { name: 'CONCAT', args: 'a, b, ...', desc: 'Join values', cat: 'combine' },
+  { name: 'TEXTJOIN', args: 'delim, a, b, ...', desc: 'Join with delim', cat: 'combine' },
+  { name: 'VALUE', args: 'text', desc: 'To number', cat: 'number' },
+  { name: 'TEXT', args: 'number, fmt', desc: 'Format number', cat: 'number' },
+  { name: 'ROUND', args: 'number, dec', desc: 'Round', cat: 'number' },
+  { name: 'ABS', args: 'number', desc: 'Absolute value', cat: 'number' },
+  { name: 'INT', args: 'number', desc: 'Truncate integer', cat: 'number' },
+  { name: 'DATEFORMAT', args: 'value, fmt', desc: 'Reformat date', cat: 'date' },
+  { name: 'YEAR', args: 'value', desc: 'Extract year', cat: 'date' },
+  { name: 'MONTH', args: 'value', desc: 'Extract month', cat: 'date' },
+  { name: 'DAY', args: 'value', desc: 'Extract day', cat: 'date' },
+  { name: 'IF', args: 'cond, then, else', desc: 'Conditional', cat: 'logic' },
+  { name: 'IFERROR', args: 'expr, fallback', desc: 'On error fallback', cat: 'logic' },
+  { name: 'ISBLANK', args: 'value', desc: 'TRUE if empty', cat: 'logic' },
+  { name: 'DEFAULT', args: 'value, fallback', desc: 'Fallback if blank', cat: 'logic' },
+  { name: 'LOOKUP', args: 'dataset, field', desc: 'External lookup', cat: 'lookup' },
+  { name: 'LPAD', args: 'value, len, char', desc: 'Left pad', cat: 'special' },
+  { name: 'RPAD', args: 'value, len, char', desc: 'Right pad', cat: 'special' },
+  { name: 'CHANGE', args: 'old,new,...', desc: 'Map values', cat: 'special' },
+];
+
+function parseFormulaArgs(argsStr) {
+  // Parse comma-separated args respecting nested parens and quoted strings
+  const args = [];
+  let depth = 0, current = '', inStr = false, strChar = '';
+  for (let i = 0; i < argsStr.length; i++) {
+    const ch = argsStr[i];
+    if (inStr) {
+      current += ch;
+      if (ch === strChar) inStr = false;
+    } else if (ch === '"' || ch === "'") {
+      inStr = true; strChar = ch; current += ch;
+    } else if (ch === '(') { depth++; current += ch; }
+    else if (ch === ')') { depth--; current += ch; }
+    else if (ch === ',' && depth === 0) { args.push(current.trim()); current = ''; }
+    else { current += ch; }
+  }
+  if (current.trim()) args.push(current.trim());
+  return args;
+}
+
+function evalFormula(expr, value, row) {
+  expr = expr.trim();
+  // String literal
+  if ((expr.startsWith('"') && expr.endsWith('"')) || (expr.startsWith("'") && expr.endsWith("'")))
+    return expr.slice(1, -1);
+  // Number literal
+  if (/^-?\d+(\.\d+)?$/.test(expr)) return expr;
+  // Field reference: [field_name]
+  if (expr.startsWith('[') && expr.endsWith(']')) return (row[expr.slice(1, -1)] || '');
+  // Boolean
+  if (expr === 'TRUE') return 'TRUE';
+  if (expr === 'FALSE') return 'FALSE';
+
+  // Function call: NAME(args...)
+  const fnMatch = expr.match(/^([A-Z_]+)\((.*)$/);
+  if (!fnMatch) {
+    // Comparison expressions for IF conditions
+    if (expr.includes('==')) { const p = expr.split('=='); return evalFormula(p[0], value, row) === evalFormula(p[1], value, row) ? 'TRUE' : 'FALSE'; }
+    if (expr.includes('!=')) { const p = expr.split('!='); return evalFormula(p[0], value, row) !== evalFormula(p[1], value, row) ? 'TRUE' : 'FALSE'; }
+    if (expr.includes('>=')) { const p = expr.split('>='); return parseFloat(evalFormula(p[0], value, row)) >= parseFloat(evalFormula(p[1], value, row)) ? 'TRUE' : 'FALSE'; }
+    if (expr.includes('<=')) { const p = expr.split('<='); return parseFloat(evalFormula(p[0], value, row)) <= parseFloat(evalFormula(p[1], value, row)) ? 'TRUE' : 'FALSE'; }
+    if (expr.includes('>') && !expr.includes('>=')) { const p = expr.split('>'); return parseFloat(evalFormula(p[0], value, row)) > parseFloat(evalFormula(p[1], value, row)) ? 'TRUE' : 'FALSE'; }
+    if (expr.includes('<') && !expr.includes('<=')) { const p = expr.split('<'); return parseFloat(evalFormula(p[0], value, row)) < parseFloat(evalFormula(p[1], value, row)) ? 'TRUE' : 'FALSE'; }
+    // Plain text = value (the pipeline input)
+    return value;
+  }
+
+  const fnName = fnMatch[1];
+  // Strip trailing paren: find matching close
+  let inner = fnMatch[2];
+  if (inner.endsWith(')')) inner = inner.slice(0, -1);
+  const args = parseFormulaArgs(inner);
+  const evalArg = (i, def) => i < args.length ? evalFormula(args[i], value, row) : (def !== undefined ? def : '');
+
+  switch (fnName) {
+    case 'TRIM': return evalArg(0, value).trim();
+    case 'UPPER': return evalArg(0, value).toUpperCase();
+    case 'LOWER': return evalArg(0, value).toLowerCase();
+    case 'PROPER': return evalArg(0, value).replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.slice(1).toLowerCase());
+    case 'LEFT': return evalArg(0, value).substring(0, parseInt(evalArg(1, '1')));
+    case 'RIGHT': { const s = evalArg(0, value), n = parseInt(evalArg(1, '1')); return s.substring(s.length - n); }
+    case 'MID': { const s = evalArg(0, value), st = parseInt(evalArg(1, '1')) - 1, ln = parseInt(evalArg(2, '1')); return s.substring(st, st + ln); }
+    case 'LEN': return String(evalArg(0, value).length);
+    case 'REPLACE':
+    case 'SUBSTITUTE': { const s = evalArg(0, value), o = evalArg(1), n = evalArg(2); return s.split(o).join(n); }
+    case 'CLEAN': return evalArg(0, value).replace(/[^\x20-\x7E]/g, '');
+    case 'REPT': return evalArg(0, value).repeat(parseInt(evalArg(1, '1')));
+    case 'SPLIT': { const parts = evalArg(0, value).split(evalArg(1, ',')); const idx = parseInt(evalArg(2, '0')); return parts[idx] || ''; }
+    case 'EXTRACT': { const m = evalArg(0, value).match(new RegExp(evalArg(1))); return m ? m[0] : ''; }
+    case 'TEXTBEFORE': { const s = evalArg(0, value), d = evalArg(1); const idx = s.indexOf(d); return idx >= 0 ? s.substring(0, idx) : s; }
+    case 'TEXTAFTER': { const s = evalArg(0, value), d = evalArg(1); const idx = s.indexOf(d); return idx >= 0 ? s.substring(idx + d.length) : ''; }
+    case 'CONCATENATE':
+    case 'CONCAT': return args.map((a, i) => evalFormula(a, value, row)).join('');
+    case 'TEXTJOIN': { const delim = evalArg(0, ','); return args.slice(1).map(a => evalFormula(a, value, row)).join(delim); }
+    case 'VALUE': return String(parseFloat(evalArg(0, value)) || 0);
+    case 'TEXT': {
+      const num = parseFloat(evalArg(0, value));
+      const fmt = evalArg(1, '0.00');
+      const dec = (fmt.split('.')[1] || '').length;
+      return isNaN(num) ? evalArg(0, value) : num.toFixed(dec);
+    }
+    case 'ROUND': return String(parseFloat(parseFloat(evalArg(0, value)).toFixed(parseInt(evalArg(1, '0')))));
+    case 'ABS': return String(Math.abs(parseFloat(evalArg(0, value)) || 0));
+    case 'INT': return String(Math.trunc(parseFloat(evalArg(0, value)) || 0));
+    case 'DATEFORMAT': {
+      const dv = evalArg(0, value).replace(/[^\d]/g, '');
+      let y, mo, da;
+      if (dv.length === 8) { y = dv.substr(0, 4); mo = dv.substr(4, 2); da = dv.substr(6, 2); }
+      else { const d = new Date(evalArg(0, value)); y = String(d.getFullYear()); mo = String(d.getMonth() + 1).padStart(2, '0'); da = String(d.getDate()).padStart(2, '0'); }
+      const fmt = evalArg(1, 'YYYYMMDD');
+      return fmt.replace('YYYY', y).replace('YY', y.slice(-2)).replace('MM', mo).replace('DD', da);
+    }
+    case 'YEAR': { const d = new Date(evalArg(0, value)); return String(d.getFullYear()); }
+    case 'MONTH': { const d = new Date(evalArg(0, value)); return String(d.getMonth() + 1).padStart(2, '0'); }
+    case 'DAY': { const d = new Date(evalArg(0, value)); return String(d.getDate()).padStart(2, '0'); }
+    case 'IF': {
+      const cond = evalFormula(args[0], value, row);
+      return (cond === 'TRUE' || cond === 'true' || (cond && cond !== '0' && cond !== 'FALSE' && cond !== 'false'))
+        ? evalArg(1) : evalArg(2);
+    }
+    case 'IFERROR': { try { return evalArg(0); } catch (e) { return evalArg(1); } }
+    case 'ISBLANK': return (!evalArg(0, value) || !evalArg(0, value).trim()) ? 'TRUE' : 'FALSE';
+    case 'DEFAULT': { const v = evalArg(0, value); return (!v || !v.trim()) ? evalArg(1) : v; }
+    case 'LOOKUP': {
+      const dsName = evalArg(0);
+      const field = evalArg(1);
+      const ds = externalDatasets[dsName];
+      if (!ds) return '(no dataset: ' + dsName + ')';
+      const keyFields = getKeyFields();
+      const sourceKey = keyFields.map(kf => (row[kf.field] || '').trim()).join('|');
+      const match = ds.rows.find(r => {
+        const k = keyFields.map(kf => (r[kf.field] || r[kf.header] || '').trim()).join('|');
+        return k === sourceKey;
+      });
+      return match ? (match[field] || '') : '(no match)';
+    }
+    case 'LPAD': { const v = evalArg(0, value), l = parseInt(evalArg(1, '10')), c = evalArg(2, '0'); return v.padStart(l, c); }
+    case 'RPAD': { const v = evalArg(0, value), l = parseInt(evalArg(1, '10')), c = evalArg(2, ' '); return v.padEnd(l, c); }
+    case 'CHANGE': {
+      const v = evalArg(0, value);
+      for (let i = 1; i + 1 < args.length; i += 2) {
+        if (v === evalFormula(args[i], value, row)) return evalFormula(args[i + 1], value, row);
+      }
+      return v;
+    }
+    default: return '(unknown: ' + fnName + ')';
+  }
+}
+
+// ── Mapping Pipeline ──
 function renderMappingTable() {
   // Ensure mappings are in sync with target schema
   const existing = {};
@@ -1563,85 +1932,183 @@ function renderMappingTable() {
   mappings = schema.map(t => existing[t.field] || {
     targetField: t.field, sapField: t.sapField,
     sourceField: (sourceSchema.find(s => s.field === t.field) || {}).field || '',
-    transform: 'direct', expression: '', extDataset: '', extKey: '', extValueField: '',
+    transforms: [],  // array of formula strings
   });
-  // update sapField
-  mappings.forEach((m, i) => { m.sapField = schema[i].sapField; });
+  // Migrate old format
+  mappings.forEach((m, i) => {
+    m.sapField = schema[i].sapField;
+    if (!m.transforms) m.transforms = [];
+    // migrate from old transform/expression format
+    if (m.transform === 'custom' && m.expression && m.transforms.length === 0) {
+      m.transforms.push(m.expression);
+    }
+    if (m.transform === 'lookup' && m.extDataset && m.transforms.length === 0) {
+      m.transforms.push('LOOKUP("' + m.extDataset + '", "' + (m.extValueField || '') + '")');
+    }
+  });
 
   const srcOpts = [''].concat(sourceSchema.map(s => s.field));
-  const extDsNames = Object.keys(externalDatasets);
-
   const tbody = document.getElementById('mapping-tbody');
   tbody.innerHTML = mappings.map((m, i) => {
-    const transformOpts = optionList(['direct','custom','lookup'], m.transform);
     const srcSelect = optionList(srcOpts, m.sourceField);
-    const tagClass = m.transform;
 
-    let exprCell = '';
-    if (m.transform === 'custom') {
-      exprCell = '<textarea onchange="updateMapping(' + i + ',\'expression\',this.value)" placeholder="e.g. row.amount * 100">' + esc(m.expression) + '</textarea>';
-    } else if (m.transform === 'lookup') {
-      const dsOpts = optionList([''].concat(extDsNames), m.extDataset);
-      const valFieldOpts = m.extDataset && externalDatasets[m.extDataset]
-        ? optionList([''].concat(externalDatasets[m.extDataset].headers), m.extValueField)
-        : '<option>(select dataset first)</option>';
-      exprCell =
-        '<div style="display:flex;flex-direction:column;gap:4px;">' +
-        '<select onchange="updateMapping(' + i + ',\'extDataset\',this.value);renderMappingTable()">' + dsOpts + '</select>' +
-        '<select onchange="updateMapping(' + i + ',\'extValueField\',this.value)">' + valFieldOpts + '</select>' +
-        '</div>';
-    } else {
-      exprCell = '<span style="color:var(--text-muted);font-size:0.8rem;">Direct copy</span>';
+    // Pipeline steps
+    let pipeHTML = '<div class="tf-pipeline">';
+    if (m.transforms.length === 0) {
+      pipeHTML += '<span style="color:var(--text-muted);font-size:0.78rem;font-style:italic;">Direct copy (no transforms)</span>';
     }
+    m.transforms.forEach((t, j) => {
+      pipeHTML += '<div class="tf-step">' +
+        '<span class="tf-move" title="Drag to reorder">&#9776;</span>' +
+        '<span class="tf-num">' + (j + 1) + '</span>' +
+        '<input class="tf-formula" value="' + esc(t) + '" ' +
+          'oninput="onFormulaInput(event,' + i + ',' + j + ')" ' +
+          'onkeydown="onFormulaKey(event,' + i + ',' + j + ')" ' +
+          'onblur="onFormulaBlur(event,' + i + ',' + j + ')" ' +
+          'onfocus="onFormulaFocus(event,' + i + ',' + j + ')" ' +
+          'placeholder="e.g. TRIM(), UPPER()" spellcheck="false">' +
+        '<span class="tf-remove" onclick="removeTransformStep(' + i + ',' + j + ')" title="Remove">&times;</span>' +
+        '<div class="tf-ac" id="tf-ac-' + i + '-' + j + '"></div>' +
+        '</div>';
+    });
+    pipeHTML += '<button class="tf-add-step" onclick="addTransformStep(' + i + ')">+ Add Step</button>';
+    pipeHTML += '</div>';
 
-    // Preview
-    let previewVal = '';
+    // Preview: show chain
+    let previewHTML = '';
     if (files.ap && files.ap.rows.length > 0) {
-      previewVal = applyMapping(m, files.ap.rows[0]);
+      const row = files.ap.rows[0];
+      const initial = row[m.sourceField] || '';
+      if (m.transforms.length === 0) {
+        previewHTML = '<span class="tf-preview">' + esc(initial) + '</span>';
+      } else {
+        let val = initial;
+        let chainHTML = '<div class="tf-preview-chain">';
+        chainHTML += '<div class="tf-preview-step"><span class="tf-pv">' + esc(initial || '(empty)') + '</span></div>';
+        m.transforms.forEach((t, j) => {
+          try { val = evalFormula(t, val, row); } catch (e) { val = '(err)'; }
+          chainHTML += '<div class="tf-preview-step"><span class="tf-preview-arrow">&#8595;</span> <span class="tf-pv">' + esc(val) + '</span></div>';
+        });
+        chainHTML += '</div>';
+        chainHTML += '<div class="tf-preview-final">' + esc(val) + '</div>';
+        previewHTML = chainHTML;
+      }
     }
 
     return '<tr>' +
       '<td><strong>' + esc(m.targetField) + '</strong></td>' +
       '<td style="font-family:monospace;font-size:0.8rem;">' + esc(m.sapField) + '</td>' +
-      '<td><select onchange="updateMapping(' + i + ',\'sourceField\',this.value)">' + srcSelect + '</select></td>' +
-      '<td><select onchange="updateMapping(' + i + ',\'transform\',this.value);renderMappingTable()">' + transformOpts + '</select></td>' +
-      '<td>' + exprCell + '</td>' +
-      '<td style="font-family:monospace;font-size:0.8rem;color:var(--primary);">' + esc(previewVal) + '</td>' +
+      '<td><select onchange="updateMappingField(' + i + ',this.value)">' + srcSelect + '</select></td>' +
+      '<td>' + pipeHTML + '</td>' +
+      '<td>' + previewHTML + '</td>' +
       '</tr>';
   }).join('');
 }
 
-function updateMapping(i, key, value) {
-  mappings[i][key] = value;
+function updateMappingField(i, value) {
+  mappings[i].sourceField = value;
+  renderMappingTable();
+}
+
+function addTransformStep(i) {
+  if (!mappings[i].transforms) mappings[i].transforms = [];
+  mappings[i].transforms.push('TRIM()');
+  renderMappingTable();
+  // Focus the new input
+  setTimeout(() => {
+    const idx = mappings[i].transforms.length - 1;
+    const inp = document.querySelector('#mapping-tbody tr:nth-child(' + (i + 1) + ') .tf-step:nth-child(' + (idx + 1) + ') .tf-formula');
+    if (inp) { inp.focus(); inp.select(); }
+  }, 50);
+}
+
+function removeTransformStep(i, j) {
+  mappings[i].transforms.splice(j, 1);
+  renderMappingTable();
+}
+
+function onFormulaInput(event, i, j) {
+  mappings[i].transforms[j] = event.target.value;
+  showFormulaAutocomplete(event.target, i, j);
+}
+
+function onFormulaFocus(event, i, j) {
+  showFormulaAutocomplete(event.target, i, j);
+}
+
+function onFormulaBlur(event, i, j) {
+  // Delay to allow click on autocomplete item
+  setTimeout(() => {
+    const ac = document.getElementById('tf-ac-' + i + '-' + j);
+    if (ac) ac.classList.remove('open');
+    // Re-render preview
+    renderMappingTable();
+  }, 200);
+}
+
+function onFormulaKey(event, i, j) {
+  const ac = document.getElementById('tf-ac-' + i + '-' + j);
+  if (!ac || !ac.classList.contains('open')) {
+    if (event.key === 'Enter') { event.preventDefault(); renderMappingTable(); }
+    return;
+  }
+  const items = ac.querySelectorAll('.tf-ac-item');
+  const active = ac.querySelector('.tf-ac-item.active');
+  let idx = Array.from(items).indexOf(active);
+  if (event.key === 'ArrowDown') { event.preventDefault(); idx = Math.min(idx + 1, items.length - 1); }
+  else if (event.key === 'ArrowUp') { event.preventDefault(); idx = Math.max(idx - 1, 0); }
+  else if (event.key === 'Enter' || event.key === 'Tab') {
+    event.preventDefault();
+    if (active) insertAutocomplete(event.target, active.dataset.fn, i, j);
+    return;
+  } else if (event.key === 'Escape') { ac.classList.remove('open'); return; }
+  else return;
+  items.forEach(it => it.classList.remove('active'));
+  if (items[idx]) items[idx].classList.add('active');
+}
+
+function showFormulaAutocomplete(input, i, j) {
+  const ac = document.getElementById('tf-ac-' + i + '-' + j);
+  const val = input.value.trim().toUpperCase();
+  // Show autocomplete when typing a function name (before the open paren)
+  const beforeCursor = val.split('(')[0];
+  if (!beforeCursor || beforeCursor.length < 1) { ac.classList.remove('open'); return; }
+  const matches = FORMULA_CATALOG.filter(f => f.name.startsWith(beforeCursor) && f.name !== beforeCursor);
+  if (matches.length === 0) { ac.classList.remove('open'); return; }
+  ac.innerHTML = matches.slice(0, 8).map((f, idx) =>
+    '<div class="tf-ac-item' + (idx === 0 ? ' active' : '') + '" data-fn="' + f.name + '" ' +
+    'onmousedown="insertAutocomplete(this.closest(\'.tf-step\').querySelector(\'.tf-formula\'),\'' + f.name + '\',' + i + ',' + j + ')">' +
+    '<span class="tf-ac-fn">' + f.name + '(' + f.args + ')</span>' +
+    '<span class="tf-ac-desc">' + f.desc + '</span>' +
+    '</div>'
+  ).join('');
+  ac.classList.add('open');
+}
+
+function insertAutocomplete(input, fnName, i, j) {
+  input.value = fnName + '()';
+  mappings[i].transforms[j] = input.value;
+  const ac = document.getElementById('tf-ac-' + i + '-' + j);
+  if (ac) ac.classList.remove('open');
+  // Place cursor inside parens
+  setTimeout(() => {
+    input.focus();
+    input.setSelectionRange(fnName.length + 1, fnName.length + 1);
+  }, 10);
 }
 
 function applyMapping(mapping, row) {
   try {
-    if (mapping.transform === 'direct') {
-      return row[mapping.sourceField] || '';
-    } else if (mapping.transform === 'custom' && mapping.expression) {
-      // Safe limited eval: only allow row.field references, basic math, string ops
-      const fn = new Function('row', 'return ' + mapping.expression);
-      const result = fn(row);
-      return String(result == null ? '' : result);
-    } else if (mapping.transform === 'lookup' && mapping.extDataset) {
-      const ds = externalDatasets[mapping.extDataset];
-      if (!ds) return '(no dataset)';
-      // Build composite key from source row
-      const keyFields = getKeyFields();
-      const sourceKey = keyFields.map(kf => (row[kf.field] || '').trim()).join('|');
-      // Find match in external dataset using same key fields
-      const match = ds.rows.find(extRow => {
-        const extKey = keyFields.map(kf => (extRow[kf.field] || extRow[kf.header] || '').trim()).join('|');
-        return extKey === sourceKey;
+    let val = row[mapping.sourceField] || '';
+    if (mapping.transforms && mapping.transforms.length > 0) {
+      mapping.transforms.forEach(formula => {
+        val = evalFormula(formula, val, row);
       });
-      if (match && mapping.extValueField) return match[mapping.extValueField] || '';
-      return match ? '(matched)' : '(no match)';
     }
+    return val;
   } catch (e) {
     return '(error: ' + e.message + ')';
   }
-  return '';
 }
 
 // Apply all mappings to transform a source row into a target row
