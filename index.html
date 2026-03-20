@@ -2336,11 +2336,8 @@ function runMigration() {
     company_codes: files.company_codes ? loadSetFromCSV(files.company_codes.rows, 'company_code') : SAMPLE_MD.company_codes,
   };
 
-  // Apply mappings to transform source rows -> target rows if any non-direct mappings exist
-  const hasMappings = mappings.length > 0 && mappings.some(m => m.transform !== 'direct' || m.sourceField !== m.targetField);
-  const targetRows = hasMappings
-    ? apRows.map(row => { const t = transformRow(row); t._sourceRow = row; return t; })
-    : apRows.map(row => { const copy = Object.assign({}, row); copy._sourceRow = row; return copy; });
+  // Always apply mappings pipeline (handles direct copy when no transforms exist)
+  const targetRows = apRows.map(row => { const t = transformRow(row); t._sourceRow = row; return t; });
 
   const allIssues = [];
   const failedRefs = new Set();
