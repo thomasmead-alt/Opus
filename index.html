@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAP LSMW Invoice Migration</title>
+<style>
+:root {
+  --bg: #f5f7fa;
+  --card: #ffffff;
+  --primary: #1a56db;
+  --primary-hover: #1348b8;
+  --border: #d1d5db;
+  --text: #1f2937;
+  --text-muted: #6b7280;
+  --critical: #dc2626;
+  --critical-bg: #fef2f2;
+  --error: #d97706;
+  --error-bg: #fffbeb;
+  --warning: #ca8a04;
+  --warning-bg: #fefce8;
+  --info: #0891b2;
+  --info-bg: #ecfeff;
+  --success: #16a34a;
+  --success-bg: #f0fdf4;
+  --radius: 8px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+
+header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+header h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 4px; }
+header p { color: var(--text-muted); font-size: 0.95rem; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.card h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card h2 .badge {
+  font-size: 0.7rem;
+  background: var(--primary);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 500;
+}
+.card h2 .badge.optional {
+  background: var(--text-muted);
+}
+
+.upload-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.upload-item {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 20px 16px;
+  text-align: center;
+  transition: border-color 0.2s, background 0.2s;
+  cursor: pointer;
+  position: relative;
+}
+.upload-item:hover { border-color: var(--primary); background: #f0f4ff; }
+.upload-item.loaded { border-color: var(--success); border-style: solid; background: var(--success-bg); }
+.upload-item label { display: block; cursor: pointer; font-weight: 500; font-size: 0.95rem; }
+.upload-item .hint { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+.upload-item .file-info { font-size: 0.8rem; color: var(--success); margin-top: 6px; font-weight: 500; }
+.upload-item input[type="file"] { display: none; }
+
+.actions { text-align: center; margin: 24px 0; }
+
+button.primary {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 12px 40px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+button.primary:hover { background: var(--primary-hover); }
+button.primary:disabled { background: #93a3b8; cursor: not-allowed; }
+
+button.secondary {
+  background: transparent;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  padding: 10px 24px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: var(--radius);
+  cursor: pointer;
+  margin-left: 8px;
+  transition: background 0.2s;
+}
+button.secondary:hover { background: #f0f4ff; }
+
+#results { display: none; }
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.stat-card {
+  text-align: center;
+  padding: 16px 8px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+.stat-card .value { font-size: 2rem; font-weight: 700; }
+.stat-card .label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-card.total .value { color: var(--primary); }
+.stat-card.passed .value { color: var(--success); }
+.stat-card.failed .value { color: var(--critical); }
+.stat-card.warnings .value { color: var(--warning); }
+
+.severity-tag {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.severity-tag.CRITICAL { background: var(--critical-bg); color: var(--critical); }
+.severity-tag.ERROR { background: var(--error-bg); color: var(--error); }
+.severity-tag.WARNING { background: var(--warning-bg); color: var(--warning); }
+.severity-tag.INFO { background: var(--info-bg); color: var(--info); }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+thead th {
+  text-align: left;
+  padding: 10px 12px;
+  background: var(--bg);
+  font-weight: 600;
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+}
+tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e5e7eb;
+  vertical-align: top;
+}
+tbody tr:hover { background: #f9fafb; }
+
+.remediation-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+  background: #fafbfc;
+}
+.remediation-card h4 { font-size: 0.95rem; margin-bottom: 8px; }
+.remediation-card .meta { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; }
+.remediation-card .action { font-size: 0.9rem; margin-top: 8px; line-height: 1.5; }
+
+.table-wrap { overflow-x: auto; }
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.summary-box { border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+.summary-box h3 { font-size: 0.95rem; margin-bottom: 10px; }
+.summary-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.85rem; }
+.summary-row .count { font-weight: 600; }
+
+.download-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 16px; }
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+}
+.empty-state .icon { font-size: 2.5rem; margin-bottom: 8px; }
+
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 12px 0;
+}
+.progress-bar .fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+.progress-bar .fill.green { background: var(--success); }
+.progress-bar .fill.red { background: var(--critical); }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>SAP LSMW Invoice Migration</h1>
+    <p>Upload AP invoice data and master data CSVs to validate and generate LSMW flat files</p>
+  </header>
+
+  <!-- AP Data Upload -->
+  <div class="card">
+    <h2>AP Invoice Data <span class="badge">Required</span></h2>
+    <div class="upload-grid">
+      <div class="upload-item" id="drop-ap" onclick="document.getElementById('file-ap').click()">
+        <label>AP Invoices</label>
+        <div class="hint">Columns: invoice_ref, vendor_id, customer_id, company_code, invoice_date, ...</div>
+        <input type="file" id="file-ap" accept=".csv" onchange="handleFile(this,'ap')">
+        <div class="file-info" id="info-ap"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Master Data Uploads -->
+  <div class="card">
+    <h2>Master Data <span class="badge optional">Optional — sample data used if omitted</span></h2>
+    <div class="upload-grid">
+      <div class="upload-item" id="drop-customers" onclick="document.getElementById('file-customers').click()">
+        <label>Customers</label>
+        <div class="hint">Column: customer_id</div>
+        <input type="file" id="file-customers" accept=".csv" onchange="handleFile(this,'customers')">
+        <div class="file-info" id="info-customers"></div>
+      </div>
+      <div class="upload-item" id="drop-vendors" onclick="document.getElementById('file-vendors').click()">
+        <label>Vendors</label>
+        <div class="hint">Column: vendor_id</div>
+        <input type="file" id="file-vendors" accept=".csv" onchange="handleFile(this,'vendors')">
+        <div class="file-info" id="info-vendors"></div>
+      </div>
+      <div class="upload-item" id="drop-cost_centres" onclick="document.getElementById('file-cost_centres').click()">
+        <label>Cost Centres</label>
+        <div class="hint">Column: cost_centre_id</div>
+        <input type="file" id="file-cost_centres" accept=".csv" onchange="handleFile(this,'cost_centres')">
+        <div class="file-info" id="info-cost_centres"></div>
+      </div>
+      <div class="upload-item" id="drop-gl_accounts" onclick="document.getElementById('file-gl_accounts').click()">
+        <label>GL Accounts</label>
+        <div class="hint">Column: gl_account</div>
+        <input type="file" id="file-gl_accounts" accept=".csv" onchange="handleFile(this,'gl_accounts')">
+        <div class="file-info" id="info-gl_accounts"></div>
+      </div>
+      <div class="upload-item" id="drop-company_codes" onclick="document.getElementById('file-company_codes').click()">
+        <label>Company Codes</label>
+        <div class="hint">Column: company_code</div>
+        <input type="file" id="file-company_codes" accept=".csv" onchange="handleFile(this,'company_codes')">
+        <div class="file-info" id="info-company_codes"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="primary" id="btn-run" onclick="runMigration()">Run Migration Validation</button>
+    <button class="secondary" onclick="loadSampleData()">Use Sample Data</button>
+  </div>
+
+  <!-- Results -->
+  <div id="results">
+    <div class="card">
+      <h2>Summary</h2>
+      <div class="stats-row" id="stats-row"></div>
+      <div class="progress-bar"><div class="fill" id="pass-bar"></div></div>
+    </div>
+
+    <div class="card">
+      <h2>Breakdowns</h2>
+      <div class="summary-grid" id="summary-grid"></div>
+    </div>
+
+    <div class="card" id="remediation-card" style="display:none">
+      <h2>Remediation Steps</h2>
+      <div id="remediation-list"></div>
+    </div>
+
+    <div class="card" id="issues-card" style="display:none">
+      <h2>All Issues</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Severity</th>
+              <th>Invoice</th>
+              <th>Field</th>
+              <th>Value</th>
+              <th>Message</th>
+              <th>Resolution</th>
+              <th>SAP Tcode</th>
+              <th>Owner</th>
+            </tr>
+          </thead>
+          <tbody id="issues-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" id="lsmw-card" style="display:none">
+      <h2>LSMW Output (Valid Records)</h2>
+      <div class="table-wrap">
+        <pre id="lsmw-output" style="font-size:0.8rem;overflow-x:auto;white-space:pre;background:var(--bg);padding:12px;border-radius:var(--radius);"></pre>
+      </div>
+    </div>
+
+    <div class="download-row">
+      <button class="secondary" id="btn-dl-lsmw" onclick="downloadLSMW()">Download LSMW File</button>
+      <button class="secondary" id="btn-dl-report" onclick="downloadReport()">Download JSON Report</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ──
+const files = {};
+let lastReport = null;
+let lastLSMW = '';
+
+// ── Sample data (matches Python script) ──
+const SAMPLE_AP = [
+  { invoice_ref:'INV-2026-0001', vendor_id:'V1001', customer_id:'C2001', company_code:'1000', invoice_date:'2026-03-15', posting_date:'2026-03-15', baseline_date:'2026-03-15', currency:'USD', gross_amount:'15000.00', tax_amount:'1500.00', tax_code:'V1', gl_account:'400100', cost_centre:'CC1010', profit_centre:'PC2000', payment_terms:'ZN30', reference:'PO-88001', header_text:'Consulting services Mar 2026', assignment:'PROJECT-ALPHA', item_text:'Professional services' },
+  { invoice_ref:'INV-2026-0002', vendor_id:'V1002', customer_id:'C9999', company_code:'1000', invoice_date:'2026-03-16', posting_date:'2026-03-16', baseline_date:'2026-03-16', currency:'EUR', gross_amount:'8200.50', tax_amount:'820.05', tax_code:'V1', gl_account:'400200', cost_centre:'CC_INVALID', profit_centre:'PC2000', payment_terms:'ZN30', reference:'PO-88002', header_text:'Hardware procurement', assignment:'PROJECT-BETA', item_text:'Server equipment' },
+  { invoice_ref:'INV-2026-0003', vendor_id:'V_UNKNOWN', customer_id:'C2002', company_code:'2000', invoice_date:'2026-03-17', posting_date:'2026-03-17', baseline_date:'2026-03-17', currency:'GBP', gross_amount:'3400.00', tax_amount:'680.00', tax_code:'V2', gl_account:'999999', cost_centre:'CC1020', profit_centre:'', payment_terms:'ZN60', reference:'PO-88003', header_text:'Facilities maintenance', assignment:'PROJECT-GAMMA', item_text:'Building repairs' },
+  { invoice_ref:'INV-2026-0004', vendor_id:'V1001', customer_id:'C2001', company_code:'1000', invoice_date:'2026-03-18', posting_date:'2026-03-18', baseline_date:'2026-03-18', currency:'USD', gross_amount:'45000.00', tax_amount:'4500.00', tax_code:'V1', gl_account:'400100', cost_centre:'CC1010', profit_centre:'PC2000', payment_terms:'ZN30', reference:'PO-88004', header_text:'Software licences Q2', assignment:'PROJECT-ALPHA', item_text:'Annual licence renewal' },
+];
+const SAMPLE_MD = {
+  customers: new Set(['C2001','C2002','C2003']),
+  vendors: new Set(['V1001','V1002','V1003']),
+  cost_centres: new Set(['CC1010','CC1020','CC1030']),
+  gl_accounts: new Set(['400100','400200','400300','500100']),
+  company_codes: new Set(['1000','2000']),
+};
+
+// ── Resolution map ──
+const RESOLUTIONS = {
+  vendor_id: {
+    message: 'Vendor master record not found in SAP.',
+    resolution: 'Create the vendor master via transaction XK01 (centralised) or MK01 (purchasing). Ensure the vendor is extended to company code {cc} with the correct reconciliation account, payment terms, and withholding-tax settings. After creation, update the legacy mapping table and re-run this migration.',
+    sap_transaction: 'XK01 / MK01',
+    responsible_team: 'Master Data \u2013 Vendor Management',
+  },
+  customer_id: {
+    message: 'Customer master record not found in SAP.',
+    resolution: 'Create the customer master via transaction XD01 (centralised) or FD01 (FI only). Verify credit-management data, payment terms, and dunning configuration. Extend the customer to company code {cc} and sales organisation as applicable. Update the legacy mapping table and re-run this migration.',
+    sap_transaction: 'XD01 / FD01',
+    responsible_team: 'Master Data \u2013 Customer Management',
+  },
+  cost_centre: {
+    message: 'Cost centre not found in SAP controlling area.',
+    resolution: 'Create the cost centre via transaction KS01 or maintain it in the cost-centre hierarchy (OKEON). Confirm the controlling area, validity dates (must cover the posting period), manager assignment, and cost-centre category. Update the legacy mapping table and re-run this migration.',
+    sap_transaction: 'KS01 / OKEON',
+    responsible_team: 'Master Data \u2013 Controlling / Cost Centre Owners',
+  },
+  gl_account: {
+    message: 'G/L account does not exist in the target chart of accounts.',
+    resolution: 'Create the G/L account via transaction FS00. Define it in the chart of accounts (account group, P&L / BS indicator, short & long text). Then extend it to company code {cc} with the correct currency, tax category, and field-status group. Update the legacy mapping table and re-run this migration.',
+    sap_transaction: 'FS00',
+    responsible_team: 'Master Data \u2013 General Ledger / Chart of Accounts',
+  },
+  company_code: {
+    message: 'Company code is not defined in SAP.',
+    resolution: 'Company codes are maintained via transaction OX02 in IMG. Confirm the company code, country, currency, chart of accounts, fiscal-year variant, and posting-period variant with the SAP Basis / configuration team.',
+    sap_transaction: 'OX02 (IMG)',
+    responsible_team: 'SAP Basis / Configuration',
+  },
+  profit_centre: {
+    message: 'Profit centre is blank or not found in SAP.',
+    resolution: 'Create the profit centre via transaction KE51 or derive it from the cost-centre master (field PRCTR in KS02). If profit-centre accounting is mandatory, every line item must carry a valid profit centre. Update the legacy mapping table and re-run this migration.',
+    sap_transaction: 'KE51 / KS02',
+    responsible_team: 'Master Data \u2013 Controlling / Profit Centre Owners',
+  },
+};
+
+// ── CSV parser ──
+function parseCSV(text) {
+  const lines = text.trim().split(/\r?\n/);
+  if (lines.length < 1) return [];
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+  return lines.slice(1).filter(l => l.trim()).map(line => {
+    const vals = [];
+    let inQuote = false, cur = '';
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') { inQuote = !inQuote; continue; }
+      if (ch === ',' && !inQuote) { vals.push(cur.trim()); cur = ''; continue; }
+      cur += ch;
+    }
+    vals.push(cur.trim());
+    const row = {};
+    headers.forEach((h, i) => { row[h] = vals[i] || ''; });
+    return row;
+  });
+}
+
+function loadSetFromCSV(rows, key) {
+  const s = new Set();
+  rows.forEach(r => { const v = (r[key] || '').trim(); if (v) s.add(v); });
+  return s;
+}
+
+// ── File handling ──
+function handleFile(input, key) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const rows = parseCSV(reader.result);
+    files[key] = { name: file.name, rows };
+    const el = document.getElementById('info-' + key);
+    el.textContent = file.name + ' (' + rows.length + ' rows)';
+    input.closest('.upload-item').classList.add('loaded');
+  };
+  reader.readAsText(file);
+}
+
+function loadSampleData() {
+  files['ap'] = { name: 'sample', rows: SAMPLE_AP };
+  document.getElementById('info-ap').textContent = 'Sample data (4 invoices)';
+  document.getElementById('drop-ap').classList.add('loaded');
+  ['customers','vendors','cost_centres','gl_accounts','company_codes'].forEach(k => {
+    document.getElementById('info-' + k).textContent = 'Sample data';
+    document.getElementById('drop-' + k).classList.add('loaded');
+  });
+  runMigration();
+}
+
+// ── Validation ──
+function validate(row, md) {
+  const issues = [];
+  const inv = row.invoice_ref || 'UNKNOWN';
+  const cc = row.company_code || '';
+
+  function check(field, lookupKey, severity) {
+    const value = (row[field] || '').trim();
+    const meta = RESOLUTIONS[field] || {};
+    if (!value) {
+      issues.push({
+        severity: severity === 'CRITICAL' ? 'CRITICAL' : 'WARNING',
+        invoice_ref: inv, field_name: field, supplied_value: '(blank)',
+        message: "Required field '" + field + "' is empty.",
+        resolution: (meta.resolution || 'Provide a valid value.').replace('{cc}', cc),
+        sap_transaction: meta.sap_transaction || '',
+        responsible_team: meta.responsible_team || 'Data Migration Team',
+      });
+    } else if (!md[lookupKey] || !md[lookupKey].has(value)) {
+      issues.push({
+        severity, invoice_ref: inv, field_name: field, supplied_value: value,
+        message: meta.message || "Value '" + value + "' not found in master data.",
+        resolution: (meta.resolution || 'Verify and correct the value.').replace('{cc}', cc),
+        sap_transaction: meta.sap_transaction || '',
+        responsible_team: meta.responsible_team || 'Data Migration Team',
+      });
+    }
+  }
+
+  check('vendor_id', 'vendors', 'CRITICAL');
+  check('customer_id', 'customers', 'CRITICAL');
+  check('company_code', 'company_codes', 'CRITICAL');
+  check('gl_account', 'gl_accounts', 'CRITICAL');
+  check('cost_centre', 'cost_centres', 'ERROR');
+  check('profit_centre', 'cost_centres', 'WARNING');
+
+  ['invoice_date','posting_date','baseline_date'].forEach(f => {
+    const v = (row[f] || '').trim();
+    if (v && !/^\d{4}-\d{2}-\d{2}$/.test(v)) {
+      issues.push({ severity:'ERROR', invoice_ref:inv, field_name:f, supplied_value:v,
+        message: "Date '" + v + "' is not in YYYY-MM-DD format.",
+        resolution: 'Correct the date format to YYYY-MM-DD in the source data.',
+        sap_transaction: '', responsible_team: 'Data Migration Team' });
+    }
+  });
+
+  ['gross_amount','tax_amount'].forEach(f => {
+    const v = (row[f] || '').trim();
+    if (v) {
+      const n = parseFloat(v);
+      if (isNaN(n)) {
+        issues.push({ severity:'ERROR', invoice_ref:inv, field_name:f, supplied_value:v,
+          message: "Amount '" + v + "' is not a valid number.",
+          resolution: 'Correct the amount to a valid decimal number.',
+          sap_transaction: '', responsible_team: 'Data Migration Team' });
+      } else if (n < 0) {
+        issues.push({ severity:'WARNING', invoice_ref:inv, field_name:f, supplied_value:v,
+          message: 'Negative amount detected (' + v + '). Verify this is a credit memo.',
+          resolution: 'Confirm whether this should be posted as a credit memo (transaction type).',
+          sap_transaction: '', responsible_team: 'AP / Finance Team' });
+      }
+    }
+  });
+
+  return issues;
+}
+
+function toSAPDate(iso) {
+  try {
+    const [y, m, d] = iso.trim().split('-');
+    return d + '.' + m + '.' + y;
+  } catch { return iso; }
+}
+
+function formatLSMW(row) {
+  return [row.invoice_ref, row.company_code, row.vendor_id, row.customer_id,
+    toSAPDate(row.invoice_date||''), toSAPDate(row.posting_date||''), toSAPDate(row.baseline_date||''),
+    row.currency, row.gross_amount, row.tax_amount, row.tax_code, row.gl_account,
+    row.cost_centre, row.profit_centre, row.payment_terms, row.reference,
+    row.header_text, row.assignment, row.item_text].join('|');
+}
+
+const LSMW_HEADER = 'INVOICE_REF|BUKRS|LIFNR|KUNNR|BLDAT|BUDAT|ZFBDT|WAERS|WRBTR|WMWST|MWSKZ|HKONT|KOSTL|PRCTR|ZTERM|XBLNR|BKTXT|ZUONR|SGTXT';
+
+// ── Main ──
+function runMigration() {
+  const apRows = files.ap ? files.ap.rows : null;
+  if (!apRows || apRows.length === 0) {
+    alert('Please upload AP invoice data or click "Use Sample Data" first.');
+    return;
+  }
+
+  const md = {
+    customers: files.customers ? loadSetFromCSV(files.customers.rows, 'customer_id') : SAMPLE_MD.customers,
+    vendors: files.vendors ? loadSetFromCSV(files.vendors.rows, 'vendor_id') : SAMPLE_MD.vendors,
+    cost_centres: files.cost_centres ? loadSetFromCSV(files.cost_centres.rows, 'cost_centre_id') : SAMPLE_MD.cost_centres,
+    gl_accounts: files.gl_accounts ? loadSetFromCSV(files.gl_accounts.rows, 'gl_account') : SAMPLE_MD.gl_accounts,
+    company_codes: files.company_codes ? loadSetFromCSV(files.company_codes.rows, 'company_code') : SAMPLE_MD.company_codes,
+  };
+
+  const allIssues = [];
+  const failedRefs = new Set();
+  const passedRows = [];
+
+  apRows.forEach(row => {
+    const issues = validate(row, md);
+    allIssues.push(...issues);
+    const blocking = issues.some(i => i.severity === 'CRITICAL' || i.severity === 'ERROR');
+    if (blocking) failedRefs.add(row.invoice_ref || 'UNKNOWN');
+    else passedRows.push(row);
+  });
+
+  // Build LSMW
+  lastLSMW = LSMW_HEADER + '\n' + passedRows.map(formatLSMW).join('\n');
+
+  // Build report
+  const sevCount = {}, fieldCount = {}, teamCount = {};
+  allIssues.forEach(i => {
+    sevCount[i.severity] = (sevCount[i.severity] || 0) + 1;
+    fieldCount[i.field_name] = (fieldCount[i.field_name] || 0) + 1;
+    const t = i.responsible_team || 'Unassigned';
+    teamCount[t] = (teamCount[t] || 0) + 1;
+  });
+
+  const remediationSteps = [];
+  const seen = new Set();
+  allIssues.filter(i => i.severity === 'CRITICAL' || i.severity === 'ERROR').forEach(i => {
+    const key = i.field_name + '|' + i.supplied_value;
+    if (!seen.has(key)) {
+      seen.add(key);
+      remediationSteps.push({
+        field: i.field_name, value: i.supplied_value,
+        action: i.resolution, sap_transaction: i.sap_transaction,
+        owner: i.responsible_team,
+        affected_invoices: allIssues.filter(x => x.field_name === i.field_name && x.supplied_value === i.supplied_value).map(x => x.invoice_ref).join(', '),
+      });
+    }
+  });
+
+  lastReport = {
+    run_timestamp: new Date().toISOString(),
+    total_records: apRows.length,
+    passed: apRows.length - failedRefs.size,
+    failed: failedRefs.size,
+    warnings: allIssues.filter(i => i.severity === 'WARNING').length,
+    issues: allIssues,
+    summary_by_severity: sevCount,
+    summary_by_field: fieldCount,
+    summary_by_responsible_team: teamCount,
+    remediation_steps: remediationSteps,
+  };
+
+  renderResults(lastReport, passedRows);
+}
+
+// ── Rendering ──
+function renderResults(r, passedRows) {
+  document.getElementById('results').style.display = 'block';
+
+  // Stats
+  const pct = r.total_records > 0 ? Math.round((r.passed / r.total_records) * 100) : 0;
+  document.getElementById('stats-row').innerHTML =
+    statCard('Total', r.total_records, 'total') +
+    statCard('Passed', r.passed, 'passed') +
+    statCard('Failed', r.failed, 'failed') +
+    statCard('Warnings', r.warnings, 'warnings');
+
+  const bar = document.getElementById('pass-bar');
+  bar.style.width = pct + '%';
+  bar.className = 'fill ' + (pct >= 80 ? 'green' : 'red');
+
+  // Summaries
+  const grid = document.getElementById('summary-grid');
+  grid.innerHTML =
+    summaryBox('By Severity', r.summary_by_severity) +
+    summaryBox('By Field', r.summary_by_field) +
+    summaryBox('By Responsible Team', r.summary_by_responsible_team);
+
+  // Remediation
+  const remCard = document.getElementById('remediation-card');
+  const remList = document.getElementById('remediation-list');
+  if (r.remediation_steps.length > 0) {
+    remCard.style.display = 'block';
+    remList.innerHTML = r.remediation_steps.map((s, i) =>
+      '<div class="remediation-card">' +
+      '<h4>[' + (i+1) + '] ' + esc(s.field) + ': ' + esc(s.value) + '</h4>' +
+      '<div class="meta">SAP Tcode: <strong>' + esc(s.sap_transaction) + '</strong> &middot; Owner: <strong>' + esc(s.owner) + '</strong></div>' +
+      '<div class="meta">Affected invoices: ' + esc(s.affected_invoices) + '</div>' +
+      '<div class="action">' + esc(s.action) + '</div></div>'
+    ).join('');
+  } else {
+    remCard.style.display = 'none';
+  }
+
+  // Issues table
+  const issCard = document.getElementById('issues-card');
+  const tbody = document.getElementById('issues-tbody');
+  if (r.issues.length > 0) {
+    issCard.style.display = 'block';
+    tbody.innerHTML = r.issues.map(i =>
+      '<tr>' +
+      '<td><span class="severity-tag ' + i.severity + '">' + i.severity + '</span></td>' +
+      '<td>' + esc(i.invoice_ref) + '</td>' +
+      '<td>' + esc(i.field_name) + '</td>' +
+      '<td><code>' + esc(i.supplied_value) + '</code></td>' +
+      '<td>' + esc(i.message) + '</td>' +
+      '<td>' + esc(i.resolution) + '</td>' +
+      '<td>' + esc(i.sap_transaction) + '</td>' +
+      '<td>' + esc(i.responsible_team) + '</td>' +
+      '</tr>'
+    ).join('');
+  } else {
+    issCard.style.display = 'none';
+  }
+
+  // LSMW output
+  const lsmwCard = document.getElementById('lsmw-card');
+  if (passedRows.length > 0) {
+    lsmwCard.style.display = 'block';
+    document.getElementById('lsmw-output').textContent = lastLSMW;
+  } else {
+    lsmwCard.style.display = 'none';
+  }
+
+  document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+}
+
+function statCard(label, value, cls) {
+  return '<div class="stat-card ' + cls + '"><div class="value">' + value + '</div><div class="label">' + label + '</div></div>';
+}
+
+function summaryBox(title, data) {
+  const entries = Object.entries(data).sort((a, b) => b[1] - a[1]);
+  return '<div class="summary-box"><h3>' + title + '</h3>' +
+    entries.map(([k, v]) => '<div class="summary-row"><span>' + esc(k) + '</span><span class="count">' + v + '</span></div>').join('') +
+    '</div>';
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s || '';
+  return d.innerHTML;
+}
+
+// ── Downloads ──
+function downloadLSMW() {
+  download('lsmw_invoices.txt', lastLSMW, 'text/plain');
+}
+function downloadReport() {
+  download('migration_report.json', JSON.stringify(lastReport, null, 2), 'application/json');
+}
+function download(name, content, type) {
+  const blob = new Blob([content], { type });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+</script>
+</body>
+</html>
