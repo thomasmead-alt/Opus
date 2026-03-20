@@ -314,6 +314,150 @@ tbody tr:hover { background: #f9fafb; }
 }
 .btn-add-field:hover { border-color: var(--primary); background: #f0f4ff; }
 
+/* ── Source Key Composer ── */
+.key-composer {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+.key-composer h4 { font-size: 0.9rem; margin-bottom: 8px; }
+.key-composer .key-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+  min-height: 32px;
+  align-items: center;
+}
+.key-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--primary);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: grab;
+}
+.key-pill .pill-order {
+  background: rgba(255,255,255,0.3);
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+.key-pill .pill-remove {
+  cursor: pointer;
+  opacity: 0.7;
+  font-size: 0.9rem;
+  margin-left: 2px;
+}
+.key-pill .pill-remove:hover { opacity: 1; }
+.key-pill-placeholder {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-style: italic;
+}
+.key-preview {
+  font-family: monospace;
+  font-size: 0.8rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 10px;
+  color: var(--text);
+  word-break: break-all;
+}
+.key-preview .sep { color: var(--primary); font-weight: 700; }
+
+/* ── Mapping Table ── */
+.mapping-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.mapping-table th {
+  text-align: left;
+  padding: 8px 10px;
+  background: var(--bg);
+  border-bottom: 2px solid var(--border);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.mapping-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid #e5e7eb;
+  vertical-align: middle;
+}
+.mapping-table tr:hover { background: #f9fafb; }
+.mapping-table select, .mapping-table input[type="text"] {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  width: 100%;
+}
+.mapping-table textarea {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  width: 100%;
+  min-height: 28px;
+  resize: vertical;
+}
+.transform-tag {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.transform-tag.direct { background: var(--success-bg); color: var(--success); }
+.transform-tag.custom { background: #ede9fe; color: #7c3aed; }
+.transform-tag.lookup { background: var(--info-bg); color: var(--info); }
+
+/* ── External Dataset Panel ── */
+.ext-dataset-panel {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-top: 16px;
+}
+.ext-dataset-panel h4 { font-size: 0.9rem; margin-bottom: 8px; }
+.ext-dataset-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.ext-dataset-row label { font-size: 0.85rem; font-weight: 500; min-width: 100px; }
+.ext-dataset-row select, .ext-dataset-row input[type="text"] {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-family: inherit;
+}
+.ext-dataset-loaded {
+  font-size: 0.8rem;
+  color: var(--success);
+  font-weight: 500;
+}
+
 /* ── Key Date ── */
 .key-date-section {
   display: flex;
@@ -487,17 +631,53 @@ tbody tr:hover { background: #f9fafb; }
     </div>
   </div>
 
-  <!-- Dev Workspace: Schema Editor -->
+  <!-- Dev Workspace -->
   <div class="card" id="workspace-card">
-    <h2>Dev Workspace <span class="badge">Schema &amp; Key Date</span></h2>
+    <h2>Dev Workspace <span class="badge">Schema &amp; Mapping</span></h2>
     <div class="workspace-toggle">
-      <button class="active" onclick="toggleWorkspaceTab(this,'tab-schema')">Field Schema</button>
+      <button class="active" onclick="toggleWorkspaceTab(this,'tab-source')">Source Schema</button>
+      <button onclick="toggleWorkspaceTab(this,'tab-target')">Target Schema</button>
+      <button onclick="toggleWorkspaceTab(this,'tab-mapping')">Mapping</button>
       <button onclick="toggleWorkspaceTab(this,'tab-keydate')">Key Date &amp; Chart</button>
     </div>
 
-    <div id="tab-schema">
+    <!-- Source Schema Tab -->
+    <div id="tab-source">
       <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:12px;">
-        Add, remove, or modify fields in the migration schema. Changes affect validation rules and LSMW output.
+        Define the source data structure. Compose the record key from one or more fields &mdash; drag to reorder.
+      </p>
+
+      <div class="key-composer">
+        <h4>Composite Key</h4>
+        <div class="key-pills" id="key-pills"></div>
+        <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:8px;">Click a source field's key checkbox to add it. Composite key is formed left-to-right.</div>
+        <div class="key-preview" id="key-preview"></div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Field Name</th>
+              <th>Source Header</th>
+              <th>Type</th>
+              <th>Key</th>
+              <th>Nullable</th>
+              <th>Sample Value</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="source-schema-tbody"></tbody>
+        </table>
+      </div>
+      <button class="btn-add-field" onclick="addSourceField()">+ Add Source Field</button>
+      <button class="btn-add-field" style="margin-left:8px;" onclick="autoDetectSource()">Auto-detect from Upload</button>
+    </div>
+
+    <!-- Target Schema Tab -->
+    <div id="tab-target" style="display:none;">
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:12px;">
+        Define the SAP target schema. Changes affect validation rules and LSMW output.
       </p>
       <div class="table-wrap">
         <table class="schema-table">
@@ -515,9 +695,47 @@ tbody tr:hover { background: #f9fafb; }
           <tbody id="schema-tbody"></tbody>
         </table>
       </div>
-      <button class="btn-add-field" onclick="addSchemaField()">+ Add Field</button>
+      <button class="btn-add-field" onclick="addSchemaField()">+ Add Target Field</button>
     </div>
 
+    <!-- Mapping Tab -->
+    <div id="tab-mapping" style="display:none;">
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:12px;">
+        Map each target field to a source field. Add custom transformations or join external datasets by key.
+      </p>
+      <div class="table-wrap">
+        <table class="mapping-table">
+          <thead>
+            <tr>
+              <th>Target Field</th>
+              <th>SAP Field</th>
+              <th>Source Field</th>
+              <th>Transform</th>
+              <th>Transformation / Expression</th>
+              <th>Preview</th>
+            </tr>
+          </thead>
+          <tbody id="mapping-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="ext-dataset-panel">
+        <h4>External Dataset Lookups</h4>
+        <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:10px;">
+          Upload an external CSV and map its key to the source composite key for lookup joins.
+        </p>
+        <div id="ext-datasets-list"></div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;">
+          <input type="text" id="ext-ds-name" placeholder="Dataset name (e.g. vendor_xref)" style="padding:4px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.85rem;">
+          <div class="upload-item" style="display:inline-block;border:1px dashed var(--border);padding:6px 14px;cursor:pointer;border-radius:4px;font-size:0.85rem;" onclick="document.getElementById('file-ext-ds').click()">
+            Choose CSV
+            <input type="file" id="file-ext-ds" accept=".csv" style="display:none;" onchange="addExternalDataset(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Key Date & Chart Tab -->
     <div id="tab-keydate" style="display:none;">
       <div class="key-date-section">
         <label for="key-date-input">Migration Key Date</label>
@@ -822,15 +1040,162 @@ const DEFAULT_SCHEMA = [
 let schema = JSON.parse(JSON.stringify(DEFAULT_SCHEMA));
 let keyDate = null;
 
+// ── Source Schema ──
+const DEFAULT_SOURCE_SCHEMA = [
+  { field: 'invoice_ref',   header: 'invoice_ref',   type: 'text',   isKey: true,  nullable: false, sample: 'INV-2026-0001' },
+  { field: 'vendor_id',     header: 'vendor_id',     type: 'text',   isKey: false, nullable: false, sample: 'V1001' },
+  { field: 'customer_id',   header: 'customer_id',   type: 'text',   isKey: false, nullable: false, sample: 'C2001' },
+  { field: 'company_code',  header: 'company_code',  type: 'text',   isKey: false, nullable: false, sample: '1000' },
+  { field: 'invoice_date',  header: 'invoice_date',  type: 'date',   isKey: false, nullable: false, sample: '2026-03-15' },
+  { field: 'posting_date',  header: 'posting_date',  type: 'date',   isKey: false, nullable: false, sample: '2026-03-15' },
+  { field: 'baseline_date', header: 'baseline_date', type: 'date',   isKey: false, nullable: false, sample: '2026-03-15' },
+  { field: 'currency',      header: 'currency',      type: 'text',   isKey: false, nullable: false, sample: 'USD' },
+  { field: 'gross_amount',  header: 'gross_amount',  type: 'amount', isKey: false, nullable: false, sample: '15000.00' },
+  { field: 'tax_amount',    header: 'tax_amount',    type: 'amount', isKey: false, nullable: true,  sample: '1500.00' },
+  { field: 'tax_code',      header: 'tax_code',      type: 'text',   isKey: false, nullable: true,  sample: 'V1' },
+  { field: 'gl_account',    header: 'gl_account',    type: 'text',   isKey: false, nullable: false, sample: '400100' },
+  { field: 'cost_centre',   header: 'cost_centre',   type: 'text',   isKey: false, nullable: false, sample: 'CC1010' },
+  { field: 'profit_centre', header: 'profit_centre', type: 'text',   isKey: false, nullable: true,  sample: 'PC2000' },
+  { field: 'payment_terms', header: 'payment_terms', type: 'text',   isKey: false, nullable: true,  sample: 'ZN30' },
+  { field: 'reference',     header: 'reference',     type: 'text',   isKey: false, nullable: true,  sample: 'PO-88001' },
+  { field: 'header_text',   header: 'header_text',   type: 'text',   isKey: false, nullable: true,  sample: 'Consulting services' },
+  { field: 'assignment',    header: 'assignment',     type: 'text',   isKey: false, nullable: true,  sample: 'PROJECT-ALPHA' },
+  { field: 'item_text',     header: 'item_text',     type: 'text',   isKey: false, nullable: true,  sample: 'Professional services' },
+];
+
+let sourceSchema = JSON.parse(JSON.stringify(DEFAULT_SOURCE_SCHEMA));
+
+// ── Mapping State ──
+// Each entry: { targetField, sourceField, transform: 'direct'|'custom'|'lookup', expression, extDataset, extKey, extValueField }
+let mappings = [];
+let externalDatasets = {}; // name -> { rows, headers }
+
+function initMappings() {
+  mappings = schema.map(t => {
+    const match = sourceSchema.find(s => s.field === t.field);
+    return {
+      targetField: t.field,
+      sapField: t.sapField,
+      sourceField: match ? match.field : '',
+      transform: 'direct',
+      expression: '',
+      extDataset: '',
+      extKey: '',
+      extValueField: '',
+    };
+  });
+}
+
 // ── Workspace Tabs ──
+const TAB_IDS = ['tab-source', 'tab-target', 'tab-mapping', 'tab-keydate'];
 function toggleWorkspaceTab(btn, tabId) {
   document.querySelectorAll('#workspace-card .workspace-toggle button').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('tab-schema').style.display = tabId === 'tab-schema' ? '' : 'none';
-  document.getElementById('tab-keydate').style.display = tabId === 'tab-keydate' ? '' : 'none';
+  TAB_IDS.forEach(id => {
+    document.getElementById(id).style.display = id === tabId ? '' : 'none';
+  });
+  if (tabId === 'tab-mapping') renderMappingTable();
+  if (tabId === 'tab-source') { renderSourceSchemaTable(); renderKeyPills(); }
 }
 
-// ── Schema Editor ──
+// ── Source Schema Editor ──
+function renderSourceSchemaTable() {
+  const tbody = document.getElementById('source-schema-tbody');
+  tbody.innerHTML = sourceSchema.map((s, i) =>
+    '<tr>' +
+    '<td><input type="text" value="' + esc(s.field) + '" onchange="updateSourceSchema(' + i + ',\'field\',this.value)"></td>' +
+    '<td><input type="text" value="' + esc(s.header) + '" onchange="updateSourceSchema(' + i + ',\'header\',this.value)"></td>' +
+    '<td><select onchange="updateSourceSchema(' + i + ',\'type\',this.value)">' +
+      optionList(['text','date','amount','integer'], s.type) + '</select></td>' +
+    '<td class="cb-cell"><input type="checkbox" ' + (s.isKey ? 'checked' : '') + ' onchange="toggleSourceKey(' + i + ',this.checked)"></td>' +
+    '<td class="cb-cell"><input type="checkbox" ' + (s.nullable ? 'checked' : '') + ' onchange="updateSourceSchema(' + i + ',\'nullable\',this.checked)"></td>' +
+    '<td><input type="text" value="' + esc(s.sample) + '" onchange="updateSourceSchema(' + i + ',\'sample\',this.value)" style="font-family:monospace;font-size:0.8rem;"></td>' +
+    '<td><button class="btn-icon" title="Remove" onclick="removeSourceField(' + i + ')">&#x2715;</button></td>' +
+    '</tr>'
+  ).join('');
+}
+
+function updateSourceSchema(i, key, value) {
+  sourceSchema[i][key] = value;
+}
+
+function toggleSourceKey(i, checked) {
+  sourceSchema[i].isKey = checked;
+  renderKeyPills();
+}
+
+function removeSourceField(i) {
+  sourceSchema.splice(i, 1);
+  renderSourceSchemaTable();
+  renderKeyPills();
+}
+
+function addSourceField() {
+  sourceSchema.push({ field: 'new_field', header: 'new_field', type: 'text', isKey: false, nullable: true, sample: '' });
+  renderSourceSchemaTable();
+  const tbody = document.getElementById('source-schema-tbody');
+  if (tbody.lastElementChild) tbody.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function autoDetectSource() {
+  if (!files.ap || !files.ap.rows || files.ap.rows.length === 0) {
+    alert('Upload AP data first, then click Auto-detect.');
+    return;
+  }
+  const firstRow = files.ap.rows[0];
+  const headers = Object.keys(firstRow);
+  sourceSchema = headers.map(h => {
+    const val = firstRow[h] || '';
+    let type = 'text';
+    if (/^\d{4}-\d{2}-\d{2}$/.test(val)) type = 'date';
+    else if (/^-?\d+(\.\d+)?$/.test(val) && val.includes('.')) type = 'amount';
+    else if (/^\d+$/.test(val)) type = 'integer';
+    // preserve existing key state if field matches
+    const existing = DEFAULT_SOURCE_SCHEMA.find(s => s.field === h);
+    return { field: h, header: h, type, isKey: existing ? existing.isKey : false, nullable: !val, sample: val };
+  });
+  renderSourceSchemaTable();
+  renderKeyPills();
+}
+
+// ── Composite Key ──
+function getKeyFields() {
+  return sourceSchema.filter(s => s.isKey);
+}
+
+function renderKeyPills() {
+  const pills = document.getElementById('key-pills');
+  const preview = document.getElementById('key-preview');
+  const keyFields = getKeyFields();
+
+  if (keyFields.length === 0) {
+    pills.innerHTML = '<span class="key-pill-placeholder">No key fields selected — tick the Key checkbox on source fields</span>';
+    preview.innerHTML = '<span style="color:var(--text-muted);font-style:italic;">No key defined</span>';
+    return;
+  }
+
+  pills.innerHTML = keyFields.map((f, i) =>
+    '<span class="key-pill">' +
+    '<span class="pill-order">' + (i + 1) + '</span>' +
+    esc(f.field) +
+    '<span class="pill-remove" onclick="removeKeyField(\'' + esc(f.field) + '\')">&times;</span>' +
+    '</span>'
+  ).join('');
+
+  // Show preview using sample data
+  const sampleParts = keyFields.map(f => f.sample || '?');
+  const keyStr = sampleParts.map(p => '<span>' + esc(p) + '</span>').join('<span class="sep"> | </span>');
+  preview.innerHTML = 'Key preview: ' + keyStr;
+}
+
+function removeKeyField(fieldName) {
+  const f = sourceSchema.find(s => s.field === fieldName);
+  if (f) f.isKey = false;
+  renderSourceSchemaTable();
+  renderKeyPills();
+}
+
+// ── Target Schema Editor ──
 function renderSchemaTable() {
   const tbody = document.getElementById('schema-tbody');
   tbody.innerHTML = schema.map((s, i) =>
@@ -865,10 +1230,148 @@ function removeSchemaField(i) {
 function addSchemaField() {
   schema.push({ field: 'new_field', sapField: '', type: 'text', required: false, masterData: '', severity: '' });
   renderSchemaTable();
-  // scroll to new row
   const tbody = document.getElementById('schema-tbody');
-  const lastRow = tbody.lastElementChild;
-  if (lastRow) lastRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  if (tbody.lastElementChild) tbody.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ── Mapping Editor ──
+function renderMappingTable() {
+  // Ensure mappings are in sync with target schema
+  const existing = {};
+  mappings.forEach(m => { existing[m.targetField] = m; });
+  mappings = schema.map(t => existing[t.field] || {
+    targetField: t.field, sapField: t.sapField,
+    sourceField: (sourceSchema.find(s => s.field === t.field) || {}).field || '',
+    transform: 'direct', expression: '', extDataset: '', extKey: '', extValueField: '',
+  });
+  // update sapField
+  mappings.forEach((m, i) => { m.sapField = schema[i].sapField; });
+
+  const srcOpts = [''].concat(sourceSchema.map(s => s.field));
+  const extDsNames = Object.keys(externalDatasets);
+
+  const tbody = document.getElementById('mapping-tbody');
+  tbody.innerHTML = mappings.map((m, i) => {
+    const transformOpts = optionList(['direct','custom','lookup'], m.transform);
+    const srcSelect = optionList(srcOpts, m.sourceField);
+    const tagClass = m.transform;
+
+    let exprCell = '';
+    if (m.transform === 'custom') {
+      exprCell = '<textarea onchange="updateMapping(' + i + ',\'expression\',this.value)" placeholder="e.g. row.amount * 100">' + esc(m.expression) + '</textarea>';
+    } else if (m.transform === 'lookup') {
+      const dsOpts = optionList([''].concat(extDsNames), m.extDataset);
+      const valFieldOpts = m.extDataset && externalDatasets[m.extDataset]
+        ? optionList([''].concat(externalDatasets[m.extDataset].headers), m.extValueField)
+        : '<option>(select dataset first)</option>';
+      exprCell =
+        '<div style="display:flex;flex-direction:column;gap:4px;">' +
+        '<select onchange="updateMapping(' + i + ',\'extDataset\',this.value);renderMappingTable()">' + dsOpts + '</select>' +
+        '<select onchange="updateMapping(' + i + ',\'extValueField\',this.value)">' + valFieldOpts + '</select>' +
+        '</div>';
+    } else {
+      exprCell = '<span style="color:var(--text-muted);font-size:0.8rem;">Direct copy</span>';
+    }
+
+    // Preview
+    let previewVal = '';
+    if (files.ap && files.ap.rows.length > 0) {
+      previewVal = applyMapping(m, files.ap.rows[0]);
+    }
+
+    return '<tr>' +
+      '<td><strong>' + esc(m.targetField) + '</strong></td>' +
+      '<td style="font-family:monospace;font-size:0.8rem;">' + esc(m.sapField) + '</td>' +
+      '<td><select onchange="updateMapping(' + i + ',\'sourceField\',this.value)">' + srcSelect + '</select></td>' +
+      '<td><select onchange="updateMapping(' + i + ',\'transform\',this.value);renderMappingTable()">' + transformOpts + '</select></td>' +
+      '<td>' + exprCell + '</td>' +
+      '<td style="font-family:monospace;font-size:0.8rem;color:var(--primary);">' + esc(previewVal) + '</td>' +
+      '</tr>';
+  }).join('');
+}
+
+function updateMapping(i, key, value) {
+  mappings[i][key] = value;
+}
+
+function applyMapping(mapping, row) {
+  try {
+    if (mapping.transform === 'direct') {
+      return row[mapping.sourceField] || '';
+    } else if (mapping.transform === 'custom' && mapping.expression) {
+      // Safe limited eval: only allow row.field references, basic math, string ops
+      const fn = new Function('row', 'return ' + mapping.expression);
+      const result = fn(row);
+      return String(result == null ? '' : result);
+    } else if (mapping.transform === 'lookup' && mapping.extDataset) {
+      const ds = externalDatasets[mapping.extDataset];
+      if (!ds) return '(no dataset)';
+      // Build composite key from source row
+      const keyFields = getKeyFields();
+      const sourceKey = keyFields.map(kf => (row[kf.field] || '').trim()).join('|');
+      // Find match in external dataset using same key fields
+      const match = ds.rows.find(extRow => {
+        const extKey = keyFields.map(kf => (extRow[kf.field] || extRow[kf.header] || '').trim()).join('|');
+        return extKey === sourceKey;
+      });
+      if (match && mapping.extValueField) return match[mapping.extValueField] || '';
+      return match ? '(matched)' : '(no match)';
+    }
+  } catch (e) {
+    return '(error: ' + e.message + ')';
+  }
+  return '';
+}
+
+// Apply all mappings to transform a source row into a target row
+function transformRow(sourceRow) {
+  const target = {};
+  mappings.forEach(m => {
+    target[m.targetField] = applyMapping(m, sourceRow);
+  });
+  return target;
+}
+
+// ── External Datasets ──
+function addExternalDataset(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const nameInput = document.getElementById('ext-ds-name');
+  let dsName = nameInput.value.trim();
+  if (!dsName) dsName = file.name.replace(/\.csv$/i, '').replace(/[^a-zA-Z0-9_]/g, '_');
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    const rows = parseCSV(reader.result);
+    const headers = rows.length > 0 ? Object.keys(rows[0]) : [];
+    externalDatasets[dsName] = { rows, headers, fileName: file.name };
+    nameInput.value = '';
+    input.value = '';
+    renderExtDatasetList();
+  };
+  reader.readAsText(file);
+}
+
+function removeExtDataset(name) {
+  delete externalDatasets[name];
+  renderExtDatasetList();
+}
+
+function renderExtDatasetList() {
+  const el = document.getElementById('ext-datasets-list');
+  const names = Object.keys(externalDatasets);
+  if (names.length === 0) {
+    el.innerHTML = '<p style="font-size:0.85rem;color:var(--text-muted);">No external datasets loaded.</p>';
+    return;
+  }
+  el.innerHTML = names.map(name => {
+    const ds = externalDatasets[name];
+    return '<div class="ext-dataset-row">' +
+      '<label>' + esc(name) + '</label>' +
+      '<span class="ext-dataset-loaded">' + esc(ds.fileName) + ' (' + ds.rows.length + ' rows, ' + ds.headers.length + ' cols)</span>' +
+      '<button class="btn-icon" title="Remove" onclick="removeExtDataset(\'' + esc(name) + '\')">&#x2715;</button>' +
+      '</div>';
+  }).join('');
 }
 
 // ── Key Date ──
@@ -936,8 +1439,14 @@ function renderDayChart(apRows, failedRefs) {
   }).join('');
 }
 
-// Init schema table on load
-document.addEventListener('DOMContentLoaded', renderSchemaTable);
+// Init all workspace tables on load
+document.addEventListener('DOMContentLoaded', function() {
+  renderSourceSchemaTable();
+  renderKeyPills();
+  renderSchemaTable();
+  initMappings();
+  renderExtDatasetList();
+});
 
 // ── Dynamic Validation (uses schema) ──
 function validateDynamic(row, md) {
@@ -1039,12 +1548,18 @@ function runMigration() {
     company_codes: files.company_codes ? loadSetFromCSV(files.company_codes.rows, 'company_code') : SAMPLE_MD.company_codes,
   };
 
+  // Apply mappings to transform source rows -> target rows if any non-direct mappings exist
+  const hasMappings = mappings.length > 0 && mappings.some(m => m.transform !== 'direct' || m.sourceField !== m.targetField);
+  const targetRows = hasMappings
+    ? apRows.map(row => { const t = transformRow(row); t._sourceRow = row; return t; })
+    : apRows.map(row => { const copy = Object.assign({}, row); copy._sourceRow = row; return copy; });
+
   const allIssues = [];
   const failedRefs = new Set();
   const passedRows = [];
   const excludedByDate = [];
 
-  apRows.forEach(row => {
+  targetRows.forEach(row => {
     const issues = validateDynamic(row, md);
     allIssues.push(...issues);
     const blocking = issues.some(i => i.severity === 'CRITICAL' || i.severity === 'ERROR');
@@ -1061,8 +1576,8 @@ function runMigration() {
   // Build LSMW (only included records)
   lastLSMW = getLSMWHeaderDynamic() + '\n' + passedRows.map(formatLSMWDynamic).join('\n');
 
-  // Render bar chart
-  renderDayChart(apRows, failedRefs);
+  // Render bar chart (use target rows which have posting_date after transform)
+  renderDayChart(targetRows, failedRefs);
 
   // Build report
   const sevCount = {}, fieldCount = {}, teamCount = {};
