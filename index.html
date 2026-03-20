@@ -458,6 +458,121 @@ tbody tr:hover { background: #f9fafb; }
   font-weight: 500;
 }
 
+/* ── Data Quality Review ── */
+.dq-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+.dq-toggle .arrow {
+  display: inline-block;
+  transition: transform 0.2s;
+  font-size: 0.8rem;
+}
+.dq-toggle .arrow.open { transform: rotate(90deg); }
+.dq-panel {
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  max-height: 0;
+}
+.dq-panel.open { max-height: 5000px; }
+.dq-overall {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  margin: 14px 0;
+}
+.dq-metric {
+  text-align: center;
+  padding: 12px 6px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: #fff;
+}
+.dq-metric .dq-val { font-size: 1.5rem; font-weight: 700; }
+.dq-metric .dq-lbl { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.3px; margin-top: 2px; }
+.dq-metric.good .dq-val { color: var(--success); }
+.dq-metric.warn .dq-val { color: var(--warning); }
+.dq-metric.bad .dq-val { color: var(--critical); }
+.dq-metric.neutral .dq-val { color: var(--primary); }
+
+.dq-completeness-bar {
+  width: 100%;
+  height: 10px;
+  background: #e5e7eb;
+  border-radius: 5px;
+  overflow: hidden;
+  margin: 4px 0;
+}
+.dq-completeness-bar .dq-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.3s;
+}
+
+.dq-field-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+.dq-field-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  background: #fff;
+}
+.dq-field-card h5 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.dq-field-card h5 .dq-type-badge {
+  font-size: 0.65rem;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-muted);
+  font-weight: 500;
+  text-transform: uppercase;
+}
+.dq-field-rows {
+  font-size: 0.8rem;
+}
+.dq-field-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+.dq-field-row:last-child { border-bottom: none; }
+.dq-field-row .dq-k { color: var(--text-muted); }
+.dq-field-row .dq-v { font-weight: 600; font-family: monospace; font-size: 0.8rem; }
+.dq-top-values {
+  margin-top: 6px;
+  font-size: 0.78rem;
+}
+.dq-top-values .dq-tv-title { color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px; }
+.dq-tv-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+.dq-tv-bar-row .dq-tv-label { min-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: monospace; font-size: 0.78rem; }
+.dq-tv-bar-row .dq-tv-track { flex: 1; height: 6px; background: #e5e7eb; border-radius: 3px; overflow: hidden; }
+.dq-tv-bar-row .dq-tv-fill { height: 100%; background: var(--primary); border-radius: 3px; }
+.dq-tv-bar-row .dq-tv-count { font-size: 0.72rem; color: var(--text-muted); min-width: 30px; text-align: right; }
+
 /* ── Key Date ── */
 .key-date-section {
   display: flex;
@@ -672,6 +787,17 @@ tbody tr:hover { background: #f9fafb; }
       </div>
       <button class="btn-add-field" onclick="addSourceField()">+ Add Source Field</button>
       <button class="btn-add-field" style="margin-left:8px;" onclick="autoDetectSource()">Auto-detect from Upload</button>
+
+      <!-- Data Quality Review (expandable) -->
+      <div class="dq-toggle" id="dq-toggle" onclick="toggleDataReview()" style="display:none;">
+        <span class="arrow" id="dq-arrow">&#9654;</span>
+        Data Quality Review
+        <span id="dq-score-badge" style="font-size:0.75rem;padding:2px 10px;border-radius:10px;font-weight:600;margin-left:4px;"></span>
+      </div>
+      <div class="dq-panel" id="dq-panel">
+        <div class="dq-overall" id="dq-overall"></div>
+        <div class="dq-field-cards" id="dq-field-cards"></div>
+      </div>
     </div>
 
     <!-- Target Schema Tab -->
@@ -915,6 +1041,7 @@ function handleFile(input, key) {
     const el = document.getElementById('info-' + key);
     el.textContent = file.name + ' (' + rows.length + ' rows)';
     input.closest('.upload-item').classList.add('loaded');
+    if (key === 'ap') runDataQualityReview();
   };
   reader.readAsText(file);
 }
@@ -927,6 +1054,7 @@ function loadSampleData() {
     document.getElementById('info-' + k).textContent = 'Sample data';
     document.getElementById('drop-' + k).classList.add('loaded');
   });
+  runDataQualityReview();
   runMigration();
 }
 
@@ -1156,6 +1284,199 @@ function autoDetectSource() {
   });
   renderSourceSchemaTable();
   renderKeyPills();
+  runDataQualityReview();
+}
+
+// ── Data Quality Review ──
+function toggleDataReview() {
+  const panel = document.getElementById('dq-panel');
+  const arrow = document.getElementById('dq-arrow');
+  panel.classList.toggle('open');
+  arrow.classList.toggle('open');
+}
+
+function runDataQualityReview() {
+  const toggle = document.getElementById('dq-toggle');
+  const panel = document.getElementById('dq-panel');
+  const overall = document.getElementById('dq-overall');
+  const fieldCards = document.getElementById('dq-field-cards');
+  const scoreBadge = document.getElementById('dq-score-badge');
+
+  if (!files.ap || !files.ap.rows || files.ap.rows.length === 0) {
+    toggle.style.display = 'none';
+    panel.classList.remove('open');
+    return;
+  }
+
+  const rows = files.ap.rows;
+  const n = rows.length;
+  const fields = sourceSchema.length > 0 ? sourceSchema : Object.keys(rows[0]).map(k => ({ field: k, type: 'text' }));
+
+  // ── Per-field profiling ──
+  const profiles = fields.map(sf => {
+    const key = sf.field;
+    let filled = 0, blank = 0, distinct = 0;
+    const freq = {};
+    const vals = [];
+    let numMin = Infinity, numMax = -Infinity, numSum = 0, numCount = 0;
+    let dateMin = null, dateMax = null;
+    let minLen = Infinity, maxLen = 0, totalLen = 0;
+    let patternCounts = {};
+
+    rows.forEach(row => {
+      const raw = (row[key] || '').trim();
+      if (!raw) { blank++; return; }
+      filled++;
+      freq[raw] = (freq[raw] || 0) + 1;
+      vals.push(raw);
+
+      // Length
+      totalLen += raw.length;
+      if (raw.length < minLen) minLen = raw.length;
+      if (raw.length > maxLen) maxLen = raw.length;
+
+      // Numeric stats
+      if (sf.type === 'amount' || sf.type === 'integer') {
+        const num = parseFloat(raw);
+        if (!isNaN(num)) { numMin = Math.min(numMin, num); numMax = Math.max(numMax, num); numSum += num; numCount++; }
+      }
+
+      // Date stats
+      if (sf.type === 'date' && /^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+        if (!dateMin || raw < dateMin) dateMin = raw;
+        if (!dateMax || raw > dateMax) dateMax = raw;
+      }
+
+      // Pattern (replace digits->9, alphas->A)
+      const pat = raw.replace(/[0-9]/g, '9').replace(/[a-zA-Z]/g, 'A');
+      patternCounts[pat] = (patternCounts[pat] || 0) + 1;
+    });
+
+    distinct = Object.keys(freq).length;
+    const completeness = n > 0 ? filled / n : 0;
+    const uniqueness = filled > 0 ? distinct / filled : 0;
+    const avgLen = filled > 0 ? (totalLen / filled).toFixed(1) : 0;
+
+    // Top 5 values
+    const topValues = Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    // Top 3 patterns
+    const topPatterns = Object.entries(patternCounts).sort((a, b) => b[1] - a[1]).slice(0, 3);
+
+    return {
+      field: key, type: sf.type, filled, blank, distinct, completeness, uniqueness,
+      minLen: filled > 0 ? minLen : 0, maxLen, avgLen,
+      numMin: numCount > 0 ? numMin : null, numMax: numCount > 0 ? numMax : null,
+      numMean: numCount > 0 ? (numSum / numCount) : null, numCount,
+      dateMin, dateMax,
+      topValues, topPatterns,
+    };
+  });
+
+  // ── Overall metrics ──
+  const totalCells = n * fields.length;
+  const totalFilled = profiles.reduce((s, p) => s + p.filled, 0);
+  const totalBlank = profiles.reduce((s, p) => s + p.blank, 0);
+  const overallCompleteness = totalCells > 0 ? (totalFilled / totalCells * 100) : 0;
+  const fullyCompleteRows = rows.filter(row => fields.every(f => (row[f.field] || '').trim())).length;
+  const duplicateKeyCount = (() => {
+    const keyFields = getKeyFields();
+    if (keyFields.length === 0) return 0;
+    const seen = {};
+    let dupes = 0;
+    rows.forEach(row => {
+      const k = keyFields.map(kf => (row[kf.field] || '').trim()).join('|');
+      if (seen[k]) dupes++;
+      seen[k] = true;
+    });
+    return dupes;
+  })();
+
+  const scoreRaw = Math.round(overallCompleteness - (duplicateKeyCount / n * 30));
+  const score = Math.max(0, Math.min(100, scoreRaw));
+  const scoreClass = score >= 90 ? 'good' : score >= 70 ? 'warn' : 'bad';
+
+  // Show toggle
+  toggle.style.display = 'flex';
+  scoreBadge.textContent = score + '% quality';
+  scoreBadge.style.background = score >= 90 ? 'var(--success-bg)' : score >= 70 ? 'var(--warning-bg)' : 'var(--critical-bg)';
+  scoreBadge.style.color = score >= 90 ? 'var(--success)' : score >= 70 ? 'var(--warning)' : 'var(--critical)';
+
+  overall.innerHTML =
+    dqMetric(n.toLocaleString(), 'Total Rows', 'neutral') +
+    dqMetric(fields.length, 'Fields', 'neutral') +
+    dqMetric(overallCompleteness.toFixed(1) + '%', 'Completeness', overallCompleteness >= 95 ? 'good' : overallCompleteness >= 80 ? 'warn' : 'bad') +
+    dqMetric(fullyCompleteRows.toLocaleString(), 'Complete Rows', fullyCompleteRows === n ? 'good' : 'warn') +
+    dqMetric(totalBlank.toLocaleString(), 'Blank Cells', totalBlank === 0 ? 'good' : 'warn') +
+    dqMetric(duplicateKeyCount, 'Duplicate Keys', duplicateKeyCount === 0 ? 'good' : 'bad');
+
+  // Field cards
+  fieldCards.innerHTML = profiles.map(p => {
+    const compPct = (p.completeness * 100).toFixed(1);
+    const compColor = p.completeness >= 0.95 ? 'var(--success)' : p.completeness >= 0.8 ? 'var(--warning)' : 'var(--critical)';
+
+    let statsHTML = '' +
+      dqRow('Filled', p.filled + ' / ' + n) +
+      dqRow('Blank', p.blank) +
+      dqRow('Distinct', p.distinct) +
+      dqRow('Uniqueness', (p.uniqueness * 100).toFixed(1) + '%') +
+      dqRow('Length (min/avg/max)', p.minLen + ' / ' + p.avgLen + ' / ' + p.maxLen);
+
+    if (p.numMin !== null) {
+      statsHTML += dqRow('Min', fmtNum(p.numMin)) +
+        dqRow('Max', fmtNum(p.numMax)) +
+        dqRow('Mean', fmtNum(p.numMean));
+    }
+    if (p.dateMin) {
+      statsHTML += dqRow('Earliest', p.dateMin) + dqRow('Latest', p.dateMax);
+    }
+
+    // Top values mini bar chart
+    const tvMax = p.topValues.length > 0 ? p.topValues[0][1] : 1;
+    const tvHTML = p.topValues.map(([val, cnt]) =>
+      '<div class="dq-tv-bar-row">' +
+      '<span class="dq-tv-label" title="' + esc(val) + '">' + esc(val.length > 14 ? val.substring(0, 14) + '..' : val) + '</span>' +
+      '<span class="dq-tv-track"><span class="dq-tv-fill" style="width:' + (cnt / tvMax * 100) + '%"></span></span>' +
+      '<span class="dq-tv-count">' + cnt + '</span>' +
+      '</div>'
+    ).join('');
+
+    // Top patterns
+    const patHTML = p.topPatterns.map(([pat, cnt]) =>
+      '<div class="dq-tv-bar-row">' +
+      '<span class="dq-tv-label" title="' + esc(pat) + '" style="font-size:0.72rem;">' + esc(pat.length > 16 ? pat.substring(0, 16) + '..' : pat) + '</span>' +
+      '<span class="dq-tv-track"><span class="dq-tv-fill" style="width:' + (cnt / n * 100) + '%;background:var(--info);"></span></span>' +
+      '<span class="dq-tv-count">' + cnt + '</span>' +
+      '</div>'
+    ).join('');
+
+    return '<div class="dq-field-card">' +
+      '<h5>' + esc(p.field) + ' <span class="dq-type-badge">' + esc(p.type) + '</span></h5>' +
+      '<div class="dq-completeness-bar"><div class="dq-fill" style="width:' + compPct + '%;background:' + compColor + ';"></div></div>' +
+      '<div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:6px;">' + compPct + '% complete</div>' +
+      '<div class="dq-field-rows">' + statsHTML + '</div>' +
+      '<div class="dq-top-values"><div class="dq-tv-title">Top Values</div>' + tvHTML + '</div>' +
+      (p.topPatterns.length > 0 ? '<div class="dq-top-values" style="margin-top:6px;"><div class="dq-tv-title">Patterns</div>' + patHTML + '</div>' : '') +
+      '</div>';
+  }).join('');
+
+  // Auto-open panel
+  if (!panel.classList.contains('open')) {
+    panel.classList.add('open');
+    document.getElementById('dq-arrow').classList.add('open');
+  }
+}
+
+function dqMetric(val, label, cls) {
+  return '<div class="dq-metric ' + cls + '"><div class="dq-val">' + val + '</div><div class="dq-lbl">' + label + '</div></div>';
+}
+
+function dqRow(k, v) {
+  return '<div class="dq-field-row"><span class="dq-k">' + k + '</span><span class="dq-v">' + v + '</span></div>';
+}
+
+function fmtNum(n) {
+  if (n === null || n === undefined) return '-';
+  return Number.isInteger(n) ? n.toLocaleString() : n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 // ── Composite Key ──
