@@ -225,6 +225,209 @@ tbody tr:hover { background: #f9fafb; }
 }
 .progress-bar .fill.green { background: var(--success); }
 .progress-bar .fill.red { background: var(--critical); }
+
+/* ── Dev Workspace: Schema Editor ── */
+.workspace-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.workspace-toggle button {
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 6px 16px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.workspace-toggle button.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+.workspace-toggle button:hover:not(.active) { background: #f0f4ff; }
+
+.schema-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.schema-table th {
+  text-align: left;
+  padding: 8px 10px;
+  background: var(--bg);
+  border-bottom: 2px solid var(--border);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.schema-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid #e5e7eb;
+  vertical-align: middle;
+}
+.schema-table tr:hover { background: #f9fafb; }
+.schema-table input[type="text"] {
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-family: inherit;
+}
+.schema-table select {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-family: inherit;
+}
+.schema-table .cb-cell { text-align: center; }
+.schema-table .cb-cell input { width: 16px; height: 16px; cursor: pointer; }
+.btn-icon {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+.btn-icon:hover { background: #fee2e2; }
+.btn-icon.add { color: var(--success); }
+.btn-icon.add:hover { background: #dcfce7; }
+.btn-add-field {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: 1px dashed var(--border);
+  padding: 6px 16px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--primary);
+  transition: all 0.2s;
+}
+.btn-add-field:hover { border-color: var(--primary); background: #f0f4ff; }
+
+/* ── Key Date ── */
+.key-date-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.key-date-section label { font-weight: 600; font-size: 0.9rem; }
+.key-date-section input[type="date"] {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+.key-date-info {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ── Bar Chart ── */
+.chart-container {
+  margin-top: 16px;
+}
+.chart-legend {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 12px;
+  font-size: 0.8rem;
+}
+.chart-legend .swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+.chart-legend .swatch.included { background: var(--success); }
+.chart-legend .swatch.excluded { background: #d1d5db; }
+.chart-legend .swatch.failed { background: var(--critical); opacity: 0.6; }
+.chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 200px;
+  border-bottom: 2px solid var(--border);
+  padding: 0 4px;
+}
+.chart-bar-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  position: relative;
+  min-width: 0;
+}
+.chart-bar-stack {
+  width: 100%;
+  max-width: 48px;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: stretch;
+}
+.chart-bar-segment {
+  width: 100%;
+  border-radius: 3px 3px 0 0;
+  min-height: 0;
+  transition: height 0.3s ease;
+  position: relative;
+}
+.chart-bar-segment.included { background: var(--success); }
+.chart-bar-segment.excluded { background: #d1d5db; }
+.chart-bar-segment.failed { background: var(--critical); opacity: 0.6; border-radius: 0; }
+.chart-bar-segment:first-child { border-radius: 0 0 0 0; }
+.chart-bar-segment:last-child { border-radius: 3px 3px 0 0; }
+.chart-bar-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  margin-top: 6px;
+  white-space: nowrap;
+  max-height: 60px;
+  overflow: hidden;
+}
+.chart-bar-count {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+.chart-bar-group:hover .chart-bar-segment.included { background: #15803d; }
+.chart-bar-group:hover .chart-bar-segment.excluded { background: #9ca3af; }
+.chart-tooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  z-index: 10;
+  pointer-events: none;
+}
+.chart-bar-group:hover .chart-tooltip { display: block; }
 </style>
 </head>
 <body>
@@ -280,6 +483,59 @@ tbody tr:hover { background: #f9fafb; }
         <div class="hint">Column: company_code</div>
         <input type="file" id="file-company_codes" accept=".csv" onchange="handleFile(this,'company_codes')">
         <div class="file-info" id="info-company_codes"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dev Workspace: Schema Editor -->
+  <div class="card" id="workspace-card">
+    <h2>Dev Workspace <span class="badge">Schema &amp; Key Date</span></h2>
+    <div class="workspace-toggle">
+      <button class="active" onclick="toggleWorkspaceTab(this,'tab-schema')">Field Schema</button>
+      <button onclick="toggleWorkspaceTab(this,'tab-keydate')">Key Date &amp; Chart</button>
+    </div>
+
+    <div id="tab-schema">
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:12px;">
+        Add, remove, or modify fields in the migration schema. Changes affect validation rules and LSMW output.
+      </p>
+      <div class="table-wrap">
+        <table class="schema-table">
+          <thead>
+            <tr>
+              <th>Field Name</th>
+              <th>SAP Field</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Validate vs Master Data</th>
+              <th>Severity</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="schema-tbody"></tbody>
+        </table>
+      </div>
+      <button class="btn-add-field" onclick="addSchemaField()">+ Add Field</button>
+    </div>
+
+    <div id="tab-keydate" style="display:none;">
+      <div class="key-date-section">
+        <label for="key-date-input">Migration Key Date</label>
+        <input type="date" id="key-date-input" onchange="onKeyDateChange()">
+        <button class="secondary" style="margin-left:0;" onclick="clearKeyDate()">Clear</button>
+      </div>
+      <p class="key-date-info">
+        Records with <strong>posting_date</strong> on or before the key date will be <strong style="color:var(--success);">included</strong> in the migration.
+        Records after the key date will be <strong style="color:var(--text-muted);">excluded</strong>.
+      </p>
+      <div class="chart-container" id="chart-container" style="display:none;">
+        <h3 style="font-size:0.95rem;margin-bottom:10px;">Records by Day</h3>
+        <div class="chart-legend">
+          <span><span class="swatch included"></span> Included (valid &amp; in scope)</span>
+          <span><span class="swatch excluded"></span> Excluded (out of scope)</span>
+          <span><span class="swatch failed"></span> Failed validation</span>
+        </div>
+        <div class="chart-bars" id="chart-bars"></div>
       </div>
     </div>
   </div>
@@ -540,6 +796,233 @@ function formatLSMW(row) {
 
 const LSMW_HEADER = 'INVOICE_REF|BUKRS|LIFNR|KUNNR|BLDAT|BUDAT|ZFBDT|WAERS|WRBTR|WMWST|MWSKZ|HKONT|KOSTL|PRCTR|ZTERM|XBLNR|BKTXT|ZUONR|SGTXT';
 
+// ── Schema Definition ──
+const DEFAULT_SCHEMA = [
+  { field: 'invoice_ref',   sapField: 'INVOICE_REF', type: 'text',   required: true,  masterData: '',              severity: '' },
+  { field: 'vendor_id',     sapField: 'LIFNR',       type: 'text',   required: true,  masterData: 'vendors',       severity: 'CRITICAL' },
+  { field: 'customer_id',   sapField: 'KUNNR',        type: 'text',   required: true,  masterData: 'customers',     severity: 'CRITICAL' },
+  { field: 'company_code',  sapField: 'BUKRS',        type: 'text',   required: true,  masterData: 'company_codes', severity: 'CRITICAL' },
+  { field: 'invoice_date',  sapField: 'BLDAT',        type: 'date',   required: true,  masterData: '',              severity: 'ERROR' },
+  { field: 'posting_date',  sapField: 'BUDAT',        type: 'date',   required: true,  masterData: '',              severity: 'ERROR' },
+  { field: 'baseline_date', sapField: 'ZFBDT',        type: 'date',   required: true,  masterData: '',              severity: 'ERROR' },
+  { field: 'currency',      sapField: 'WAERS',        type: 'text',   required: true,  masterData: '',              severity: '' },
+  { field: 'gross_amount',  sapField: 'WRBTR',        type: 'amount', required: true,  masterData: '',              severity: 'ERROR' },
+  { field: 'tax_amount',    sapField: 'WMWST',        type: 'amount', required: false, masterData: '',              severity: 'WARNING' },
+  { field: 'tax_code',      sapField: 'MWSKZ',        type: 'text',   required: false, masterData: '',              severity: '' },
+  { field: 'gl_account',    sapField: 'HKONT',        type: 'text',   required: true,  masterData: 'gl_accounts',   severity: 'CRITICAL' },
+  { field: 'cost_centre',   sapField: 'KOSTL',        type: 'text',   required: true,  masterData: 'cost_centres',  severity: 'ERROR' },
+  { field: 'profit_centre', sapField: 'PRCTR',        type: 'text',   required: false, masterData: '',              severity: 'WARNING' },
+  { field: 'payment_terms', sapField: 'ZTERM',        type: 'text',   required: false, masterData: '',              severity: '' },
+  { field: 'reference',     sapField: 'XBLNR',        type: 'text',   required: false, masterData: '',              severity: '' },
+  { field: 'header_text',   sapField: 'BKTXT',        type: 'text',   required: false, masterData: '',              severity: '' },
+  { field: 'assignment',    sapField: 'ZUONR',        type: 'text',   required: false, masterData: '',              severity: '' },
+  { field: 'item_text',     sapField: 'SGTXT',        type: 'text',   required: false, masterData: '',              severity: '' },
+];
+
+let schema = JSON.parse(JSON.stringify(DEFAULT_SCHEMA));
+let keyDate = null;
+
+// ── Workspace Tabs ──
+function toggleWorkspaceTab(btn, tabId) {
+  document.querySelectorAll('#workspace-card .workspace-toggle button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-schema').style.display = tabId === 'tab-schema' ? '' : 'none';
+  document.getElementById('tab-keydate').style.display = tabId === 'tab-keydate' ? '' : 'none';
+}
+
+// ── Schema Editor ──
+function renderSchemaTable() {
+  const tbody = document.getElementById('schema-tbody');
+  tbody.innerHTML = schema.map((s, i) =>
+    '<tr>' +
+    '<td><input type="text" value="' + esc(s.field) + '" onchange="updateSchema(' + i + ',\'field\',this.value)"></td>' +
+    '<td><input type="text" value="' + esc(s.sapField) + '" onchange="updateSchema(' + i + ',\'sapField\',this.value)"></td>' +
+    '<td><select onchange="updateSchema(' + i + ',\'type\',this.value)">' +
+      optionList(['text','date','amount'], s.type) + '</select></td>' +
+    '<td class="cb-cell"><input type="checkbox" ' + (s.required ? 'checked' : '') + ' onchange="updateSchema(' + i + ',\'required\',this.checked)"></td>' +
+    '<td><select onchange="updateSchema(' + i + ',\'masterData\',this.value)">' +
+      optionList(['','customers','vendors','cost_centres','gl_accounts','company_codes'], s.masterData) + '</select></td>' +
+    '<td><select onchange="updateSchema(' + i + ',\'severity\',this.value)">' +
+      optionList(['','CRITICAL','ERROR','WARNING','INFO'], s.severity) + '</select></td>' +
+    '<td><button class="btn-icon" title="Remove" onclick="removeSchemaField(' + i + ')">&#x2715;</button></td>' +
+    '</tr>'
+  ).join('');
+}
+
+function optionList(opts, selected) {
+  return opts.map(o => '<option value="' + o + '"' + (o === selected ? ' selected' : '') + '>' + (o || '(none)') + '</option>').join('');
+}
+
+function updateSchema(i, key, value) {
+  schema[i][key] = value;
+}
+
+function removeSchemaField(i) {
+  schema.splice(i, 1);
+  renderSchemaTable();
+}
+
+function addSchemaField() {
+  schema.push({ field: 'new_field', sapField: '', type: 'text', required: false, masterData: '', severity: '' });
+  renderSchemaTable();
+  // scroll to new row
+  const tbody = document.getElementById('schema-tbody');
+  const lastRow = tbody.lastElementChild;
+  if (lastRow) lastRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ── Key Date ──
+function onKeyDateChange() {
+  const val = document.getElementById('key-date-input').value;
+  keyDate = val || null;
+  // If data is loaded, re-run to update chart
+  if (files.ap) runMigration();
+}
+
+function clearKeyDate() {
+  document.getElementById('key-date-input').value = '';
+  keyDate = null;
+  if (files.ap) runMigration();
+}
+
+// ── Bar Chart ──
+function renderDayChart(apRows, failedRefs) {
+  const container = document.getElementById('chart-container');
+  const barsEl = document.getElementById('chart-bars');
+
+  if (!apRows || apRows.length === 0) {
+    container.style.display = 'none';
+    return;
+  }
+
+  container.style.display = '';
+
+  // Group records by posting_date
+  const byDay = {};
+  apRows.forEach(row => {
+    const d = (row.posting_date || row.invoice_date || 'Unknown').trim();
+    if (!byDay[d]) byDay[d] = { included: 0, excluded: 0, failed: 0, total: 0 };
+    byDay[d].total++;
+    const ref = row.invoice_ref || 'UNKNOWN';
+    if (failedRefs.has(ref)) {
+      byDay[d].failed++;
+    } else if (keyDate && d > keyDate) {
+      byDay[d].excluded++;
+    } else {
+      byDay[d].included++;
+    }
+  });
+
+  // Sort dates
+  const days = Object.keys(byDay).sort();
+  const maxCount = Math.max(...days.map(d => byDay[d].total), 1);
+
+  barsEl.innerHTML = days.map(d => {
+    const data = byDay[d];
+    const hIncl = Math.round((data.included / maxCount) * 180);
+    const hExcl = Math.round((data.excluded / maxCount) * 180);
+    const hFail = Math.round((data.failed / maxCount) * 180);
+    const displayDate = d.length === 10 ? d.substring(5) : d; // show MM-DD
+    return '<div class="chart-bar-group">' +
+      '<div class="chart-tooltip">' + esc(d) + '<br>Included: ' + data.included + ' | Excluded: ' + data.excluded + ' | Failed: ' + data.failed + '</div>' +
+      '<div class="chart-bar-count">' + data.total + '</div>' +
+      '<div class="chart-bar-stack">' +
+        (data.included > 0 ? '<div class="chart-bar-segment included" style="height:' + hIncl + 'px"></div>' : '') +
+        (data.excluded > 0 ? '<div class="chart-bar-segment excluded" style="height:' + hExcl + 'px"></div>' : '') +
+        (data.failed > 0 ? '<div class="chart-bar-segment failed" style="height:' + hFail + 'px"></div>' : '') +
+      '</div>' +
+      '<div class="chart-bar-label">' + esc(displayDate) + '</div>' +
+      '</div>';
+  }).join('');
+}
+
+// Init schema table on load
+document.addEventListener('DOMContentLoaded', renderSchemaTable);
+
+// ── Dynamic Validation (uses schema) ──
+function validateDynamic(row, md) {
+  const issues = [];
+  const inv = row.invoice_ref || 'UNKNOWN';
+  const cc = row.company_code || '';
+
+  schema.forEach(s => {
+    if (s.field === 'invoice_ref') return; // don't validate the key field itself
+    const value = (row[s.field] || '').trim();
+    const meta = RESOLUTIONS[s.field] || {};
+
+    // Master data check
+    if (s.masterData && s.severity) {
+      if (!value) {
+        if (s.required) {
+          issues.push({
+            severity: s.severity === 'CRITICAL' ? 'CRITICAL' : (s.severity || 'WARNING'),
+            invoice_ref: inv, field_name: s.field, supplied_value: '(blank)',
+            message: "Required field '" + s.field + "' is empty.",
+            resolution: (meta.resolution || 'Provide a valid value.').replace('{cc}', cc),
+            sap_transaction: meta.sap_transaction || '',
+            responsible_team: meta.responsible_team || 'Data Migration Team',
+          });
+        }
+      } else if (!md[s.masterData] || !md[s.masterData].has(value)) {
+        issues.push({
+          severity: s.severity, invoice_ref: inv, field_name: s.field, supplied_value: value,
+          message: meta.message || "Value '" + value + "' not found in master data.",
+          resolution: (meta.resolution || 'Verify and correct the value.').replace('{cc}', cc),
+          sap_transaction: meta.sap_transaction || '',
+          responsible_team: meta.responsible_team || 'Data Migration Team',
+        });
+      }
+    }
+
+    // Date type
+    if (s.type === 'date' && value && !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      issues.push({ severity: 'ERROR', invoice_ref: inv, field_name: s.field, supplied_value: value,
+        message: "Date '" + value + "' is not in YYYY-MM-DD format.",
+        resolution: 'Correct the date format to YYYY-MM-DD in the source data.',
+        sap_transaction: '', responsible_team: 'Data Migration Team' });
+    }
+
+    // Amount type
+    if (s.type === 'amount' && value) {
+      const n = parseFloat(value);
+      if (isNaN(n)) {
+        issues.push({ severity: 'ERROR', invoice_ref: inv, field_name: s.field, supplied_value: value,
+          message: "Amount '" + value + "' is not a valid number.",
+          resolution: 'Correct the amount to a valid decimal number.',
+          sap_transaction: '', responsible_team: 'Data Migration Team' });
+      } else if (n < 0) {
+        issues.push({ severity: 'WARNING', invoice_ref: inv, field_name: s.field, supplied_value: value,
+          message: 'Negative amount detected (' + value + '). Verify this is a credit memo.',
+          resolution: 'Confirm whether this should be posted as a credit memo (transaction type).',
+          sap_transaction: '', responsible_team: 'AP / Finance Team' });
+      }
+    }
+
+    // Required but empty (no master data check)
+    if (s.required && !s.masterData && !value && s.type === 'text') {
+      issues.push({ severity: s.severity || 'WARNING', invoice_ref: inv, field_name: s.field, supplied_value: '(blank)',
+        message: "Required field '" + s.field + "' is empty.",
+        resolution: 'Provide a valid value for ' + s.field + '.',
+        sap_transaction: '', responsible_team: 'Data Migration Team' });
+    }
+  });
+
+  return issues;
+}
+
+// ── Dynamic LSMW format (uses schema) ──
+function formatLSMWDynamic(row) {
+  return schema.map(s => {
+    const val = row[s.field] || '';
+    if (s.type === 'date' && val) return toSAPDate(val);
+    return val;
+  }).join('|');
+}
+
+function getLSMWHeaderDynamic() {
+  return schema.map(s => s.sapField || s.field.toUpperCase()).join('|');
+}
+
 // ── Main ──
 function runMigration() {
   const apRows = files.ap ? files.ap.rows : null;
@@ -559,17 +1042,27 @@ function runMigration() {
   const allIssues = [];
   const failedRefs = new Set();
   const passedRows = [];
+  const excludedByDate = [];
 
   apRows.forEach(row => {
-    const issues = validate(row, md);
+    const issues = validateDynamic(row, md);
     allIssues.push(...issues);
     const blocking = issues.some(i => i.severity === 'CRITICAL' || i.severity === 'ERROR');
-    if (blocking) failedRefs.add(row.invoice_ref || 'UNKNOWN');
-    else passedRows.push(row);
+    const ref = row.invoice_ref || 'UNKNOWN';
+    if (blocking) {
+      failedRefs.add(ref);
+    } else if (keyDate && (row.posting_date || '').trim() > keyDate) {
+      excludedByDate.push(row);
+    } else {
+      passedRows.push(row);
+    }
   });
 
-  // Build LSMW
-  lastLSMW = LSMW_HEADER + '\n' + passedRows.map(formatLSMW).join('\n');
+  // Build LSMW (only included records)
+  lastLSMW = getLSMWHeaderDynamic() + '\n' + passedRows.map(formatLSMWDynamic).join('\n');
+
+  // Render bar chart
+  renderDayChart(apRows, failedRefs);
 
   // Build report
   const sevCount = {}, fieldCount = {}, teamCount = {};
@@ -598,8 +1091,10 @@ function runMigration() {
   lastReport = {
     run_timestamp: new Date().toISOString(),
     total_records: apRows.length,
-    passed: apRows.length - failedRefs.size,
+    passed: passedRows.length,
     failed: failedRefs.size,
+    excluded_by_date: excludedByDate.length,
+    key_date: keyDate || null,
     warnings: allIssues.filter(i => i.severity === 'WARNING').length,
     issues: allIssues,
     summary_by_severity: sevCount,
@@ -617,10 +1112,14 @@ function renderResults(r, passedRows) {
 
   // Stats
   const pct = r.total_records > 0 ? Math.round((r.passed / r.total_records) * 100) : 0;
+  const excludedCard = r.excluded_by_date > 0
+    ? '<div class="stat-card"><div class="value" style="color:var(--text-muted)">' + r.excluded_by_date + '</div><div class="label">Excluded (date)</div></div>'
+    : '';
   document.getElementById('stats-row').innerHTML =
     statCard('Total', r.total_records, 'total') +
-    statCard('Passed', r.passed, 'passed') +
+    statCard('Included', r.passed, 'passed') +
     statCard('Failed', r.failed, 'failed') +
+    excludedCard +
     statCard('Warnings', r.warnings, 'warnings');
 
   const bar = document.getElementById('pass-bar');
