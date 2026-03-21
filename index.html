@@ -92,6 +92,57 @@ header p { color: var(--text-muted); font-size: 0.95rem; }
 .upload-item .hint { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
 .upload-item .file-info { font-size: 0.8rem; color: var(--success); margin-top: 6px; font-weight: 500; }
 .upload-item input[type="file"] { display: none; }
+.upload-item .file-version {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  margin-top: 2px;
+}
+
+/* ── Environment Tabs ── */
+.env-bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 16px;
+}
+.env-bar .env-tab {
+  padding: 6px 18px;
+  border: 1px solid var(--border);
+  background: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.env-bar .env-tab:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+.env-bar .env-tab:last-child { border-radius: 0 var(--radius) var(--radius) 0; }
+.env-bar .env-tab:not(:first-child) { border-left: none; }
+.env-bar .env-tab:hover { background: var(--bg); }
+.env-bar .env-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.env-bar .env-tab.active + .env-tab { border-left-color: var(--primary); }
+.env-bar .env-tab .env-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+.env-tab.env-dev .env-dot { background: #3b82f6; }
+.env-tab.env-sit .env-dot { background: #f59e0b; }
+.env-tab.env-uat .env-dot { background: #8b5cf6; }
+.env-tab.env-prod .env-dot { background: #10b981; }
+.env-summary {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-left: 12px;
+  font-style: italic;
+}
 
 .actions { text-align: center; margin: 24px 0; }
 
@@ -895,52 +946,66 @@ tbody tr:hover { background: #f9fafb; }
     <p>Upload AP invoice data and master data CSVs to validate and generate LSMW flat files</p>
   </header>
 
-  <!-- AP Data Upload -->
+  <!-- Environment Selector -->
   <div class="card">
-    <h2>AP Invoice Data <span class="badge">Required</span></h2>
-    <div class="upload-grid">
+    <h2>Environment <span class="badge" id="env-badge">DEV</span></h2>
+    <div class="env-bar">
+      <button class="env-tab env-dev active" onclick="switchEnv('dev')"><span class="env-dot"></span>DEV</button>
+      <button class="env-tab env-sit" onclick="switchEnv('sit')"><span class="env-dot"></span>SIT</button>
+      <button class="env-tab env-uat" onclick="switchEnv('uat')"><span class="env-dot"></span>UAT</button>
+      <button class="env-tab env-prod" onclick="switchEnv('prod')"><span class="env-dot"></span>PROD</button>
+      <span class="env-summary" id="env-summary"></span>
+    </div>
+
+    <!-- AP Data Upload -->
+    <h3 style="font-size:0.95rem;margin-bottom:8px;">AP Invoice Data <span class="badge">Required</span></h3>
+    <div class="upload-grid" style="margin-bottom:20px;">
       <div class="upload-item" id="drop-ap" onclick="document.getElementById('file-ap').click()">
         <label>AP Invoices</label>
         <div class="hint">Columns: invoice_ref, vendor_id, customer_id, company_code, invoice_date, ...</div>
         <input type="file" id="file-ap" accept=".csv" onchange="handleFile(this,'ap')">
         <div class="file-info" id="info-ap"></div>
+        <div class="file-version" id="ver-ap"></div>
       </div>
     </div>
-  </div>
 
-  <!-- Master Data Uploads -->
-  <div class="card">
-    <h2>Master Data <span class="badge optional">Optional — sample data used if omitted</span></h2>
+    <!-- Master Data Uploads -->
+    <h3 style="font-size:0.95rem;margin-bottom:8px;">Master Data <span class="badge optional">Optional — sample data used if omitted</span></h3>
     <div class="upload-grid">
       <div class="upload-item" id="drop-customers" onclick="document.getElementById('file-customers').click()">
         <label>Customers</label>
         <div class="hint">Column: customer_id</div>
         <input type="file" id="file-customers" accept=".csv" onchange="handleFile(this,'customers')">
         <div class="file-info" id="info-customers"></div>
+        <div class="file-version" id="ver-customers"></div>
       </div>
       <div class="upload-item" id="drop-vendors" onclick="document.getElementById('file-vendors').click()">
         <label>Vendors</label>
         <div class="hint">Column: vendor_id</div>
         <input type="file" id="file-vendors" accept=".csv" onchange="handleFile(this,'vendors')">
         <div class="file-info" id="info-vendors"></div>
+        <div class="file-version" id="ver-vendors"></div>
       </div>
       <div class="upload-item" id="drop-cost_centres" onclick="document.getElementById('file-cost_centres').click()">
         <label>Cost Centres</label>
         <div class="hint">Column: cost_centre_id</div>
         <input type="file" id="file-cost_centres" accept=".csv" onchange="handleFile(this,'cost_centres')">
         <div class="file-info" id="info-cost_centres"></div>
+        <div class="file-version" id="ver-cost_centres"></div>
       </div>
       <div class="upload-item" id="drop-gl_accounts" onclick="document.getElementById('file-gl_accounts').click()">
         <label>GL Accounts</label>
         <div class="hint">Column: gl_account</div>
         <input type="file" id="file-gl_accounts" accept=".csv" onchange="handleFile(this,'gl_accounts')">
         <div class="file-info" id="info-gl_accounts"></div>
+        <div class="file-version" id="ver-gl_accounts"></div>
       </div>
       <div class="upload-item" id="drop-company_codes" onclick="document.getElementById('file-company_codes').click()">
         <label>Company Codes</label>
         <div class="hint">Column: company_code</div>
         <input type="file" id="file-company_codes" accept=".csv" onchange="handleFile(this,'company_codes')">
         <div class="file-info" id="info-company_codes"></div>
+        <div class="file-version" id="ver-company_codes"></div>
       </div>
     </div>
   </div>
@@ -1203,7 +1268,18 @@ tbody tr:hover { background: #f9fafb; }
 
 <script>
 // ── State ──
-const files = {};
+const ENVS = ['dev', 'sit', 'uat', 'prod'];
+const ENV_LABELS = { dev: 'DEV', sit: 'SIT', uat: 'UAT', prod: 'PROD' };
+const FILE_KEYS = ['ap', 'customers', 'vendors', 'cost_centres', 'gl_accounts', 'company_codes'];
+let activeEnv = 'dev';
+
+// Per-environment file storage: envFiles[env][key] = { name, rows, version, loadedAt }
+const envFiles = {};
+ENVS.forEach(e => { envFiles[e] = {}; });
+
+// Convenience accessor for current env
+function getFiles() { return envFiles[activeEnv]; }
+
 let lastReport = null;
 let lastLSMW = '';
 
@@ -1293,6 +1369,64 @@ function loadSetFromCSV(rows, key) {
   return s;
 }
 
+// ── Environment Switching ──
+function switchEnv(env) {
+  activeEnv = env;
+  document.querySelectorAll('.env-tab').forEach(b => b.classList.remove('active'));
+  document.querySelector('.env-tab.env-' + env).classList.add('active');
+  document.getElementById('env-badge').textContent = ENV_LABELS[env];
+  refreshUploadUI();
+  updateEnvSummary();
+}
+
+function refreshUploadUI() {
+  const ef = getFiles();
+  FILE_KEYS.forEach(key => {
+    const drop = document.getElementById('drop-' + key);
+    const info = document.getElementById('info-' + key);
+    const ver = document.getElementById('ver-' + key);
+    if (ef[key]) {
+      drop.classList.add('loaded');
+      info.textContent = ef[key].name + ' (' + ef[key].rows.length + ' rows)';
+      ver.textContent = 'v' + ef[key].version + ' \u00b7 ' + formatTimestamp(ef[key].loadedAt);
+    } else {
+      drop.classList.remove('loaded');
+      info.textContent = '';
+      ver.textContent = '';
+    }
+  });
+}
+
+function updateEnvSummary() {
+  const counts = ENVS.map(e => {
+    const n = FILE_KEYS.filter(k => envFiles[e][k]).length;
+    return n > 0 ? ENV_LABELS[e] + ': ' + n + '/' + FILE_KEYS.length : null;
+  }).filter(Boolean);
+  document.getElementById('env-summary').textContent = counts.length > 0 ? counts.join(' \u00b7 ') : 'No data loaded';
+}
+
+function formatTimestamp(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function getNextFileVersion(env, key) {
+  const existing = envFiles[env][key];
+  return existing ? existing.version + 1 : 1;
+}
+
+function getFileVersionSummary() {
+  const ef = getFiles();
+  const summary = {};
+  FILE_KEYS.forEach(k => {
+    if (ef[k]) {
+      summary[k] = { file: ef[k].name, version: ef[k].version, loadedAt: ef[k].loadedAt };
+    }
+  });
+  return summary;
+}
+
 // ── File handling ──
 function handleFile(input, key) {
   const file = input.files[0];
@@ -1300,23 +1434,23 @@ function handleFile(input, key) {
   const reader = new FileReader();
   reader.onload = () => {
     const rows = parseCSV(reader.result);
-    files[key] = { name: file.name, rows };
-    const el = document.getElementById('info-' + key);
-    el.textContent = file.name + ' (' + rows.length + ' rows)';
-    input.closest('.upload-item').classList.add('loaded');
+    const version = getNextFileVersion(activeEnv, key);
+    envFiles[activeEnv][key] = { name: file.name, rows, version, loadedAt: new Date().toISOString() };
+    refreshUploadUI();
+    updateEnvSummary();
     if (key === 'ap') runDataQualityReview();
   };
   reader.readAsText(file);
 }
 
 function loadSampleData() {
-  files['ap'] = { name: 'sample', rows: SAMPLE_AP };
-  document.getElementById('info-ap').textContent = 'Sample data (4 invoices)';
-  document.getElementById('drop-ap').classList.add('loaded');
+  const ts = new Date().toISOString();
+  envFiles[activeEnv]['ap'] = { name: 'sample', rows: SAMPLE_AP, version: getNextFileVersion(activeEnv, 'ap'), loadedAt: ts };
   ['customers','vendors','cost_centres','gl_accounts','company_codes'].forEach(k => {
-    document.getElementById('info-' + k).textContent = 'Sample data';
-    document.getElementById('drop-' + k).classList.add('loaded');
+    envFiles[activeEnv][k] = { name: 'sample', rows: [], version: getNextFileVersion(activeEnv, k), loadedAt: ts };
   });
+  refreshUploadUI();
+  updateEnvSummary();
   runDataQualityReview();
   runMigration();
 }
@@ -1532,11 +1666,11 @@ function addSourceField() {
 }
 
 function autoDetectSource() {
-  if (!files.ap || !files.ap.rows || files.ap.rows.length === 0) {
+  if (!getFiles().ap || !getFiles().ap.rows || getFiles().ap.rows.length === 0) {
     alert('Upload AP data first, then click Auto-detect.');
     return;
   }
-  const firstRow = files.ap.rows[0];
+  const firstRow = getFiles().ap.rows[0];
   const headers = Object.keys(firstRow);
   sourceSchema = headers.map(h => {
     const val = firstRow[h] || '';
@@ -1568,13 +1702,13 @@ function runDataQualityReview() {
   const fieldCards = document.getElementById('dq-field-cards');
   const scoreBadge = document.getElementById('dq-score-badge');
 
-  if (!files.ap || !files.ap.rows || files.ap.rows.length === 0) {
+  if (!getFiles().ap || !getFiles().ap.rows || getFiles().ap.rows.length === 0) {
     toggle.style.display = 'none';
     panel.classList.remove('open');
     return;
   }
 
-  const rows = files.ap.rows;
+  const rows = getFiles().ap.rows;
   const n = rows.length;
   const fields = sourceSchema.length > 0 ? sourceSchema : Object.keys(rows[0]).map(k => ({ field: k, type: 'text' }));
 
@@ -2046,8 +2180,8 @@ function renderMappingTable() {
 
     // Preview: show chain
     let previewHTML = '';
-    if (files.ap && files.ap.rows.length > 0) {
-      const row = files.ap.rows[0];
+    if (getFiles().ap && getFiles().ap.rows.length > 0) {
+      const row = getFiles().ap.rows[0];
       const initial = row[m.sourceField] || '';
       if (m.transforms.length === 0) {
         previewHTML = '<span class="tf-preview">' + esc(initial) + '</span>';
@@ -2241,13 +2375,13 @@ function onKeyDateChange() {
   const val = document.getElementById('key-date-input').value;
   keyDate = val || null;
   // If data is loaded, re-run to update chart
-  if (files.ap) runMigration();
+  if (getFiles().ap) runMigration();
 }
 
 function clearKeyDate() {
   document.getElementById('key-date-input').value = '';
   keyDate = null;
-  if (files.ap) runMigration();
+  if (getFiles().ap) runMigration();
 }
 
 // ── Bar Chart ──
@@ -2309,6 +2443,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initMappings();
   renderExtDatasetList();
   updateConfigVersionDisplay();
+  updateEnvSummary();
 });
 
 // ── Dynamic Validation (uses schema) ──
@@ -2397,18 +2532,18 @@ function getLSMWHeaderDynamic() {
 
 // ── Main ──
 function runMigration() {
-  const apRows = files.ap ? files.ap.rows : null;
+  const apRows = getFiles().ap ? getFiles().ap.rows : null;
   if (!apRows || apRows.length === 0) {
     alert('Please upload AP invoice data or click "Use Sample Data" first.');
     return;
   }
 
   const md = {
-    customers: files.customers ? loadSetFromCSV(files.customers.rows, 'customer_id') : SAMPLE_MD.customers,
-    vendors: files.vendors ? loadSetFromCSV(files.vendors.rows, 'vendor_id') : SAMPLE_MD.vendors,
-    cost_centres: files.cost_centres ? loadSetFromCSV(files.cost_centres.rows, 'cost_centre_id') : SAMPLE_MD.cost_centres,
-    gl_accounts: files.gl_accounts ? loadSetFromCSV(files.gl_accounts.rows, 'gl_account') : SAMPLE_MD.gl_accounts,
-    company_codes: files.company_codes ? loadSetFromCSV(files.company_codes.rows, 'company_code') : SAMPLE_MD.company_codes,
+    customers: getFiles().customers ? loadSetFromCSV(getFiles().customers.rows, 'customer_id') : SAMPLE_MD.customers,
+    vendors: getFiles().vendors ? loadSetFromCSV(getFiles().vendors.rows, 'vendor_id') : SAMPLE_MD.vendors,
+    cost_centres: getFiles().cost_centres ? loadSetFromCSV(getFiles().cost_centres.rows, 'cost_centre_id') : SAMPLE_MD.cost_centres,
+    gl_accounts: getFiles().gl_accounts ? loadSetFromCSV(getFiles().gl_accounts.rows, 'gl_account') : SAMPLE_MD.gl_accounts,
+    company_codes: getFiles().company_codes ? loadSetFromCSV(getFiles().company_codes.rows, 'company_code') : SAMPLE_MD.company_codes,
   };
 
   // Always apply mappings pipeline (handles direct copy when no transforms exist)
@@ -2465,6 +2600,8 @@ function runMigration() {
 
   lastReport = {
     run_timestamp: new Date().toISOString(),
+    environment: activeEnv.toUpperCase(),
+    data_versions: getFileVersionSummary(),
     total_records: apRows.length,
     passed: passedRows.length,
     failed: failedRefs.size,
@@ -2630,6 +2767,7 @@ function exportConfig(type) {
     // Bundle all
     payload = {
       configType: 'migration_bundle',
+      environment: activeEnv.toUpperCase(),
       versions: { ...configVersions },
       exportedAt: ts,
       fingerprints: {
@@ -2641,9 +2779,10 @@ function exportConfig(type) {
       targetSchema: schema,
       mappings: mappings,
       externalDatasetNames: Object.keys(externalDatasets),
+      dataVersions: getFileVersionSummary(),
       keyDate: keyDate || null,
     };
-    filename = 'migration_config_v' + configVersions.source + '.' + configVersions.target + '.' + configVersions.mapping + '.json';
+    filename = 'migration_config_' + activeEnv + '_v' + configVersions.source + '.' + configVersions.target + '.' + configVersions.mapping + '.json';
   }
 
   download(filename, JSON.stringify(payload, null, 2), 'application/json');
@@ -2673,7 +2812,7 @@ function applyImportedConfig(cfg, filename) {
     if (cfg.version) configVersions.source = cfg.version;
     renderSourceSchemaTable();
     renderKeyPills();
-    if (files.ap) runDataQualityReview();
+    if (getFiles().ap) runDataQualityReview();
     alert('Source schema loaded (v' + configVersions.source + ')');
   } else if (type === 'target_schema') {
     schema = cfg.schema;
@@ -2711,7 +2850,7 @@ function applyImportedConfig(cfg, filename) {
     renderKeyPills();
     renderSchemaTable();
     renderMappingTable();
-    if (files.ap) runDataQualityReview();
+    if (getFiles().ap) runDataQualityReview();
     alert('Migration bundle loaded (v' + configVersions.source + '.' + configVersions.target + '.' + configVersions.mapping + ')');
   } else {
     alert('Unknown config type: ' + (type || 'none') + '. Expected source_schema, target_schema, mapping, or migration_bundle.');
@@ -2729,10 +2868,10 @@ function onMappingChanged() { bumpVersion('mapping'); }
 
 // ── Downloads ──
 function downloadLSMW() {
-  download('lsmw_invoices.txt', lastLSMW, 'text/plain');
+  download('lsmw_invoices_' + activeEnv + '.txt', lastLSMW, 'text/plain');
 }
 function downloadReport() {
-  download('migration_report.json', JSON.stringify(lastReport, null, 2), 'application/json');
+  download('migration_report_' + activeEnv + '.json', JSON.stringify(lastReport, null, 2), 'application/json');
 }
 function download(name, content, type) {
   const blob = new Blob([content], { type });
