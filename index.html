@@ -1719,14 +1719,21 @@ function handleFile(input, key) {
   reader.readAsText(file);
 }
 
+function sampleMdToRows(type) {
+  const key = MD_TYPES[type].key;
+  return Array.from(SAMPLE_MD[type]).map(v => { const r = {}; r[key] = v; return r; });
+}
+
 function loadSampleData() {
   const ts = new Date().toISOString();
   envFiles[activeEnv]['ap'] = { name: 'sample', rows: SAMPLE_AP, version: getNextFileVersion(activeEnv, 'ap'), loadedAt: ts };
   ['customers','vendors','cost_centres','gl_accounts','company_codes'].forEach(k => {
-    envFiles[activeEnv][k] = { name: 'sample', rows: [], version: getNextFileVersion(activeEnv, k), loadedAt: ts };
+    envFiles[activeEnv][k] = { name: 'sample', rows: sampleMdToRows(k), version: getNextFileVersion(activeEnv, k), loadedAt: ts };
+    delete mdEdits[activeEnv][k];
   });
   refreshUploadUI();
   updateEnvSummary();
+  renderMdTable();
   runDataQualityReview();
   runMigration();
 }
@@ -3088,8 +3095,11 @@ function runMigration() {
 
   // Use edited master data if available, then uploaded files, then sample data
   function resolveMd(type, key) {
-    if (mdEdits[activeEnv][type]) return loadSetFromCSV(mdEdits[activeEnv][type], key);
-    if (getFiles()[type]) return loadSetFromCSV(getFiles()[type].rows, key);
+    if (mdEdits[activeEnv][type] && mdEdits[activeEnv][type].length > 0)
+      return loadSetFromCSV(mdEdits[activeEnv][type], key);
+    const f = getFiles()[type];
+    if (f && f.rows && f.rows.length > 0)
+      return loadSetFromCSV(f.rows, key);
     return SAMPLE_MD[type];
   }
   const md = {
