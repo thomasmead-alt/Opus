@@ -831,6 +831,140 @@ tbody tr:hover { background: #f9fafb; }
   border-top: 1px solid #e5e7eb;
 }
 
+/* ── Hierarchy Editor ── */
+.hier-panel { margin-top: 10px; }
+.hier-tabs { display: flex; gap: 4px; margin-bottom: 10px; flex-wrap: wrap; }
+.hier-tabs button {
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  font-size: 0.8rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.hier-tabs button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.hier-tabs button:hover:not(.active) { background: #f3f4f6; }
+
+.hier-toolbar {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.hier-toolbar button {
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  font-size: 0.78rem;
+  font-family: inherit;
+  cursor: pointer;
+}
+.hier-toolbar button:hover { background: #f3f4f6; }
+.hier-toolbar button.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+.hier-tree {
+  font-size: 0.82rem;
+  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  padding: 8px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+.hier-node {
+  padding: 0;
+  user-select: none;
+}
+.hier-node-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.hier-node-row:hover { background: #f0f4ff; }
+.hier-node-row.selected { background: #dbeafe; outline: 1px solid var(--primary); }
+.hier-node-row .hier-toggle {
+  width: 16px;
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.hier-node-row .hier-icon {
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+.hier-node-row .hier-label {
+  flex: 1;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hier-node-row .hier-id {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.hier-node-row .hier-actions {
+  display: none;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.hier-node-row:hover .hier-actions { display: flex; }
+.hier-actions button {
+  padding: 1px 5px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: #fff;
+  font-size: 0.68rem;
+  cursor: pointer;
+  line-height: 1.2;
+}
+.hier-actions button:hover { background: #f3f4f6; }
+.hier-actions button.danger:hover { background: var(--critical-bg); color: var(--critical); }
+.hier-children {
+  margin-left: 20px;
+  border-left: 1px dashed #d1d5db;
+}
+.hier-children.collapsed { display: none; }
+
+.hier-stats {
+  display: flex;
+  gap: 16px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+}
+
+.hier-add-dialog {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #f9fafb;
+}
+.hier-add-dialog input {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.82rem;
+  font-family: inherit;
+}
+
 /* ── Issue Row Cards ── */
 .issue-row-card {
   border: 1px solid var(--border);
@@ -1505,12 +1639,16 @@ tbody tr:hover { background: #f9fafb; }
     </div>
     <div class="card-body open" id="masterdata-workspace-card-body">
 
-    <div class="md-tabs" id="md-tabs">
+    <div class="md-tabs" id="md-tabs" style="flex-wrap:wrap;">
       <button class="active" onclick="switchMdTab('customers')">Customers <span class="md-tab-count" id="md-count-customers">0</span></button>
       <button onclick="switchMdTab('vendors')">Vendors <span class="md-tab-count" id="md-count-vendors">0</span></button>
-      <button onclick="switchMdTab('cost_centres')">Cost Centres <span class="md-tab-count" id="md-count-cost_centres">0</span></button>
       <button onclick="switchMdTab('gl_accounts')">GL Accounts <span class="md-tab-count" id="md-count-gl_accounts">0</span></button>
+      <button onclick="switchMdTab('profit_centres')">Profit Centres <span class="md-tab-count" id="md-count-profit_centres">0</span></button>
+      <button onclick="switchMdTab('cost_centres')">Cost Centres <span class="md-tab-count" id="md-count-cost_centres">0</span></button>
       <button onclick="switchMdTab('company_codes')">Company Codes <span class="md-tab-count" id="md-count-company_codes">0</span></button>
+      <button onclick="switchMdTab('business_entities')">Bus. Entities <span class="md-tab-count" id="md-count-business_entities">0</span></button>
+      <button onclick="switchMdTab('rental_objects')">Rental Objects <span class="md-tab-count" id="md-count-rental_objects">0</span></button>
+      <button onclick="switchMdTab('settlement_units')">Settlement Units <span class="md-tab-count" id="md-count-settlement_units">0</span></button>
     </div>
 
     <div class="md-toolbar" id="md-toolbar">
@@ -1525,6 +1663,29 @@ tbody tr:hover { background: #f9fafb; }
     <div class="md-stats" id="md-stats"></div>
     <div id="md-table-container"></div>
     <div class="md-pagination" id="md-pagination"></div>
+
+    <!-- Dependency Map (shown for types with dependencies) -->
+    <div id="md-dep-map" style="display:none;margin-top:12px;padding:10px;border:1px solid var(--border);border-radius:var(--radius);background:#f9fafb;">
+      <h4 style="font-size:0.85rem;font-weight:600;margin:0 0 6px 0;">Dependencies</h4>
+      <div id="md-dep-map-content" style="font-size:0.78rem;"></div>
+    </div>
+
+    <!-- Hierarchy Editor -->
+    <div class="hier-panel" id="hier-panel" style="margin-top:16px;">
+      <h3 style="font-size:0.95rem;font-weight:600;margin-bottom:8px;">Hierarchy Editor</h3>
+      <div class="hier-tabs" id="hier-tabs"></div>
+      <div class="hier-toolbar" id="hier-toolbar">
+        <button class="primary" onclick="hierAddNode()">+ Add Node</button>
+        <button onclick="hierAddGroup()">+ Add Group</button>
+        <button onclick="hierDeleteSelected()" style="color:var(--critical);">Delete</button>
+        <button onclick="hierCollapseAll()">Collapse All</button>
+        <button onclick="hierExpandAll()">Expand All</button>
+        <button onclick="hierResetToSample()">Reset to Default</button>
+      </div>
+      <div id="hier-add-form" style="display:none;"></div>
+      <div class="hier-tree" id="hier-tree"></div>
+      <div class="hier-stats" id="hier-stats"></div>
+    </div>
 
     </div><!-- /card-body -->
   </div><!-- /masterdata-workspace-card -->
@@ -1595,6 +1756,34 @@ tbody tr:hover { background: #f9fafb; }
         <input type="file" id="file-company_codes" accept=".csv" onchange="handleFile(this,'company_codes')">
         <div class="file-info" id="info-company_codes"></div>
         <div class="file-version" id="ver-company_codes"></div>
+      </div>
+      <div class="upload-item" id="drop-profit_centres" onclick="document.getElementById('file-profit_centres').click()">
+        <label>Profit Centres</label>
+        <div class="hint">Column: profit_centre_id</div>
+        <input type="file" id="file-profit_centres" accept=".csv" onchange="handleFile(this,'profit_centres')">
+        <div class="file-info" id="info-profit_centres"></div>
+        <div class="file-version" id="ver-profit_centres"></div>
+      </div>
+      <div class="upload-item" id="drop-business_entities" onclick="document.getElementById('file-business_entities').click()">
+        <label>Business Entities</label>
+        <div class="hint">Column: business_entity_id</div>
+        <input type="file" id="file-business_entities" accept=".csv" onchange="handleFile(this,'business_entities')">
+        <div class="file-info" id="info-business_entities"></div>
+        <div class="file-version" id="ver-business_entities"></div>
+      </div>
+      <div class="upload-item" id="drop-rental_objects" onclick="document.getElementById('file-rental_objects').click()">
+        <label>Rental Objects</label>
+        <div class="hint">Column: rental_object_id</div>
+        <input type="file" id="file-rental_objects" accept=".csv" onchange="handleFile(this,'rental_objects')">
+        <div class="file-info" id="info-rental_objects"></div>
+        <div class="file-version" id="ver-rental_objects"></div>
+      </div>
+      <div class="upload-item" id="drop-settlement_units" onclick="document.getElementById('file-settlement_units').click()">
+        <label>Settlement Units</label>
+        <div class="hint">Column: settlement_unit_id</div>
+        <input type="file" id="file-settlement_units" accept=".csv" onchange="handleFile(this,'settlement_units')">
+        <div class="file-info" id="info-settlement_units"></div>
+        <div class="file-version" id="ver-settlement_units"></div>
       </div>
     </div>
 
@@ -1686,7 +1875,7 @@ tbody tr:hover { background: #f9fafb; }
 // ── State ──
 const ENVS = ['dev', 'sit', 'uat', 'prod'];
 const ENV_LABELS = { dev: 'DEV', sit: 'SIT', uat: 'UAT', prod: 'PROD' };
-const FILE_KEYS = ['ap', 'customers', 'vendors', 'cost_centres', 'gl_accounts', 'company_codes'];
+const FILE_KEYS = ['ap', 'customers', 'vendors', 'gl_accounts', 'profit_centres', 'cost_centres', 'company_codes', 'business_entities', 'rental_objects', 'settlement_units'];
 let activeEnv = 'dev';
 
 // Per-environment file storage: envFiles[env][key] = { name, rows, version, loadedAt }
@@ -1705,18 +1894,116 @@ let configMeta = { name: '', description: '', loadedFrom: null };
 
 // ── Sample data (matches Python script) ──
 const SAMPLE_AP = [
-  { invoice_ref:'INV-2026-0001', vendor_id:'V1001', customer_id:'C2001', company_code:'1000', invoice_date:'2026-03-15', posting_date:'2026-03-15', baseline_date:'2026-03-15', currency:'USD', gross_amount:'15000.00', tax_amount:'1500.00', tax_code:'V1', gl_account:'400100', cost_centre:'CC1010', profit_centre:'PC2000', payment_terms:'ZN30', reference:'PO-88001', header_text:'Consulting services Mar 2026', assignment:'PROJECT-ALPHA', item_text:'Professional services' },
-  { invoice_ref:'INV-2026-0002', vendor_id:'V1002', customer_id:'C9999', company_code:'1000', invoice_date:'2026-03-16', posting_date:'2026-03-16', baseline_date:'2026-03-16', currency:'EUR', gross_amount:'8200.50', tax_amount:'820.05', tax_code:'V1', gl_account:'400200', cost_centre:'CC_INVALID', profit_centre:'PC2000', payment_terms:'ZN30', reference:'PO-88002', header_text:'Hardware procurement', assignment:'PROJECT-BETA', item_text:'Server equipment' },
-  { invoice_ref:'INV-2026-0003', vendor_id:'V_UNKNOWN', customer_id:'C2002', company_code:'2000', invoice_date:'2026-03-17', posting_date:'2026-03-17', baseline_date:'2026-03-17', currency:'GBP', gross_amount:'3400.00', tax_amount:'680.00', tax_code:'V2', gl_account:'999999', cost_centre:'CC1020', profit_centre:'', payment_terms:'ZN60', reference:'PO-88003', header_text:'Facilities maintenance', assignment:'PROJECT-GAMMA', item_text:'Building repairs' },
-  { invoice_ref:'INV-2026-0004', vendor_id:'V1001', customer_id:'C2001', company_code:'1000', invoice_date:'2026-03-18', posting_date:'2026-03-18', baseline_date:'2026-03-18', currency:'USD', gross_amount:'45000.00', tax_amount:'4500.00', tax_code:'V1', gl_account:'400100', cost_centre:'CC1010', profit_centre:'PC2000', payment_terms:'ZN30', reference:'PO-88004', header_text:'Software licences Q2', assignment:'PROJECT-ALPHA', item_text:'Annual licence renewal' },
+  { invoice_ref:'INV-2026-0001', vendor_id:'V1001', customer_id:'C2001', company_code:'1000', invoice_date:'2026-03-15', posting_date:'2026-03-15', baseline_date:'2026-03-15', currency:'USD', gross_amount:'15000.00', tax_amount:'1500.00', tax_code:'V1', gl_account:'400100', cost_centre:'CC1010', profit_centre:'PC1000', business_entity:'BE001', rental_object:'RO001', settlement_unit:'SU001', payment_terms:'ZN30', reference:'PO-88001', header_text:'Consulting services Mar 2026', assignment:'PROJECT-ALPHA', item_text:'Professional services' },
+  { invoice_ref:'INV-2026-0002', vendor_id:'V1002', customer_id:'C9999', company_code:'1000', invoice_date:'2026-03-16', posting_date:'2026-03-16', baseline_date:'2026-03-16', currency:'EUR', gross_amount:'8200.50', tax_amount:'820.05', tax_code:'V1', gl_account:'400200', cost_centre:'CC_INVALID', profit_centre:'PC2000', business_entity:'BE_BAD', rental_object:'RO002', settlement_unit:'SU002', payment_terms:'ZN30', reference:'PO-88002', header_text:'Hardware procurement', assignment:'PROJECT-BETA', item_text:'Server equipment' },
+  { invoice_ref:'INV-2026-0003', vendor_id:'V_UNKNOWN', customer_id:'C2002', company_code:'2000', invoice_date:'2026-03-17', posting_date:'2026-03-17', baseline_date:'2026-03-17', currency:'GBP', gross_amount:'3400.00', tax_amount:'680.00', tax_code:'V2', gl_account:'999999', cost_centre:'CC1020', profit_centre:'', business_entity:'BE002', rental_object:'', settlement_unit:'SU003', payment_terms:'ZN60', reference:'PO-88003', header_text:'Facilities maintenance', assignment:'PROJECT-GAMMA', item_text:'Building repairs' },
+  { invoice_ref:'INV-2026-0004', vendor_id:'V1001', customer_id:'C2001', company_code:'1000', invoice_date:'2026-03-18', posting_date:'2026-03-18', baseline_date:'2026-03-18', currency:'USD', gross_amount:'45000.00', tax_amount:'4500.00', tax_code:'V1', gl_account:'400100', cost_centre:'CC1010', profit_centre:'PC1000', business_entity:'BE001', rental_object:'RO001', settlement_unit:'SU001', payment_terms:'ZN30', reference:'PO-88004', header_text:'Software licences Q2', assignment:'PROJECT-ALPHA', item_text:'Annual licence renewal' },
 ];
 const SAMPLE_MD = {
   customers: new Set(['C2001','C2002','C2003']),
   vendors: new Set(['V1001','V1002','V1003']),
-  cost_centres: new Set(['CC1010','CC1020','CC1030']),
   gl_accounts: new Set(['400100','400200','400300','500100']),
+  profit_centres: new Set(['PC1000','PC2000','PC3000']),
+  cost_centres: new Set(['CC1010','CC1020','CC1030']),
   company_codes: new Set(['1000','2000']),
+  business_entities: new Set(['BE001','BE002','BE003']),
+  rental_objects: new Set(['RO001','RO002','RO003']),
+  settlement_units: new Set(['SU001','SU002','SU003']),
 };
+
+// Rich sample rows with dependency columns (used by sampleMdToRows)
+const SAMPLE_MD_ROWS = {
+  customers: [
+    { customer_id:'C2001', customer_name:'Acme Corp', country:'US', status:'Active' },
+    { customer_id:'C2002', customer_name:'Global Services Ltd', country:'GB', status:'Active' },
+    { customer_id:'C2003', customer_name:'Euro Logistics GmbH', country:'DE', status:'Active' },
+  ],
+  vendors: [
+    { vendor_id:'V1001', vendor_name:'Tech Solutions Inc', country:'US', status:'Active' },
+    { vendor_id:'V1002', vendor_name:'Office Supplies Ltd', country:'GB', status:'Active' },
+    { vendor_id:'V1003', vendor_name:'Maintenance Co', country:'DE', status:'Active' },
+  ],
+  gl_accounts: [
+    { gl_account:'400100', account_name:'Consulting Expenses', account_type:'P&L', account_group:'Expenses', status:'Active' },
+    { gl_account:'400200', account_name:'Hardware Expenses', account_type:'P&L', account_group:'Expenses', status:'Active' },
+    { gl_account:'400300', account_name:'Travel Expenses', account_type:'P&L', account_group:'Expenses', status:'Active' },
+    { gl_account:'500100', account_name:'Revenue - Services', account_type:'P&L', account_group:'Revenue', status:'Active' },
+  ],
+  profit_centres: [
+    { profit_centre_id:'PC1000', description:'Division A - Consulting', company_code:'1000', controlling_area:'CA01', status:'Active' },
+    { profit_centre_id:'PC2000', description:'Division B - Technology', company_code:'1000', controlling_area:'CA01', status:'Active' },
+    { profit_centre_id:'PC3000', description:'Division C - Operations', company_code:'2000', controlling_area:'CA01', status:'Active' },
+  ],
+  cost_centres: [
+    { cost_centre_id:'CC1010', description:'Admin - Head Office', company_code:'1000', profit_centre:'PC1000', controlling_area:'CA01', status:'Active' },
+    { cost_centre_id:'CC1020', description:'IT Infrastructure', company_code:'1000', profit_centre:'PC2000', controlling_area:'CA01', status:'Active' },
+    { cost_centre_id:'CC1030', description:'Facilities Management', company_code:'2000', profit_centre:'PC3000', controlling_area:'CA01', status:'Active' },
+  ],
+  company_codes: [
+    { company_code:'1000', company_name:'Global HQ', currency:'USD', country:'US' },
+    { company_code:'2000', company_name:'European Operations', currency:'EUR', country:'DE' },
+  ],
+  business_entities: [
+    { business_entity_id:'BE001', description:'Commercial Property A', company_code:'1000', profit_centre:'PC1000', cost_centre:'CC1010', gl_account:'400100', status:'Active' },
+    { business_entity_id:'BE002', description:'Residential Complex B', company_code:'2000', profit_centre:'PC3000', cost_centre:'CC1030', gl_account:'400300', status:'Active' },
+    { business_entity_id:'BE003', description:'Industrial Park C', company_code:'1000', profit_centre:'PC2000', cost_centre:'CC1020', gl_account:'400200', status:'Active' },
+  ],
+  rental_objects: [
+    { rental_object_id:'RO001', description:'Office Suite 101', business_entity:'BE001', company_code:'1000', profit_centre:'PC1000', cost_centre:'CC1010', gl_account:'400100', status:'Active' },
+    { rental_object_id:'RO002', description:'Warehouse Unit 5', business_entity:'BE003', company_code:'1000', profit_centre:'PC2000', cost_centre:'CC1020', gl_account:'400200', status:'Active' },
+    { rental_object_id:'RO003', description:'Retail Space Ground', business_entity:'BE002', company_code:'2000', profit_centre:'PC3000', cost_centre:'CC1030', gl_account:'400300', status:'Active' },
+  ],
+  settlement_units: [
+    { settlement_unit_id:'SU001', description:'Service Charge Pool A', business_entity:'BE001', rental_object:'RO001', company_code:'1000', profit_centre:'PC1000', cost_centre:'CC1010', gl_account:'400100', status:'Active' },
+    { settlement_unit_id:'SU002', description:'Utility Pool B', business_entity:'BE003', rental_object:'RO002', company_code:'1000', profit_centre:'PC2000', cost_centre:'CC1020', gl_account:'400200', status:'Active' },
+    { settlement_unit_id:'SU003', description:'Maintenance Pool C', business_entity:'BE002', rental_object:'RO003', company_code:'2000', profit_centre:'PC3000', cost_centre:'CC1030', gl_account:'400300', status:'Active' },
+  ],
+};
+
+// ── Hierarchy Data ──
+const SAMPLE_HIERARCHIES = {
+  gl_accounts: {
+    label: 'Chart of Accounts',
+    nodes: [
+      { id: 'ROOT', name: 'Chart of Accounts', parent: null },
+      { id: 'GRP_EXP', name: 'Expenses', parent: 'ROOT' },
+      { id: 'GRP_REV', name: 'Revenue', parent: 'ROOT' },
+      { id: '400100', name: '400100 - Consulting Expenses', parent: 'GRP_EXP' },
+      { id: '400200', name: '400200 - Hardware Expenses', parent: 'GRP_EXP' },
+      { id: '400300', name: '400300 - Travel Expenses', parent: 'GRP_EXP' },
+      { id: '500100', name: '500100 - Revenue Services', parent: 'GRP_REV' },
+    ]
+  },
+  profit_centres: {
+    label: 'Profit Centre Hierarchy',
+    nodes: [
+      { id: 'ROOT', name: 'Enterprise', parent: null },
+      { id: 'DIV_A', name: 'Division A - Consulting', parent: 'ROOT' },
+      { id: 'DIV_B', name: 'Division B - Technology', parent: 'ROOT' },
+      { id: 'DIV_C', name: 'Division C - Operations', parent: 'ROOT' },
+      { id: 'PC1000', name: 'PC1000 - Consulting', parent: 'DIV_A' },
+      { id: 'PC2000', name: 'PC2000 - Technology', parent: 'DIV_B' },
+      { id: 'PC3000', name: 'PC3000 - Operations', parent: 'DIV_C' },
+    ]
+  },
+  cost_centres: {
+    label: 'Cost Centre Hierarchy',
+    nodes: [
+      { id: 'ROOT', name: 'Controlling Area CA01', parent: null },
+      { id: 'GRP_ADMIN', name: 'Administration', parent: 'ROOT' },
+      { id: 'GRP_OPS', name: 'Operations', parent: 'ROOT' },
+      { id: 'CC1010', name: 'CC1010 - Admin Head Office', parent: 'GRP_ADMIN' },
+      { id: 'CC1020', name: 'CC1020 - IT Infrastructure', parent: 'GRP_OPS' },
+      { id: 'CC1030', name: 'CC1030 - Facilities Mgmt', parent: 'GRP_OPS' },
+    ]
+  }
+};
+
+// Mutable hierarchy store per env
+const hierarchies = {};
+ENVS.forEach(e => {
+  hierarchies[e] = JSON.parse(JSON.stringify(SAMPLE_HIERARCHIES));
+});
 
 // ── Resolution map ──
 const RESOLUTIONS = {
@@ -1755,6 +2042,24 @@ const RESOLUTIONS = {
     resolution: 'Create the profit centre via transaction KE51 or derive it from the cost-centre master (field PRCTR in KS02). If profit-centre accounting is mandatory, every line item must carry a valid profit centre. Update the legacy mapping table and re-run this migration.',
     sap_transaction: 'KE51 / KS02',
     responsible_team: 'Master Data \u2013 Controlling / Profit Centre Owners',
+  },
+  business_entity: {
+    message: 'Business entity not found in RE-FX master data.',
+    resolution: 'Create the business entity via transaction RECN (RE Navigator) or REBDBE. Ensure the entity is linked to the correct company code, profit centre, cost centre, and GL account. Verify validity dates cover the posting period.',
+    sap_transaction: 'RECN / REBDBE',
+    responsible_team: 'Master Data \u2013 Real Estate / RE-FX',
+  },
+  rental_object: {
+    message: 'Rental object not found in RE-FX master data.',
+    resolution: 'Create the rental object via transaction RECN (RE Navigator) or REBDRO. The rental object must be assigned to a valid business entity with correct area measurements, usage type, and object currency. Verify links to profit centre and cost centre.',
+    sap_transaction: 'RECN / REBDRO',
+    responsible_team: 'Master Data \u2013 Real Estate / RE-FX',
+  },
+  settlement_unit: {
+    message: 'Settlement unit not found in RE-FX master data.',
+    resolution: 'Create the settlement unit via transaction RECN (RE Navigator) or REBDSU. The settlement unit must reference a valid business entity and rental object with correct settlement rules, GL account assignment, and apportionment keys.',
+    sap_transaction: 'RECN / REBDSU',
+    responsible_team: 'Master Data \u2013 Real Estate / RE-FX',
   },
 };
 
@@ -1863,6 +2168,7 @@ function handleFile(input, key) {
 }
 
 function sampleMdToRows(type) {
+  if (SAMPLE_MD_ROWS[type]) return JSON.parse(JSON.stringify(SAMPLE_MD_ROWS[type]));
   const key = MD_TYPES[type].key;
   return Array.from(SAMPLE_MD[type]).map(v => { const r = {}; r[key] = v; return r; });
 }
@@ -1870,7 +2176,7 @@ function sampleMdToRows(type) {
 function loadSampleData() {
   const ts = new Date().toISOString();
   envFiles[activeEnv]['ap'] = { name: 'sample', rows: SAMPLE_AP, version: getNextFileVersion(activeEnv, 'ap'), loadedAt: ts };
-  ['customers','vendors','cost_centres','gl_accounts','company_codes'].forEach(k => {
+  Object.keys(MD_TYPES).forEach(k => {
     envFiles[activeEnv][k] = { name: 'sample', rows: sampleMdToRows(k), version: getNextFileVersion(activeEnv, k), loadedAt: ts };
     delete mdEdits[activeEnv][k];
   });
@@ -1883,11 +2189,19 @@ function loadSampleData() {
 
 // ── Master Data Explorer ──
 const MD_TYPES = {
-  customers:     { key: 'customer_id',    label: 'Customer ID',    columns: ['customer_id', 'customer_name', 'country', 'status'] },
-  vendors:       { key: 'vendor_id',      label: 'Vendor ID',      columns: ['vendor_id', 'vendor_name', 'country', 'status'] },
-  cost_centres:  { key: 'cost_centre_id', label: 'Cost Centre ID', columns: ['cost_centre_id', 'description', 'company_code', 'status'] },
-  gl_accounts:   { key: 'gl_account',     label: 'GL Account',     columns: ['gl_account', 'account_name', 'account_type', 'status'] },
-  company_codes: { key: 'company_code',   label: 'Company Code',   columns: ['company_code', 'company_name', 'currency', 'country'] },
+  customers:          { key: 'customer_id',         label: 'Customer ID',         columns: ['customer_id', 'customer_name', 'country', 'status'] },
+  vendors:            { key: 'vendor_id',           label: 'Vendor ID',           columns: ['vendor_id', 'vendor_name', 'country', 'status'] },
+  gl_accounts:        { key: 'gl_account',          label: 'GL Account',          columns: ['gl_account', 'account_name', 'account_type', 'account_group', 'status'], hasHierarchy: true },
+  profit_centres:     { key: 'profit_centre_id',    label: 'Profit Centre',       columns: ['profit_centre_id', 'description', 'company_code', 'controlling_area', 'status'], hasHierarchy: true },
+  cost_centres:       { key: 'cost_centre_id',      label: 'Cost Centre',         columns: ['cost_centre_id', 'description', 'company_code', 'profit_centre', 'controlling_area', 'status'], hasHierarchy: true,
+                        dependencies: { company_code: 'company_codes', profit_centre: 'profit_centres' } },
+  company_codes:      { key: 'company_code',        label: 'Company Code',        columns: ['company_code', 'company_name', 'currency', 'country'] },
+  business_entities:  { key: 'business_entity_id',  label: 'Business Entity',     columns: ['business_entity_id', 'description', 'company_code', 'profit_centre', 'cost_centre', 'gl_account', 'status'],
+                        dependencies: { company_code: 'company_codes', profit_centre: 'profit_centres', cost_centre: 'cost_centres', gl_account: 'gl_accounts' } },
+  rental_objects:     { key: 'rental_object_id',    label: 'Rental Object',       columns: ['rental_object_id', 'description', 'business_entity', 'company_code', 'profit_centre', 'cost_centre', 'gl_account', 'status'],
+                        dependencies: { business_entity: 'business_entities', company_code: 'company_codes', profit_centre: 'profit_centres', cost_centre: 'cost_centres', gl_account: 'gl_accounts' } },
+  settlement_units:   { key: 'settlement_unit_id',  label: 'Settlement Unit',     columns: ['settlement_unit_id', 'description', 'business_entity', 'rental_object', 'company_code', 'profit_centre', 'cost_centre', 'gl_account', 'status'],
+                        dependencies: { business_entity: 'business_entities', rental_object: 'rental_objects', company_code: 'company_codes', profit_centre: 'profit_centres', cost_centre: 'cost_centres', gl_account: 'gl_accounts' } },
 };
 let activeMdTab = 'customers';
 let mdPage = 0;
@@ -1926,11 +2240,12 @@ function switchMdTab(tab) {
   mdSelected = new Set();
   document.querySelectorAll('#md-tabs button').forEach(b => b.classList.remove('active'));
   const buttons = document.querySelectorAll('#md-tabs button');
-  const tabOrder = ['customers', 'vendors', 'cost_centres', 'gl_accounts', 'company_codes'];
+  const tabOrder = Object.keys(MD_TYPES);
   const idx = tabOrder.indexOf(tab);
   if (idx >= 0 && buttons[idx]) buttons[idx].classList.add('active');
   document.getElementById('md-search').value = '';
   renderMdTable();
+  if (typeof renderDepMap === 'function') renderDepMap();
 }
 
 function getMdColumns() {
@@ -2223,11 +2538,11 @@ function formatLSMW(row) {
   return [row.invoice_ref, row.company_code, row.vendor_id, row.customer_id,
     toSAPDate(row.invoice_date||''), toSAPDate(row.posting_date||''), toSAPDate(row.baseline_date||''),
     row.currency, row.gross_amount, row.tax_amount, row.tax_code, row.gl_account,
-    row.cost_centre, row.profit_centre, row.payment_terms, row.reference,
-    row.header_text, row.assignment, row.item_text].join('|');
+    row.profit_centre, row.cost_centre, row.business_entity, row.rental_object, row.settlement_unit,
+    row.payment_terms, row.reference, row.header_text, row.assignment, row.item_text].join('|');
 }
 
-const LSMW_HEADER = 'INVOICE_REF|BUKRS|LIFNR|KUNNR|BLDAT|BUDAT|ZFBDT|WAERS|WRBTR|WMWST|MWSKZ|HKONT|KOSTL|PRCTR|ZTERM|XBLNR|BKTXT|ZUONR|SGTXT';
+const LSMW_HEADER = 'INVOICE_REF|BUKRS|LIFNR|KUNNR|BLDAT|BUDAT|ZFBDT|WAERS|WRBTR|WMWST|MWSKZ|HKONT|PRCTR|KOSTL|SWENR|SMENR|SNKSL|ZTERM|XBLNR|BKTXT|ZUONR|SGTXT';
 
 // ── Schema Definition ──
 const DEFAULT_SCHEMA = [
@@ -2242,10 +2557,13 @@ const DEFAULT_SCHEMA = [
   { field: 'gross_amount',  sapField: 'WRBTR',        type: 'amount', required: true,  masterData: '',              severity: 'ERROR' },
   { field: 'tax_amount',    sapField: 'WMWST',        type: 'amount', required: false, masterData: '',              severity: 'WARNING' },
   { field: 'tax_code',      sapField: 'MWSKZ',        type: 'text',   required: false, masterData: '',              severity: '' },
-  { field: 'gl_account',    sapField: 'HKONT',        type: 'text',   required: true,  masterData: 'gl_accounts',   severity: 'CRITICAL' },
-  { field: 'cost_centre',   sapField: 'KOSTL',        type: 'text',   required: true,  masterData: 'cost_centres',  severity: 'ERROR' },
-  { field: 'profit_centre', sapField: 'PRCTR',        type: 'text',   required: false, masterData: '',              severity: 'WARNING' },
-  { field: 'payment_terms', sapField: 'ZTERM',        type: 'text',   required: false, masterData: '',              severity: '' },
+  { field: 'gl_account',       sapField: 'HKONT',        type: 'text',   required: true,  masterData: 'gl_accounts',        severity: 'CRITICAL' },
+  { field: 'profit_centre',   sapField: 'PRCTR',        type: 'text',   required: true,  masterData: 'profit_centres',     severity: 'ERROR' },
+  { field: 'cost_centre',     sapField: 'KOSTL',        type: 'text',   required: true,  masterData: 'cost_centres',       severity: 'ERROR' },
+  { field: 'business_entity', sapField: 'SWENR',        type: 'text',   required: false, masterData: 'business_entities',  severity: 'WARNING' },
+  { field: 'rental_object',   sapField: 'SMENR',        type: 'text',   required: false, masterData: 'rental_objects',     severity: 'WARNING' },
+  { field: 'settlement_unit', sapField: 'SNKSL',        type: 'text',   required: false, masterData: 'settlement_units',   severity: 'WARNING' },
+  { field: 'payment_terms',   sapField: 'ZTERM',        type: 'text',   required: false, masterData: '',                   severity: '' },
   { field: 'reference',     sapField: 'XBLNR',        type: 'text',   required: false, masterData: '',              severity: '' },
   { field: 'header_text',   sapField: 'BKTXT',        type: 'text',   required: false, masterData: '',              severity: '' },
   { field: 'assignment',    sapField: 'ZUONR',        type: 'text',   required: false, masterData: '',              severity: '' },
@@ -2268,10 +2586,13 @@ const DEFAULT_SOURCE_SCHEMA = [
   { field: 'gross_amount',  header: 'gross_amount',  type: 'amount', isKey: false, nullable: false, sample: '15000.00' },
   { field: 'tax_amount',    header: 'tax_amount',    type: 'amount', isKey: false, nullable: true,  sample: '1500.00' },
   { field: 'tax_code',      header: 'tax_code',      type: 'text',   isKey: false, nullable: true,  sample: 'V1' },
-  { field: 'gl_account',    header: 'gl_account',    type: 'text',   isKey: false, nullable: false, sample: '400100' },
-  { field: 'cost_centre',   header: 'cost_centre',   type: 'text',   isKey: false, nullable: false, sample: 'CC1010' },
-  { field: 'profit_centre', header: 'profit_centre', type: 'text',   isKey: false, nullable: true,  sample: 'PC2000' },
-  { field: 'payment_terms', header: 'payment_terms', type: 'text',   isKey: false, nullable: true,  sample: 'ZN30' },
+  { field: 'gl_account',       header: 'gl_account',       type: 'text',   isKey: false, nullable: false, sample: '400100' },
+  { field: 'profit_centre',   header: 'profit_centre',   type: 'text',   isKey: false, nullable: false, sample: 'PC1000' },
+  { field: 'cost_centre',     header: 'cost_centre',     type: 'text',   isKey: false, nullable: false, sample: 'CC1010' },
+  { field: 'business_entity', header: 'business_entity', type: 'text',   isKey: false, nullable: true,  sample: 'BE001' },
+  { field: 'rental_object',   header: 'rental_object',   type: 'text',   isKey: false, nullable: true,  sample: 'RO001' },
+  { field: 'settlement_unit', header: 'settlement_unit', type: 'text',   isKey: false, nullable: true,  sample: 'SU001' },
+  { field: 'payment_terms',   header: 'payment_terms',   type: 'text',   isKey: false, nullable: true,  sample: 'ZN30' },
   { field: 'reference',     header: 'reference',     type: 'text',   isKey: false, nullable: true,  sample: 'PO-88001' },
   { field: 'header_text',   header: 'header_text',   type: 'text',   isKey: false, nullable: true,  sample: 'Consulting services' },
   { field: 'assignment',    header: 'assignment',     type: 'text',   isKey: false, nullable: true,  sample: 'PROJECT-ALPHA' },
@@ -3142,16 +3463,18 @@ document.addEventListener('DOMContentLoaded', function() {
   updateConfigVersionDisplay();
   updateEnvSummary();
   renderMdTable();
+  renderDepMap();
+  initHierTabs();
 });
 
 // ── Dynamic Validation (uses schema) ──
-function validateDynamic(row, md) {
+function validateDynamic(row, md, mdRowResolver) {
   const issues = [];
   const inv = row.invoice_ref || 'UNKNOWN';
   const cc = row.company_code || '';
 
   schema.forEach(s => {
-    if (s.field === 'invoice_ref') return; // don't validate the key field itself
+    if (s.field === 'invoice_ref') return;
     const value = (row[s.field] || '').trim();
     const meta = RESOLUTIONS[s.field] || {};
 
@@ -3212,6 +3535,58 @@ function validateDynamic(row, md) {
     }
   });
 
+  // ── Dependency validation ──
+  // For master data types with dependencies, cross-check that the row's referenced
+  // values match the dependency relationships defined in the master data records.
+  if (mdRowResolver) {
+    // Map field names to their MD_TYPES keys for lookup
+    const fieldToMdType = {};
+    schema.forEach(s => { if (s.masterData) fieldToMdType[s.field] = s.masterData; });
+
+    // Check each master data type that has dependencies
+    schema.forEach(s => {
+      if (!s.masterData) return;
+      const mdTypeInfo = MD_TYPES[s.masterData];
+      if (!mdTypeInfo || !mdTypeInfo.dependencies) return;
+
+      const value = (row[s.field] || '').trim();
+      if (!value) return; // skip if the field itself is empty
+      if (!md[s.masterData] || !md[s.masterData].has(value)) return; // skip if value doesn't exist (already caught above)
+
+      // Find the master data row for this value
+      const mdRows = mdRowResolver(s.masterData);
+      const mdRow = mdRows.find(r => (r[mdTypeInfo.key] || '').trim() === value);
+      if (!mdRow) return;
+
+      // Check each dependency column
+      Object.entries(mdTypeInfo.dependencies).forEach(([depCol, depMdType]) => {
+        const depMdInfo = MD_TYPES[depMdType];
+        if (!depMdInfo) return;
+
+        const mdDepValue = (mdRow[depCol] || '').trim();
+        if (!mdDepValue) return; // no dependency value stored in master data
+
+        // Find the matching field in the transaction row
+        // e.g. cost_centre master has profit_centre dep → check row.profit_centre
+        const rowValue = (row[depCol] || '').trim();
+        if (!rowValue) return;
+
+        if (mdDepValue !== rowValue) {
+          issues.push({
+            severity: 'WARNING',
+            invoice_ref: inv,
+            field_name: s.field,
+            supplied_value: value,
+            message: s.field.replace(/_/g, ' ') + " '" + value + "' expects " + depCol.replace(/_/g, ' ') + " '" + mdDepValue + "' but row has '" + rowValue + "'.",
+            resolution: 'Verify the ' + depCol.replace(/_/g, ' ') + ' assignment. The master data record for ' + s.field.replace(/_/g, ' ') + " '" + value + "' is linked to " + depCol.replace(/_/g, ' ') + " '" + mdDepValue + "'. Either update the transaction data or the master data relationship.",
+            sap_transaction: (RESOLUTIONS[s.field] || {}).sap_transaction || '',
+            responsible_team: (RESOLUTIONS[s.field] || {}).responsible_team || 'Data Migration Team',
+          });
+        }
+      });
+    });
+  }
+
   return issues;
 }
 
@@ -3243,15 +3618,20 @@ function runMigration() {
     const f = getFiles()[type];
     if (f && f.rows && f.rows.length > 0)
       return loadSetFromCSV(f.rows, key);
-    return SAMPLE_MD[type];
+    return SAMPLE_MD[type] || new Set();
   }
-  const md = {
-    customers: resolveMd('customers', 'customer_id'),
-    vendors: resolveMd('vendors', 'vendor_id'),
-    cost_centres: resolveMd('cost_centres', 'cost_centre_id'),
-    gl_accounts: resolveMd('gl_accounts', 'gl_account'),
-    company_codes: resolveMd('company_codes', 'company_code'),
-  };
+  // Resolve full rows for dependency checks
+  function resolveMdRows(type) {
+    if (mdEdits[activeEnv][type] && mdEdits[activeEnv][type].length > 0)
+      return mdEdits[activeEnv][type];
+    const f = getFiles()[type];
+    if (f && f.rows && f.rows.length > 0) return f.rows;
+    return SAMPLE_MD_ROWS[type] || [];
+  }
+  const md = {};
+  Object.keys(MD_TYPES).forEach(t => {
+    md[t] = resolveMd(t, MD_TYPES[t].key);
+  });
 
   // Always apply mappings pipeline (handles direct copy when no transforms exist)
   const targetRows = apRows.map(row => { const t = transformRow(row); t._sourceRow = row; return t; });
@@ -3262,7 +3642,7 @@ function runMigration() {
   const excludedByDate = [];
 
   targetRows.forEach(row => {
-    const issues = validateDynamic(row, md);
+    const issues = validateDynamic(row, md, resolveMdRows);
     // Attach the full transformed row to each issue
     issues.forEach(iss => { iss._row = row; });
     allIssues.push(...issues);
@@ -3549,6 +3929,276 @@ function getWorstSeverity(issues) {
   let worst = 'INFO';
   issues.forEach(i => { if (sevRank(i.severity) > sevRank(worst)) worst = i.severity; });
   return worst;
+}
+
+// ── Hierarchy Editor ──
+let activeHierTab = '';
+let hierSelectedNode = null;
+let hierCollapsed = {};
+
+function initHierTabs() {
+  const tabs = document.getElementById('hier-tabs');
+  const hierTypes = Object.entries(MD_TYPES).filter(([k, v]) => v.hasHierarchy);
+  if (hierTypes.length === 0) {
+    document.getElementById('hier-panel').style.display = 'none';
+    return;
+  }
+  tabs.innerHTML = hierTypes.map(([k, v], i) =>
+    '<button' + (i === 0 ? ' class="active"' : '') + ' onclick="switchHierTab(\'' + k + '\')">' + v.label.replace('ID', 'Hierarchy') + '</button>'
+  ).join('');
+  activeHierTab = hierTypes[0][0];
+  renderHierarchy();
+}
+
+function switchHierTab(tab) {
+  activeHierTab = tab;
+  hierSelectedNode = null;
+  document.getElementById('hier-add-form').style.display = 'none';
+  const btns = document.querySelectorAll('#hier-tabs button');
+  btns.forEach(b => b.classList.remove('active'));
+  const hierTypes = Object.entries(MD_TYPES).filter(([k, v]) => v.hasHierarchy);
+  const idx = hierTypes.findIndex(([k]) => k === tab);
+  if (idx >= 0 && btns[idx]) btns[idx].classList.add('active');
+  renderHierarchy();
+}
+
+function getHierData() {
+  return hierarchies[activeEnv][activeHierTab];
+}
+
+function renderHierarchy() {
+  const data = getHierData();
+  if (!data) {
+    document.getElementById('hier-tree').innerHTML = '<p style="color:var(--text-muted);font-size:0.82rem;">No hierarchy data for this type.</p>';
+    document.getElementById('hier-stats').innerHTML = '';
+    return;
+  }
+
+  const nodes = data.nodes;
+  // Build tree structure
+  const childMap = {};
+  const nodeMap = {};
+  nodes.forEach(n => {
+    nodeMap[n.id] = n;
+    if (!childMap[n.id]) childMap[n.id] = [];
+    if (n.parent !== null) {
+      if (!childMap[n.parent]) childMap[n.parent] = [];
+      childMap[n.parent].push(n.id);
+    }
+  });
+
+  // Find roots
+  const roots = nodes.filter(n => n.parent === null).map(n => n.id);
+
+  function renderNode(id, depth) {
+    const node = nodeMap[id];
+    if (!node) return '';
+    const children = childMap[id] || [];
+    const hasChildren = children.length > 0;
+    const collapsed = hierCollapsed[activeHierTab + ':' + id];
+    const isSelected = hierSelectedNode === id;
+    const isGroup = !MD_TYPES[activeHierTab] || !(getHierData().nodes.find(n => n.id === id && !childMap[id]?.length === 0));
+    const isLeaf = children.length === 0;
+    const icon = isLeaf ? '&#9679;' : (collapsed ? '&#128193;' : '&#128194;');
+
+    let html = '<div class="hier-node">';
+    html += '<div class="hier-node-row' + (isSelected ? ' selected' : '') + '" onclick="hierSelect(\'' + esc(id) + '\')" ondblclick="hierToggleCollapse(\'' + esc(id) + '\')">';
+    html += '<span class="hier-toggle" onclick="event.stopPropagation();hierToggleCollapse(\'' + esc(id) + '\')">' +
+      (hasChildren ? (collapsed ? '&#9654;' : '&#9660;') : '&nbsp;') + '</span>';
+    html += '<span class="hier-icon">' + icon + '</span>';
+    html += '<span class="hier-label">' + esc(node.name) + '</span>';
+    html += '<span class="hier-id">' + esc(id) + '</span>';
+    html += '<span class="hier-actions">';
+    if (node.parent !== null) {
+      html += '<button onclick="event.stopPropagation();hierMoveUp(\'' + esc(id) + '\')" title="Move up">&#x2191;</button>';
+      html += '<button onclick="event.stopPropagation();hierMoveDown(\'' + esc(id) + '\')" title="Move down">&#x2193;</button>';
+      html += '<button class="danger" onclick="event.stopPropagation();hierDeleteNode(\'' + esc(id) + '\')" title="Delete">&#x2715;</button>';
+    }
+    html += '</span>';
+    html += '</div>';
+
+    if (hasChildren) {
+      html += '<div class="hier-children' + (collapsed ? ' collapsed' : '') + '">';
+      children.forEach(cid => { html += renderNode(cid, depth + 1); });
+      html += '</div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  const treeEl = document.getElementById('hier-tree');
+  treeEl.innerHTML = roots.map(r => renderNode(r, 0)).join('');
+
+  // Stats
+  const totalNodes = nodes.length;
+  const groups = nodes.filter(n => (childMap[n.id] || []).length > 0).length;
+  const leaves = totalNodes - groups;
+  const maxDepth = (function calcDepth(id) {
+    const ch = childMap[id] || [];
+    if (ch.length === 0) return 0;
+    return 1 + Math.max(...ch.map(calcDepth));
+  })(roots[0] || 'ROOT');
+
+  document.getElementById('hier-stats').innerHTML =
+    '<span>Nodes: ' + totalNodes + '</span>' +
+    '<span>Groups: ' + groups + '</span>' +
+    '<span>Leaves: ' + leaves + '</span>' +
+    '<span>Depth: ' + maxDepth + '</span>';
+}
+
+function hierSelect(id) {
+  hierSelectedNode = (hierSelectedNode === id) ? null : id;
+  renderHierarchy();
+}
+
+function hierToggleCollapse(id) {
+  const key = activeHierTab + ':' + id;
+  hierCollapsed[key] = !hierCollapsed[key];
+  renderHierarchy();
+}
+
+function hierCollapseAll() {
+  const data = getHierData();
+  if (!data) return;
+  data.nodes.forEach(n => { hierCollapsed[activeHierTab + ':' + n.id] = true; });
+  renderHierarchy();
+}
+
+function hierExpandAll() {
+  const data = getHierData();
+  if (!data) return;
+  data.nodes.forEach(n => { delete hierCollapsed[activeHierTab + ':' + n.id]; });
+  renderHierarchy();
+}
+
+function hierAddNode() {
+  const parentId = hierSelectedNode || 'ROOT';
+  const form = document.getElementById('hier-add-form');
+  form.style.display = 'block';
+  form.innerHTML =
+    '<div class="hier-add-dialog">' +
+    '<label style="font-size:0.78rem;font-weight:600;">Add leaf under ' + esc(parentId) + ':</label>' +
+    '<input type="text" id="hier-new-id" placeholder="Node ID (e.g. 400400)" style="width:120px;">' +
+    '<input type="text" id="hier-new-name" placeholder="Node name" style="width:200px;">' +
+    '<button class="primary" onclick="hierConfirmAdd(\'' + esc(parentId) + '\',false)" style="background:var(--primary);color:#fff;border-color:var(--primary);">Add</button>' +
+    '<button onclick="document.getElementById(\'hier-add-form\').style.display=\'none\'">Cancel</button>' +
+    '</div>';
+  document.getElementById('hier-new-id').focus();
+}
+
+function hierAddGroup() {
+  const parentId = hierSelectedNode || 'ROOT';
+  const form = document.getElementById('hier-add-form');
+  form.style.display = 'block';
+  form.innerHTML =
+    '<div class="hier-add-dialog">' +
+    '<label style="font-size:0.78rem;font-weight:600;">Add group under ' + esc(parentId) + ':</label>' +
+    '<input type="text" id="hier-new-id" placeholder="Group ID (e.g. GRP_NEW)" style="width:120px;">' +
+    '<input type="text" id="hier-new-name" placeholder="Group name" style="width:200px;">' +
+    '<button class="primary" onclick="hierConfirmAdd(\'' + esc(parentId) + '\',true)" style="background:var(--primary);color:#fff;border-color:var(--primary);">Add</button>' +
+    '<button onclick="document.getElementById(\'hier-add-form\').style.display=\'none\'">Cancel</button>' +
+    '</div>';
+  document.getElementById('hier-new-id').focus();
+}
+
+function hierConfirmAdd(parentId, isGroup) {
+  const id = (document.getElementById('hier-new-id').value || '').trim();
+  const name = (document.getElementById('hier-new-name').value || '').trim();
+  if (!id) { alert('Node ID is required.'); return; }
+  const data = getHierData();
+  if (data.nodes.some(n => n.id === id)) { alert('Node ID already exists.'); return; }
+  data.nodes.push({ id: id, name: name || id, parent: parentId });
+  document.getElementById('hier-add-form').style.display = 'none';
+  delete hierCollapsed[activeHierTab + ':' + parentId]; // expand parent
+  hierSelectedNode = id;
+  renderHierarchy();
+}
+
+function hierDeleteNode(id) {
+  const data = getHierData();
+  // Collect all descendant IDs
+  function getDescendants(nodeId) {
+    const desc = [];
+    data.nodes.forEach(n => {
+      if (n.parent === nodeId) {
+        desc.push(n.id);
+        desc.push(...getDescendants(n.id));
+      }
+    });
+    return desc;
+  }
+  const toRemove = new Set([id, ...getDescendants(id)]);
+  if (toRemove.size > 1 && !confirm('Delete node "' + id + '" and its ' + (toRemove.size - 1) + ' descendants?')) return;
+  data.nodes = data.nodes.filter(n => !toRemove.has(n.id));
+  if (hierSelectedNode === id) hierSelectedNode = null;
+  renderHierarchy();
+}
+
+function hierDeleteSelected() {
+  if (!hierSelectedNode) { alert('Select a node first.'); return; }
+  const data = getHierData();
+  const node = data.nodes.find(n => n.id === hierSelectedNode);
+  if (node && node.parent === null) { alert('Cannot delete root node.'); return; }
+  hierDeleteNode(hierSelectedNode);
+}
+
+function hierMoveUp(id) {
+  const data = getHierData();
+  const node = data.nodes.find(n => n.id === id);
+  if (!node || node.parent === null) return;
+  const siblings = data.nodes.filter(n => n.parent === node.parent);
+  const idx = siblings.findIndex(n => n.id === id);
+  if (idx <= 0) return;
+  // Swap positions in the main array
+  const prevSibling = siblings[idx - 1];
+  const mainIdx = data.nodes.indexOf(node);
+  const prevMainIdx = data.nodes.indexOf(prevSibling);
+  data.nodes[mainIdx] = prevSibling;
+  data.nodes[prevMainIdx] = node;
+  renderHierarchy();
+}
+
+function hierMoveDown(id) {
+  const data = getHierData();
+  const node = data.nodes.find(n => n.id === id);
+  if (!node || node.parent === null) return;
+  const siblings = data.nodes.filter(n => n.parent === node.parent);
+  const idx = siblings.findIndex(n => n.id === id);
+  if (idx >= siblings.length - 1) return;
+  const nextSibling = siblings[idx + 1];
+  const mainIdx = data.nodes.indexOf(node);
+  const nextMainIdx = data.nodes.indexOf(nextSibling);
+  data.nodes[mainIdx] = nextSibling;
+  data.nodes[nextMainIdx] = node;
+  renderHierarchy();
+}
+
+function hierResetToSample() {
+  if (!confirm('Reset ' + activeHierTab + ' hierarchy to defaults?')) return;
+  hierarchies[activeEnv][activeHierTab] = JSON.parse(JSON.stringify(SAMPLE_HIERARCHIES[activeHierTab]));
+  hierSelectedNode = null;
+  renderHierarchy();
+}
+
+// ── Dependency Map Display ──
+function renderDepMap() {
+  const mdTypeInfo = MD_TYPES[activeMdTab];
+  const depEl = document.getElementById('md-dep-map');
+  if (!mdTypeInfo || !mdTypeInfo.dependencies) {
+    depEl.style.display = 'none';
+    return;
+  }
+  depEl.style.display = 'block';
+  const deps = mdTypeInfo.dependencies;
+  const html = Object.entries(deps).map(([col, mdType]) => {
+    const depInfo = MD_TYPES[mdType];
+    return '<span style="display:inline-flex;align-items:center;gap:4px;margin-right:12px;margin-bottom:4px;">' +
+      '<span style="font-weight:600;">' + esc(col.replace(/_/g, ' ')) + '</span>' +
+      '<span style="color:var(--text-muted);">&#x2192;</span>' +
+      '<span style="color:var(--primary);">' + esc(depInfo ? depInfo.label : mdType) + '</span>' +
+      '</span>';
+  }).join('');
+  document.getElementById('md-dep-map-content').innerHTML = html;
 }
 
 // ── Config Export / Import ──
