@@ -100,6 +100,178 @@ header p { color: var(--text-muted); font-size: 0.95rem; }
 }
 .card-collapsible > .card-header:hover { opacity: 0.85; }
 
+/* ── Master Data Explorer ── */
+.md-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 14px;
+  border-bottom: 2px solid var(--border);
+}
+.md-tabs button {
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.15s;
+  font-family: inherit;
+  position: relative;
+}
+.md-tabs button:hover { color: var(--text); }
+.md-tabs button.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+.md-tabs button .md-tab-count {
+  font-size: 0.68rem;
+  background: var(--bg);
+  color: var(--text-muted);
+  padding: 1px 6px;
+  border-radius: 8px;
+  margin-left: 4px;
+  font-weight: 500;
+}
+.md-tabs button.active .md-tab-count { background: #e8edff; color: var(--primary); }
+
+.md-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.md-toolbar .md-search {
+  flex: 1;
+  min-width: 180px;
+  padding: 6px 10px 6px 30px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  font-family: inherit;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E") 10px center no-repeat;
+}
+.md-toolbar .md-search:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(26,86,219,0.1); }
+.md-toolbar button {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  font-size: 0.82rem;
+  font-family: inherit;
+  cursor: pointer;
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.md-toolbar button:hover { border-color: var(--primary); color: var(--primary); }
+.md-toolbar button.md-btn-add { background: var(--primary); color: #fff; border-color: var(--primary); }
+.md-toolbar button.md-btn-add:hover { background: var(--primary-hover); }
+.md-toolbar button.md-btn-danger { color: var(--critical); }
+.md-toolbar button.md-btn-danger:hover { background: var(--critical-bg); border-color: var(--critical); }
+
+.md-stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 14px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+.md-stats .md-stat { display: flex; align-items: center; gap: 4px; }
+.md-stats .md-stat-val { font-weight: 700; color: var(--text); font-family: 'SF Mono', Monaco, Consolas, monospace; }
+
+.md-table-wrap {
+  max-height: 420px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.md-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+.md-table th {
+  text-align: left;
+  padding: 8px 10px;
+  background: var(--bg);
+  border-bottom: 2px solid var(--border);
+  font-weight: 600;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.md-table td {
+  padding: 5px 10px;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: middle;
+}
+.md-table tr:hover { background: #f9fafb; }
+.md-table tr.md-row-new { background: var(--success-bg); }
+.md-table tr.md-row-edited { background: #fffbeb; }
+.md-table td input {
+  padding: 3px 6px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  font-size: 0.82rem;
+  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  width: 100%;
+  background: transparent;
+}
+.md-table td input:focus { border-color: var(--primary); background: #fff; outline: none; }
+.md-table td input:hover:not(:focus) { border-color: var(--border); }
+.md-table .md-row-idx {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  width: 40px;
+  text-align: center;
+}
+.md-table .md-row-actions {
+  width: 30px;
+  text-align: center;
+}
+.md-table .md-row-actions button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  padding: 2px;
+}
+.md-table .md-row-actions button:hover { color: var(--critical); }
+.md-table .md-cb { width: 30px; text-align: center; }
+
+.md-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.md-pagination button {
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: #fff;
+  font-size: 0.78rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+.md-pagination button:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+.md-pagination button:disabled { opacity: 0.4; cursor: default; }
+
+.md-empty {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+.md-empty p { margin-bottom: 8px; }
+
 .upload-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -1178,6 +1350,38 @@ tbody tr:hover { background: #f9fafb; }
   </div><!-- /card-body -->
   </div><!-- /schema-workspace-card -->
 
+  <!-- Master Data Workspace -->
+  <div class="card card-collapsible" id="masterdata-workspace-card">
+    <div class="card-header" onclick="toggleCard('masterdata-workspace-card')">
+      <span class="card-arrow open" id="masterdata-workspace-card-arrow">&#9654;</span>
+      <h2>Master Data Workspace <span class="badge">Explorer &amp; Editor</span></h2>
+    </div>
+    <div class="card-body open" id="masterdata-workspace-card-body">
+
+    <div class="md-tabs" id="md-tabs">
+      <button class="active" onclick="switchMdTab('customers')">Customers <span class="md-tab-count" id="md-count-customers">0</span></button>
+      <button onclick="switchMdTab('vendors')">Vendors <span class="md-tab-count" id="md-count-vendors">0</span></button>
+      <button onclick="switchMdTab('cost_centres')">Cost Centres <span class="md-tab-count" id="md-count-cost_centres">0</span></button>
+      <button onclick="switchMdTab('gl_accounts')">GL Accounts <span class="md-tab-count" id="md-count-gl_accounts">0</span></button>
+      <button onclick="switchMdTab('company_codes')">Company Codes <span class="md-tab-count" id="md-count-company_codes">0</span></button>
+    </div>
+
+    <div class="md-toolbar" id="md-toolbar">
+      <input type="text" class="md-search" id="md-search" placeholder="Search records..." oninput="renderMdTable()">
+      <button class="md-btn-add" onclick="mdAddRow()">+ Add Record</button>
+      <button onclick="mdExportCsv()">Export CSV</button>
+      <button onclick="mdImportCsv()">Import CSV</button>
+      <input type="file" id="md-import-file" accept=".csv" style="display:none;" onchange="mdHandleImport(this)">
+      <button class="md-btn-danger" onclick="mdDeleteSelected()">Delete Selected</button>
+    </div>
+
+    <div class="md-stats" id="md-stats"></div>
+    <div id="md-table-container"></div>
+    <div class="md-pagination" id="md-pagination"></div>
+
+    </div><!-- /card-body -->
+  </div><!-- /masterdata-workspace-card -->
+
   <!-- Migration Workspace -->
   <div class="card card-collapsible" id="migration-workspace-card">
     <div class="card-header" onclick="toggleCard('migration-workspace-card')">
@@ -1446,6 +1650,7 @@ function switchEnv(env) {
   document.getElementById('env-badge').textContent = ENV_LABELS[env];
   refreshUploadUI();
   updateEnvSummary();
+  renderMdTable();
 }
 
 function refreshUploadUI() {
@@ -1508,6 +1713,8 @@ function handleFile(input, key) {
     refreshUploadUI();
     updateEnvSummary();
     if (key === 'ap') runDataQualityReview();
+    // Clear edits for this type so uploaded data shows fresh
+    if (key !== 'ap') { delete mdEdits[activeEnv][key]; renderMdTable(); }
   };
   reader.readAsText(file);
 }
@@ -1522,6 +1729,270 @@ function loadSampleData() {
   updateEnvSummary();
   runDataQualityReview();
   runMigration();
+}
+
+// ── Master Data Explorer ──
+const MD_TYPES = {
+  customers:     { key: 'customer_id',    label: 'Customer ID',    columns: ['customer_id', 'customer_name', 'country', 'status'] },
+  vendors:       { key: 'vendor_id',      label: 'Vendor ID',      columns: ['vendor_id', 'vendor_name', 'country', 'status'] },
+  cost_centres:  { key: 'cost_centre_id', label: 'Cost Centre ID', columns: ['cost_centre_id', 'description', 'company_code', 'status'] },
+  gl_accounts:   { key: 'gl_account',     label: 'GL Account',     columns: ['gl_account', 'account_name', 'account_type', 'status'] },
+  company_codes: { key: 'company_code',   label: 'Company Code',   columns: ['company_code', 'company_name', 'currency', 'country'] },
+};
+let activeMdTab = 'customers';
+let mdPage = 0;
+const MD_PAGE_SIZE = 50;
+let mdSelected = new Set();
+// Track edits per env: mdEdits[env][type] = array of row objects (overrides file data)
+const mdEdits = {};
+ENVS.forEach(e => { mdEdits[e] = {}; });
+
+function getMdRows(type) {
+  const t = type || activeMdTab;
+  // Edited data takes priority
+  if (mdEdits[activeEnv][t]) return mdEdits[activeEnv][t];
+  // Then uploaded file
+  const ef = getFiles();
+  if (ef[t] && ef[t].rows && ef[t].rows.length > 0) return ef[t].rows;
+  // Then sample data (convert Set to rows)
+  if (SAMPLE_MD[t]) {
+    const key = MD_TYPES[t].key;
+    return Array.from(SAMPLE_MD[t]).map(v => {
+      const row = {};
+      row[key] = v;
+      return row;
+    });
+  }
+  return [];
+}
+
+function setMdRows(rows) {
+  mdEdits[activeEnv][activeMdTab] = rows;
+}
+
+function switchMdTab(tab) {
+  activeMdTab = tab;
+  mdPage = 0;
+  mdSelected = new Set();
+  document.querySelectorAll('#md-tabs button').forEach(b => b.classList.remove('active'));
+  const buttons = document.querySelectorAll('#md-tabs button');
+  const tabOrder = ['customers', 'vendors', 'cost_centres', 'gl_accounts', 'company_codes'];
+  const idx = tabOrder.indexOf(tab);
+  if (idx >= 0 && buttons[idx]) buttons[idx].classList.add('active');
+  document.getElementById('md-search').value = '';
+  renderMdTable();
+}
+
+function getMdColumns() {
+  const rows = getMdRows();
+  const typeCols = MD_TYPES[activeMdTab].columns;
+  if (rows.length === 0) return typeCols;
+  // Merge actual columns from data with type defaults
+  const dataCols = Object.keys(rows[0]);
+  const merged = [...typeCols];
+  dataCols.forEach(c => { if (!merged.includes(c)) merged.push(c); });
+  return merged;
+}
+
+function getFilteredMdRows() {
+  const rows = getMdRows();
+  const q = (document.getElementById('md-search').value || '').trim().toLowerCase();
+  if (!q) return rows;
+  return rows.filter(r => Object.values(r).some(v => String(v || '').toLowerCase().includes(q)));
+}
+
+function renderMdTable() {
+  const allRows = getMdRows();
+  const filtered = getFilteredMdRows();
+  const cols = getMdColumns();
+  const totalPages = Math.max(1, Math.ceil(filtered.length / MD_PAGE_SIZE));
+  if (mdPage >= totalPages) mdPage = totalPages - 1;
+  const start = mdPage * MD_PAGE_SIZE;
+  const pageRows = filtered.slice(start, start + MD_PAGE_SIZE);
+
+  // Update tab counts
+  Object.keys(MD_TYPES).forEach(t => {
+    const el = document.getElementById('md-count-' + t);
+    if (el) el.textContent = getMdRows(t).length;
+  });
+
+  // Stats
+  const key = MD_TYPES[activeMdTab].key;
+  const uniqueKeys = new Set(allRows.map(r => (r[key] || '').trim()).filter(Boolean));
+  const blanks = allRows.filter(r => !(r[key] || '').trim()).length;
+  const dupes = allRows.length - uniqueKeys.size - blanks;
+  document.getElementById('md-stats').innerHTML =
+    '<div class="md-stat">Total: <span class="md-stat-val">' + allRows.length + '</span></div>' +
+    '<div class="md-stat">Unique: <span class="md-stat-val">' + uniqueKeys.size + '</span></div>' +
+    (dupes > 0 ? '<div class="md-stat" style="color:var(--warning);">Duplicates: <span class="md-stat-val">' + dupes + '</span></div>' : '') +
+    (blanks > 0 ? '<div class="md-stat" style="color:var(--critical);">Blank keys: <span class="md-stat-val">' + blanks + '</span></div>' : '') +
+    (filtered.length !== allRows.length ? '<div class="md-stat">Showing: <span class="md-stat-val">' + filtered.length + '</span></div>' : '') +
+    (mdEdits[activeEnv][activeMdTab] ? '<div class="md-stat" style="color:var(--info);">Edited</div>' : '');
+
+  // Table
+  const container = document.getElementById('md-table-container');
+  if (allRows.length === 0) {
+    container.innerHTML = '<div class="md-empty"><p>No ' + activeMdTab.replace('_', ' ') + ' data loaded</p>' +
+      '<p style="font-size:0.8rem;">Upload a CSV in the Migration Workspace, use Sample Data, or add records manually.</p></div>';
+    document.getElementById('md-pagination').innerHTML = '';
+    return;
+  }
+
+  let html = '<div class="md-table-wrap"><table class="md-table"><thead><tr>' +
+    '<th class="md-cb"><input type="checkbox" onchange="mdToggleAll(this.checked)" ' + (mdSelected.size === pageRows.length && pageRows.length > 0 ? 'checked' : '') + '></th>' +
+    '<th class="md-row-idx">#</th>';
+  cols.forEach(c => { html += '<th>' + esc(c) + '</th>'; });
+  html += '<th class="md-row-actions"></th></tr></thead><tbody>';
+
+  pageRows.forEach((row, pi) => {
+    const globalIdx = start + pi;
+    const isNew = row._mdNew;
+    const isEdited = row._mdEdited;
+    const cls = isNew ? ' class="md-row-new"' : (isEdited ? ' class="md-row-edited"' : '');
+    html += '<tr' + cls + '>';
+    html += '<td class="md-cb"><input type="checkbox" ' + (mdSelected.has(globalIdx) ? 'checked' : '') + ' onchange="mdToggleRow(' + globalIdx + ',this.checked)"></td>';
+    html += '<td class="md-row-idx">' + (globalIdx + 1) + '</td>';
+    cols.forEach(c => {
+      html += '<td><input value="' + esc(row[c] || '') + '" onchange="mdEditCell(' + globalIdx + ',\'' + esc(c) + '\',this.value)" spellcheck="false"></td>';
+    });
+    html += '<td class="md-row-actions"><button onclick="mdDeleteRow(' + globalIdx + ')" title="Delete">&times;</button></td>';
+    html += '</tr>';
+  });
+
+  html += '</tbody></table></div>';
+  container.innerHTML = html;
+
+  // Pagination
+  document.getElementById('md-pagination').innerHTML =
+    '<span>Page ' + (mdPage + 1) + ' of ' + totalPages + ' (' + filtered.length + ' records)</span>' +
+    '<div style="display:flex;gap:4px;">' +
+    '<button onclick="mdPage=0;renderMdTable()" ' + (mdPage === 0 ? 'disabled' : '') + '>&laquo;</button>' +
+    '<button onclick="mdPage--;renderMdTable()" ' + (mdPage === 0 ? 'disabled' : '') + '>&lsaquo; Prev</button>' +
+    '<button onclick="mdPage++;renderMdTable()" ' + (mdPage >= totalPages - 1 ? 'disabled' : '') + '>Next &rsaquo;</button>' +
+    '<button onclick="mdPage=' + (totalPages - 1) + ';renderMdTable()" ' + (mdPage >= totalPages - 1 ? 'disabled' : '') + '>&raquo;</button>' +
+    '</div>';
+}
+
+function mdEditCell(globalIdx, col, value) {
+  // Ensure we have a mutable copy
+  let rows = getMdRows();
+  if (!mdEdits[activeEnv][activeMdTab]) {
+    rows = JSON.parse(JSON.stringify(rows));
+    mdEdits[activeEnv][activeMdTab] = rows;
+  }
+  const filtered = getFilteredMdRows();
+  // Map filtered index back to source row
+  const row = filtered[globalIdx];
+  if (row) {
+    row[col] = value;
+    row._mdEdited = true;
+  }
+}
+
+function mdAddRow() {
+  let rows = getMdRows();
+  if (!mdEdits[activeEnv][activeMdTab]) {
+    rows = JSON.parse(JSON.stringify(rows));
+    mdEdits[activeEnv][activeMdTab] = rows;
+  } else {
+    rows = mdEdits[activeEnv][activeMdTab];
+  }
+  const newRow = { _mdNew: true };
+  getMdColumns().forEach(c => { newRow[c] = ''; });
+  rows.unshift(newRow);
+  mdPage = 0;
+  document.getElementById('md-search').value = '';
+  renderMdTable();
+  // Focus first editable cell
+  setTimeout(() => {
+    const firstInput = document.querySelector('.md-table tbody tr:first-child td:nth-child(3) input');
+    if (firstInput) firstInput.focus();
+  }, 50);
+}
+
+function mdDeleteRow(globalIdx) {
+  let rows = getMdRows();
+  if (!mdEdits[activeEnv][activeMdTab]) {
+    rows = JSON.parse(JSON.stringify(rows));
+    mdEdits[activeEnv][activeMdTab] = rows;
+  } else {
+    rows = mdEdits[activeEnv][activeMdTab];
+  }
+  const filtered = getFilteredMdRows();
+  const row = filtered[globalIdx];
+  if (row) {
+    const srcIdx = rows.indexOf(row);
+    if (srcIdx >= 0) rows.splice(srcIdx, 1);
+  }
+  mdSelected.delete(globalIdx);
+  renderMdTable();
+}
+
+function mdDeleteSelected() {
+  if (mdSelected.size === 0) return;
+  if (!confirm('Delete ' + mdSelected.size + ' selected records?')) return;
+  let rows = getMdRows();
+  if (!mdEdits[activeEnv][activeMdTab]) {
+    rows = JSON.parse(JSON.stringify(rows));
+    mdEdits[activeEnv][activeMdTab] = rows;
+  } else {
+    rows = mdEdits[activeEnv][activeMdTab];
+  }
+  const filtered = getFilteredMdRows();
+  const toRemove = Array.from(mdSelected).map(i => filtered[i]).filter(Boolean);
+  toRemove.forEach(row => {
+    const idx = rows.indexOf(row);
+    if (idx >= 0) rows.splice(idx, 1);
+  });
+  mdSelected = new Set();
+  renderMdTable();
+}
+
+function mdToggleRow(idx, checked) {
+  if (checked) mdSelected.add(idx); else mdSelected.delete(idx);
+  renderMdTable();
+}
+
+function mdToggleAll(checked) {
+  const filtered = getFilteredMdRows();
+  const start = mdPage * MD_PAGE_SIZE;
+  const end = Math.min(start + MD_PAGE_SIZE, filtered.length);
+  for (let i = start; i < end; i++) {
+    if (checked) mdSelected.add(i); else mdSelected.delete(i);
+  }
+  renderMdTable();
+}
+
+function mdExportCsv() {
+  const rows = getMdRows();
+  if (rows.length === 0) { alert('No data to export.'); return; }
+  const cols = getMdColumns().filter(c => !c.startsWith('_md'));
+  const lines = [cols.join(',')];
+  rows.forEach(r => {
+    lines.push(cols.map(c => {
+      const v = String(r[c] || '');
+      return v.includes(',') || v.includes('"') ? '"' + v.replace(/"/g, '""') + '"' : v;
+    }).join(','));
+  });
+  download(activeMdTab + '_' + activeEnv + '.csv', lines.join('\n'), 'text/csv');
+}
+
+function mdImportCsv() {
+  document.getElementById('md-import-file').click();
+}
+
+function mdHandleImport(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const rows = parseCSV(reader.result);
+    mdEdits[activeEnv][activeMdTab] = rows;
+    mdPage = 0;
+    renderMdTable();
+  };
+  reader.readAsText(file);
+  input.value = '';
 }
 
 // ── Validation ──
@@ -2520,6 +2991,7 @@ document.addEventListener('DOMContentLoaded', function() {
   renderExtDatasetList();
   updateConfigVersionDisplay();
   updateEnvSummary();
+  renderMdTable();
 });
 
 // ── Dynamic Validation (uses schema) ──
@@ -2614,12 +3086,18 @@ function runMigration() {
     return;
   }
 
+  // Use edited master data if available, then uploaded files, then sample data
+  function resolveMd(type, key) {
+    if (mdEdits[activeEnv][type]) return loadSetFromCSV(mdEdits[activeEnv][type], key);
+    if (getFiles()[type]) return loadSetFromCSV(getFiles()[type].rows, key);
+    return SAMPLE_MD[type];
+  }
   const md = {
-    customers: getFiles().customers ? loadSetFromCSV(getFiles().customers.rows, 'customer_id') : SAMPLE_MD.customers,
-    vendors: getFiles().vendors ? loadSetFromCSV(getFiles().vendors.rows, 'vendor_id') : SAMPLE_MD.vendors,
-    cost_centres: getFiles().cost_centres ? loadSetFromCSV(getFiles().cost_centres.rows, 'cost_centre_id') : SAMPLE_MD.cost_centres,
-    gl_accounts: getFiles().gl_accounts ? loadSetFromCSV(getFiles().gl_accounts.rows, 'gl_account') : SAMPLE_MD.gl_accounts,
-    company_codes: getFiles().company_codes ? loadSetFromCSV(getFiles().company_codes.rows, 'company_code') : SAMPLE_MD.company_codes,
+    customers: resolveMd('customers', 'customer_id'),
+    vendors: resolveMd('vendors', 'vendor_id'),
+    cost_centres: resolveMd('cost_centres', 'cost_centre_id'),
+    gl_accounts: resolveMd('gl_accounts', 'gl_account'),
+    company_codes: resolveMd('company_codes', 'company_code'),
   };
 
   // Always apply mappings pipeline (handles direct copy when no transforms exist)
