@@ -831,6 +831,153 @@ tbody tr:hover { background: #f9fafb; }
   border-top: 1px solid #e5e7eb;
 }
 
+/* ── Issue Row Cards ── */
+.issue-row-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.issue-row-card.sev-CRITICAL { border-left: 4px solid var(--critical); }
+.issue-row-card.sev-ERROR { border-left: 4px solid var(--error); }
+.issue-row-card.sev-WARNING { border-left: 4px solid var(--warning); }
+.issue-row-card.sev-INFO { border-left: 4px solid var(--info); }
+
+.issue-row-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--bg);
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.82rem;
+}
+.issue-row-header:hover { background: #eef1f6; }
+.issue-row-header .issue-row-arrow {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  transition: transform 0.2s;
+}
+.issue-row-header .issue-row-arrow.open { transform: rotate(90deg); }
+.issue-row-header .issue-row-ref {
+  font-weight: 700;
+  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  font-size: 0.82rem;
+}
+.issue-row-header .issue-row-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+.issue-row-header .issue-row-count {
+  margin-left: auto;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.issue-row-body {
+  display: none;
+  padding: 0;
+}
+.issue-row-body.open { display: block; }
+
+.issue-row-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1px;
+  background: #e5e7eb;
+  border-bottom: 1px solid var(--border);
+}
+.issue-field {
+  padding: 6px 10px;
+  background: #fff;
+  font-size: 0.78rem;
+}
+.issue-field .issue-field-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--text-muted);
+  margin-bottom: 1px;
+}
+.issue-field .issue-field-value {
+  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  font-size: 0.78rem;
+  word-break: break-all;
+}
+.issue-field.field-error {
+  background: var(--critical-bg);
+}
+.issue-field.field-error .issue-field-label { color: var(--critical); }
+.issue-field.field-error .issue-field-value { color: var(--critical); font-weight: 600; }
+.issue-field.field-warning {
+  background: var(--warning-bg);
+}
+.issue-field.field-warning .issue-field-label { color: var(--warning); }
+.issue-field.field-warning .issue-field-value { color: #92400e; font-weight: 600; }
+
+.issue-details {
+  padding: 8px 12px;
+}
+.issue-detail-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 0.78rem;
+}
+.issue-detail-row:last-child { border-bottom: none; }
+.issue-detail-row .severity-tag { flex-shrink: 0; }
+.issue-detail-row .issue-detail-field {
+  font-weight: 600;
+  min-width: 90px;
+  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  font-size: 0.76rem;
+  flex-shrink: 0;
+}
+.issue-detail-row .issue-detail-msg { flex: 1; color: var(--text); }
+.issue-detail-row .issue-detail-resolution {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  max-width: 400px;
+}
+.issue-detail-row .issue-detail-meta {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.issues-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.issues-toolbar input {
+  flex: 1;
+  min-width: 160px;
+  padding: 5px 10px 5px 28px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.82rem;
+  font-family: inherit;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E") 8px center no-repeat;
+}
+.issues-toolbar select {
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.82rem;
+  font-family: inherit;
+}
+.issues-toolbar .issues-page-info {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
 /* ── External Dataset Panel ── */
 .ext-dataset-panel {
   background: var(--bg);
@@ -1502,23 +1649,19 @@ tbody tr:hover { background: #f9fafb; }
           <span class="badge" id="issues-count-badge" style="font-size:0.7rem;"></span>
         </div>
         <div class="card-body" id="issues-card-body" style="padding-top:12px;">
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Severity</th>
-                  <th>Invoice</th>
-                  <th>Field</th>
-                  <th>Value</th>
-                  <th>Message</th>
-                  <th>Resolution</th>
-                  <th>SAP Tcode</th>
-                  <th>Owner</th>
-                </tr>
-              </thead>
-              <tbody id="issues-tbody"></tbody>
-            </table>
+          <div class="issues-toolbar">
+            <input type="text" id="issues-search" placeholder="Filter by invoice, field, or value..." oninput="renderIssueRows()">
+            <select id="issues-sev-filter" onchange="renderIssueRows()">
+              <option value="">All Severities</option>
+              <option value="CRITICAL">Critical</option>
+              <option value="ERROR">Error</option>
+              <option value="WARNING">Warning</option>
+              <option value="INFO">Info</option>
+            </select>
+            <span class="issues-page-info" id="issues-page-info"></span>
           </div>
+          <div id="issues-rows-container"></div>
+          <div class="md-pagination" id="issues-pagination"></div>
         </div>
       </div>
 
@@ -3120,6 +3263,8 @@ function runMigration() {
 
   targetRows.forEach(row => {
     const issues = validateDynamic(row, md);
+    // Attach the full transformed row to each issue
+    issues.forEach(iss => { iss._row = row; });
     allIssues.push(...issues);
     const blocking = issues.some(i => i.severity === 'CRITICAL' || i.severity === 'ERROR');
     const ref = row.invoice_ref || 'UNKNOWN';
@@ -3230,24 +3375,16 @@ function renderResults(r, passedRows) {
     remCard.style.display = 'none';
   }
 
-  // Issues table
+  // Issues — row-based display
   const issCard = document.getElementById('issues-card');
-  const tbody = document.getElementById('issues-tbody');
   if (r.issues.length > 0) {
     issCard.style.display = 'block';
     document.getElementById('issues-count-badge').textContent = r.issues.length + ' issues';
-    tbody.innerHTML = r.issues.map(i =>
-      '<tr>' +
-      '<td><span class="severity-tag ' + i.severity + '">' + i.severity + '</span></td>' +
-      '<td>' + esc(i.invoice_ref) + '</td>' +
-      '<td>' + esc(i.field_name) + '</td>' +
-      '<td><code>' + esc(i.supplied_value) + '</code></td>' +
-      '<td>' + esc(i.message) + '</td>' +
-      '<td>' + esc(i.resolution) + '</td>' +
-      '<td>' + esc(i.sap_transaction) + '</td>' +
-      '<td>' + esc(i.responsible_team) + '</td>' +
-      '</tr>'
-    ).join('');
+    // Reset filters
+    document.getElementById('issues-search').value = '';
+    document.getElementById('issues-sev-filter').value = '';
+    issuesPage = 0;
+    renderIssueRows();
   } else {
     issCard.style.display = 'none';
   }
@@ -3285,6 +3422,133 @@ function esc(s) {
   const d = document.createElement('div');
   d.textContent = s || '';
   return d.innerHTML;
+}
+
+// ── Issue Row Renderer ──
+let issuesPage = 0;
+const ISSUES_PAGE_SIZE = 25;
+
+function renderIssueRows() {
+  if (!lastReport || !lastReport.issues) return;
+  const allIssues = lastReport.issues;
+
+  // Filters
+  const q = (document.getElementById('issues-search').value || '').trim().toLowerCase();
+  const sevFilter = document.getElementById('issues-sev-filter').value;
+
+  // Group by invoice_ref
+  const grouped = {};
+  allIssues.forEach(iss => {
+    if (sevFilter && iss.severity !== sevFilter) return;
+    if (q) {
+      const haystack = (iss.invoice_ref + ' ' + iss.field_name + ' ' + iss.supplied_value + ' ' + iss.message).toLowerCase();
+      if (!haystack.includes(q)) return;
+    }
+    const ref = iss.invoice_ref || 'UNKNOWN';
+    if (!grouped[ref]) grouped[ref] = { ref, issues: [], row: iss._row || {} };
+    grouped[ref].issues.push(iss);
+  });
+
+  const entries = Object.values(grouped);
+  const totalPages = Math.max(1, Math.ceil(entries.length / ISSUES_PAGE_SIZE));
+  if (issuesPage >= totalPages) issuesPage = totalPages - 1;
+  if (issuesPage < 0) issuesPage = 0;
+  const start = issuesPage * ISSUES_PAGE_SIZE;
+  const pageEntries = entries.slice(start, start + ISSUES_PAGE_SIZE);
+
+  // Count total issues in filtered set
+  const filteredIssueCount = entries.reduce((s, e) => s + e.issues.length, 0);
+  document.getElementById('issues-page-info').textContent =
+    filteredIssueCount + ' issues across ' + entries.length + ' records';
+
+  const fields = schema.map(s => s.field);
+
+  const container = document.getElementById('issues-rows-container');
+  container.innerHTML = pageEntries.map((entry, ei) => {
+    const globalIdx = start + ei;
+    const worstSev = getWorstSeverity(entry.issues);
+    const errorFields = {};
+    entry.issues.forEach(iss => {
+      const existing = errorFields[iss.field_name];
+      if (!existing || sevRank(iss.severity) > sevRank(existing)) {
+        errorFields[iss.field_name] = iss.severity;
+      }
+    });
+
+    // Severity tags
+    const sevCounts = {};
+    entry.issues.forEach(iss => { sevCounts[iss.severity] = (sevCounts[iss.severity] || 0) + 1; });
+    const tags = Object.entries(sevCounts).sort((a, b) => sevRank(b[0]) - sevRank(a[0]))
+      .map(([sev, cnt]) => '<span class="severity-tag ' + sev + '" style="font-size:0.68rem;">' + sev + ' (' + cnt + ')</span>')
+      .join('');
+
+    // Field grid
+    const fieldCells = fields.map(f => {
+      const val = entry.row[f] || '';
+      const errSev = errorFields[f];
+      let cls = 'issue-field';
+      if (errSev === 'CRITICAL' || errSev === 'ERROR') cls += ' field-error';
+      else if (errSev === 'WARNING') cls += ' field-warning';
+      return '<div class="' + cls + '">' +
+        '<div class="issue-field-label">' + esc(f) + '</div>' +
+        '<div class="issue-field-value">' + esc(val || '(blank)') + '</div>' +
+        '</div>';
+    }).join('');
+
+    // Issue detail rows
+    const details = entry.issues.map(iss =>
+      '<div class="issue-detail-row">' +
+      '<span class="severity-tag ' + iss.severity + '" style="font-size:0.68rem;">' + iss.severity + '</span>' +
+      '<span class="issue-detail-field">' + esc(iss.field_name) + '</span>' +
+      '<span class="issue-detail-msg">' + esc(iss.message) + '</span>' +
+      '<span class="issue-detail-resolution">' + esc(iss.resolution) + '</span>' +
+      '<span class="issue-detail-meta">' +
+        (iss.sap_transaction ? '<span>' + esc(iss.sap_transaction) + '</span>' : '') +
+        (iss.responsible_team ? '<span>' + esc(iss.responsible_team) + '</span>' : '') +
+      '</span>' +
+      '</div>'
+    ).join('');
+
+    return '<div class="issue-row-card sev-' + worstSev + '">' +
+      '<div class="issue-row-header" onclick="toggleIssueRow(\'ir-' + globalIdx + '\')">' +
+        '<span class="issue-row-arrow" id="ir-' + globalIdx + '-arrow">&#9654;</span>' +
+        '<span class="issue-row-ref">' + esc(entry.ref) + '</span>' +
+        '<span class="issue-row-tags">' + tags + '</span>' +
+        '<span class="issue-row-count">' + entry.issues.length + ' issue' + (entry.issues.length > 1 ? 's' : '') + '</span>' +
+      '</div>' +
+      '<div class="issue-row-body" id="ir-' + globalIdx + '-body">' +
+        '<div class="issue-row-fields">' + fieldCells + '</div>' +
+        '<div class="issue-details">' + details + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  // Pagination
+  document.getElementById('issues-pagination').innerHTML =
+    '<span>Page ' + (issuesPage + 1) + ' of ' + totalPages + '</span>' +
+    '<div style="display:flex;gap:4px;">' +
+    '<button onclick="issuesPage=0;renderIssueRows()" ' + (issuesPage === 0 ? 'disabled' : '') + '>&laquo;</button>' +
+    '<button onclick="issuesPage--;renderIssueRows()" ' + (issuesPage === 0 ? 'disabled' : '') + '>&lsaquo; Prev</button>' +
+    '<button onclick="issuesPage++;renderIssueRows()" ' + (issuesPage >= totalPages - 1 ? 'disabled' : '') + '>Next &rsaquo;</button>' +
+    '<button onclick="issuesPage=' + (totalPages - 1) + ';renderIssueRows()" ' + (issuesPage >= totalPages - 1 ? 'disabled' : '') + '>&raquo;</button>' +
+    '</div>';
+}
+
+function toggleIssueRow(id) {
+  const body = document.getElementById(id + '-body');
+  const arrow = document.getElementById(id + '-arrow');
+  if (body) body.classList.toggle('open');
+  if (arrow) arrow.classList.toggle('open');
+}
+
+function sevRank(sev) {
+  return { CRITICAL: 4, ERROR: 3, WARNING: 2, INFO: 1 }[sev] || 0;
+}
+
+function getWorstSeverity(issues) {
+  let worst = 'INFO';
+  issues.forEach(i => { if (sevRank(i.severity) > sevRank(worst)) worst = i.severity; });
+  return worst;
 }
 
 // ── Config Export / Import ──
