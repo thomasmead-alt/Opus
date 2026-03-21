@@ -746,6 +746,54 @@ tbody tr:hover { background: #f9fafb; }
   margin-top: 4px;
 }
 
+/* ── Config Export/Import ── */
+.config-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.8rem;
+}
+.config-bar .cb-label {
+  font-weight: 600;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-right: 4px;
+}
+.config-bar .cb-sep {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+  margin: 0 4px;
+}
+.config-bar button {
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: #fff;
+  font-size: 0.78rem;
+  font-family: inherit;
+  cursor: pointer;
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.config-bar button:hover { border-color: var(--primary); color: var(--primary); }
+.config-bar .cb-version {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  margin-left: auto;
+}
+
 /* ── Bar Chart ── */
 .chart-container {
   margin-top: 16px;
@@ -900,6 +948,18 @@ tbody tr:hover { background: #f9fafb; }
   <!-- Dev Workspace -->
   <div class="card" id="workspace-card">
     <h2>Dev Workspace <span class="badge">Schema &amp; Mapping</span></h2>
+    <div class="config-bar">
+      <span class="cb-label">Export</span>
+      <button onclick="exportConfig('source')">Source Schema</button>
+      <button onclick="exportConfig('target')">Target Schema</button>
+      <button onclick="exportConfig('mapping')">Mapping</button>
+      <button onclick="exportConfig('all')" style="font-weight:600;">All (Bundle)</button>
+      <span class="cb-sep"></span>
+      <span class="cb-label">Import</span>
+      <button onclick="document.getElementById('config-import-file').click()">Load Config&hellip;</button>
+      <input type="file" id="config-import-file" accept=".json" style="display:none;" onchange="importConfig(this)">
+      <span class="cb-version" id="config-version-display"></span>
+    </div>
     <div class="workspace-toggle">
       <button class="active" onclick="toggleWorkspaceTab(this,'tab-source')">Source Schema</button>
       <button onclick="toggleWorkspaceTab(this,'tab-target')">Target Schema</button>
@@ -1146,6 +1206,10 @@ tbody tr:hover { background: #f9fafb; }
 const files = {};
 let lastReport = null;
 let lastLSMW = '';
+
+// ── Config Versioning ──
+const configVersions = { source: 1, target: 1, mapping: 1 };
+let configMeta = { name: '', description: '', loadedFrom: null };
 
 // ── Sample data (matches Python script) ──
 const SAMPLE_AP = [
@@ -1444,6 +1508,7 @@ function renderSourceSchemaTable() {
 
 function updateSourceSchema(i, key, value) {
   sourceSchema[i][key] = value;
+  onSourceSchemaChanged();
 }
 
 function toggleSourceKey(i, checked) {
@@ -1455,10 +1520,12 @@ function removeSourceField(i) {
   sourceSchema.splice(i, 1);
   renderSourceSchemaTable();
   renderKeyPills();
+  onSourceSchemaChanged();
 }
 
 function addSourceField() {
   sourceSchema.push({ field: 'new_field', header: 'new_field', type: 'text', isKey: false, nullable: true, sample: '' });
+  onSourceSchemaChanged();
   renderSourceSchemaTable();
   const tbody = document.getElementById('source-schema-tbody');
   if (tbody.lastElementChild) tbody.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -1740,15 +1807,18 @@ function optionList(opts, selected) {
 
 function updateSchema(i, key, value) {
   schema[i][key] = value;
+  onTargetSchemaChanged();
 }
 
 function removeSchemaField(i) {
   schema.splice(i, 1);
   renderSchemaTable();
+  onTargetSchemaChanged();
 }
 
 function addSchemaField() {
   schema.push({ field: 'new_field', sapField: '', type: 'text', required: false, masterData: '', severity: '' });
+  onTargetSchemaChanged();
   renderSchemaTable();
   const tbody = document.getElementById('schema-tbody');
   if (tbody.lastElementChild) tbody.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -2007,12 +2077,14 @@ function renderMappingTable() {
 
 function updateMappingField(i, value) {
   mappings[i].sourceField = value;
+  onMappingChanged();
   renderMappingTable();
 }
 
 function addTransformStep(i) {
   if (!mappings[i].transforms) mappings[i].transforms = [];
   mappings[i].transforms.push('TRIM()');
+  onMappingChanged();
   renderMappingTable();
   // Focus the new input
   setTimeout(() => {
@@ -2024,6 +2096,7 @@ function addTransformStep(i) {
 
 function removeTransformStep(i, j) {
   mappings[i].transforms.splice(j, 1);
+  onMappingChanged();
   renderMappingTable();
 }
 
@@ -2042,6 +2115,7 @@ function onFormulaBlur(event, i, j) {
     const ac = document.getElementById('tf-ac-' + i + '-' + j);
     if (ac) ac.classList.remove('open');
     // Re-render preview
+    onMappingChanged();
     renderMappingTable();
   }, 200);
 }
@@ -2234,6 +2308,7 @@ document.addEventListener('DOMContentLoaded', function() {
   renderSchemaTable();
   initMappings();
   renderExtDatasetList();
+  updateConfigVersionDisplay();
 });
 
 // ── Dynamic Validation (uses schema) ──
@@ -2498,6 +2573,159 @@ function esc(s) {
   d.textContent = s || '';
   return d.innerHTML;
 }
+
+// ── Config Export / Import ──
+function bumpVersion(type) {
+  configVersions[type]++;
+  updateConfigVersionDisplay();
+}
+
+function updateConfigVersionDisplay() {
+  const el = document.getElementById('config-version-display');
+  if (el) el.textContent = 'v' + configVersions.source + '.' + configVersions.target + '.' + configVersions.mapping +
+    ' (src.tgt.map)';
+}
+
+function getConfigFingerprint(obj) {
+  return btoa(JSON.stringify(obj)).slice(0, 12);
+}
+
+function exportConfig(type) {
+  const ts = new Date().toISOString();
+  let payload, filename;
+
+  if (type === 'source') {
+    payload = {
+      configType: 'source_schema',
+      version: configVersions.source,
+      exportedAt: ts,
+      fingerprint: getConfigFingerprint(sourceSchema),
+      schema: sourceSchema,
+    };
+    filename = 'source_schema_v' + configVersions.source + '.json';
+  } else if (type === 'target') {
+    payload = {
+      configType: 'target_schema',
+      version: configVersions.target,
+      exportedAt: ts,
+      fingerprint: getConfigFingerprint(schema),
+      schema: schema,
+    };
+    filename = 'target_schema_v' + configVersions.target + '.json';
+  } else if (type === 'mapping') {
+    payload = {
+      configType: 'mapping',
+      version: configVersions.mapping,
+      exportedAt: ts,
+      fingerprint: getConfigFingerprint(mappings),
+      sourceSchemaVersion: configVersions.source,
+      targetSchemaVersion: configVersions.target,
+      sourceSchemaFingerprint: getConfigFingerprint(sourceSchema),
+      targetSchemaFingerprint: getConfigFingerprint(schema),
+      mappings: mappings,
+      externalDatasetNames: Object.keys(externalDatasets),
+    };
+    filename = 'mapping_v' + configVersions.mapping + '.json';
+  } else {
+    // Bundle all
+    payload = {
+      configType: 'migration_bundle',
+      versions: { ...configVersions },
+      exportedAt: ts,
+      fingerprints: {
+        source: getConfigFingerprint(sourceSchema),
+        target: getConfigFingerprint(schema),
+        mapping: getConfigFingerprint(mappings),
+      },
+      sourceSchema: sourceSchema,
+      targetSchema: schema,
+      mappings: mappings,
+      externalDatasetNames: Object.keys(externalDatasets),
+      keyDate: keyDate || null,
+    };
+    filename = 'migration_config_v' + configVersions.source + '.' + configVersions.target + '.' + configVersions.mapping + '.json';
+  }
+
+  download(filename, JSON.stringify(payload, null, 2), 'application/json');
+}
+
+function importConfig(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const cfg = JSON.parse(reader.result);
+      applyImportedConfig(cfg, file.name);
+    } catch (e) {
+      alert('Invalid config file: ' + e.message);
+    }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+function applyImportedConfig(cfg, filename) {
+  const type = cfg.configType;
+
+  if (type === 'source_schema') {
+    sourceSchema = cfg.schema;
+    if (cfg.version) configVersions.source = cfg.version;
+    renderSourceSchemaTable();
+    renderKeyPills();
+    if (files.ap) runDataQualityReview();
+    alert('Source schema loaded (v' + configVersions.source + ')');
+  } else if (type === 'target_schema') {
+    schema = cfg.schema;
+    if (cfg.version) configVersions.target = cfg.version;
+    renderSchemaTable();
+    alert('Target schema loaded (v' + configVersions.target + ')');
+  } else if (type === 'mapping') {
+    mappings = cfg.mappings || [];
+    if (cfg.version) configVersions.mapping = cfg.version;
+    // Warn if schema versions don't match
+    const warnings = [];
+    if (cfg.sourceSchemaVersion && cfg.sourceSchemaVersion !== configVersions.source)
+      warnings.push('Source schema: config expects v' + cfg.sourceSchemaVersion + ', current is v' + configVersions.source);
+    if (cfg.targetSchemaVersion && cfg.targetSchemaVersion !== configVersions.target)
+      warnings.push('Target schema: config expects v' + cfg.targetSchemaVersion + ', current is v' + configVersions.target);
+    if (cfg.sourceSchemaFingerprint && cfg.sourceSchemaFingerprint !== getConfigFingerprint(sourceSchema))
+      warnings.push('Source schema content has changed since this mapping was exported');
+    if (cfg.targetSchemaFingerprint && cfg.targetSchemaFingerprint !== getConfigFingerprint(schema))
+      warnings.push('Target schema content has changed since this mapping was exported');
+    renderMappingTable();
+    let msg = 'Mapping loaded (v' + configVersions.mapping + ')';
+    if (warnings.length > 0) msg += '\n\nWarnings:\n' + warnings.join('\n');
+    alert(msg);
+  } else if (type === 'migration_bundle') {
+    sourceSchema = cfg.sourceSchema || sourceSchema;
+    schema = cfg.targetSchema || schema;
+    mappings = cfg.mappings || [];
+    if (cfg.versions) {
+      configVersions.source = cfg.versions.source || 1;
+      configVersions.target = cfg.versions.target || 1;
+      configVersions.mapping = cfg.versions.mapping || 1;
+    }
+    if (cfg.keyDate) { keyDate = cfg.keyDate; document.getElementById('key-date-input').value = keyDate; }
+    renderSourceSchemaTable();
+    renderKeyPills();
+    renderSchemaTable();
+    renderMappingTable();
+    if (files.ap) runDataQualityReview();
+    alert('Migration bundle loaded (v' + configVersions.source + '.' + configVersions.target + '.' + configVersions.mapping + ')');
+  } else {
+    alert('Unknown config type: ' + (type || 'none') + '. Expected source_schema, target_schema, mapping, or migration_bundle.');
+    return;
+  }
+
+  configMeta.loadedFrom = filename;
+  updateConfigVersionDisplay();
+}
+
+// Bump versions when schemas/mappings change
+function onSourceSchemaChanged() { bumpVersion('source'); }
+function onTargetSchemaChanged() { bumpVersion('target'); }
+function onMappingChanged() { bumpVersion('mapping'); }
 
 // ── Downloads ──
 function downloadLSMW() {
