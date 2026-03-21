@@ -71,6 +71,35 @@ header p { color: var(--text-muted); font-size: 0.95rem; }
   background: var(--text-muted);
 }
 
+/* ── Collapsible Cards ── */
+.card-collapsible > .card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  margin-bottom: 0;
+}
+.card-collapsible > .card-header h2 { margin-bottom: 0; }
+.card-collapsible > .card-header .card-arrow {
+  display: inline-block;
+  transition: transform 0.2s;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+.card-collapsible > .card-header .card-arrow.open { transform: rotate(90deg); }
+.card-collapsible > .card-body {
+  overflow: hidden;
+  transition: max-height 0.35s ease, opacity 0.25s ease;
+  max-height: 0;
+  opacity: 0;
+}
+.card-collapsible > .card-body.open {
+  max-height: 50000px;
+  opacity: 1;
+}
+.card-collapsible > .card-header:hover { opacity: 0.85; }
+
 .upload-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -946,73 +975,13 @@ tbody tr:hover { background: #f9fafb; }
     <p>Upload AP invoice data and master data CSVs to validate and generate LSMW flat files</p>
   </header>
 
-  <!-- Environment Selector -->
-  <div class="card">
-    <h2>Environment <span class="badge" id="env-badge">DEV</span></h2>
-    <div class="env-bar">
-      <button class="env-tab env-dev active" onclick="switchEnv('dev')"><span class="env-dot"></span>DEV</button>
-      <button class="env-tab env-sit" onclick="switchEnv('sit')"><span class="env-dot"></span>SIT</button>
-      <button class="env-tab env-uat" onclick="switchEnv('uat')"><span class="env-dot"></span>UAT</button>
-      <button class="env-tab env-prod" onclick="switchEnv('prod')"><span class="env-dot"></span>PROD</button>
-      <span class="env-summary" id="env-summary"></span>
+  <!-- Schema Workspace -->
+  <div class="card card-collapsible" id="schema-workspace-card">
+    <div class="card-header" onclick="toggleCard('schema-workspace-card')">
+      <span class="card-arrow open" id="schema-workspace-card-arrow">&#9654;</span>
+      <h2>Schema Workspace <span class="badge">Schema &amp; Mapping</span></h2>
     </div>
-
-    <!-- AP Data Upload -->
-    <h3 style="font-size:0.95rem;margin-bottom:8px;">AP Invoice Data <span class="badge">Required</span></h3>
-    <div class="upload-grid" style="margin-bottom:20px;">
-      <div class="upload-item" id="drop-ap" onclick="document.getElementById('file-ap').click()">
-        <label>AP Invoices</label>
-        <div class="hint">Columns: invoice_ref, vendor_id, customer_id, company_code, invoice_date, ...</div>
-        <input type="file" id="file-ap" accept=".csv" onchange="handleFile(this,'ap')">
-        <div class="file-info" id="info-ap"></div>
-        <div class="file-version" id="ver-ap"></div>
-      </div>
-    </div>
-
-    <!-- Master Data Uploads -->
-    <h3 style="font-size:0.95rem;margin-bottom:8px;">Master Data <span class="badge optional">Optional — sample data used if omitted</span></h3>
-    <div class="upload-grid">
-      <div class="upload-item" id="drop-customers" onclick="document.getElementById('file-customers').click()">
-        <label>Customers</label>
-        <div class="hint">Column: customer_id</div>
-        <input type="file" id="file-customers" accept=".csv" onchange="handleFile(this,'customers')">
-        <div class="file-info" id="info-customers"></div>
-        <div class="file-version" id="ver-customers"></div>
-      </div>
-      <div class="upload-item" id="drop-vendors" onclick="document.getElementById('file-vendors').click()">
-        <label>Vendors</label>
-        <div class="hint">Column: vendor_id</div>
-        <input type="file" id="file-vendors" accept=".csv" onchange="handleFile(this,'vendors')">
-        <div class="file-info" id="info-vendors"></div>
-        <div class="file-version" id="ver-vendors"></div>
-      </div>
-      <div class="upload-item" id="drop-cost_centres" onclick="document.getElementById('file-cost_centres').click()">
-        <label>Cost Centres</label>
-        <div class="hint">Column: cost_centre_id</div>
-        <input type="file" id="file-cost_centres" accept=".csv" onchange="handleFile(this,'cost_centres')">
-        <div class="file-info" id="info-cost_centres"></div>
-        <div class="file-version" id="ver-cost_centres"></div>
-      </div>
-      <div class="upload-item" id="drop-gl_accounts" onclick="document.getElementById('file-gl_accounts').click()">
-        <label>GL Accounts</label>
-        <div class="hint">Column: gl_account</div>
-        <input type="file" id="file-gl_accounts" accept=".csv" onchange="handleFile(this,'gl_accounts')">
-        <div class="file-info" id="info-gl_accounts"></div>
-        <div class="file-version" id="ver-gl_accounts"></div>
-      </div>
-      <div class="upload-item" id="drop-company_codes" onclick="document.getElementById('file-company_codes').click()">
-        <label>Company Codes</label>
-        <div class="hint">Column: company_code</div>
-        <input type="file" id="file-company_codes" accept=".csv" onchange="handleFile(this,'company_codes')">
-        <div class="file-info" id="info-company_codes"></div>
-        <div class="file-version" id="ver-company_codes"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Dev Workspace -->
-  <div class="card" id="workspace-card">
-    <h2>Dev Workspace <span class="badge">Schema &amp; Mapping</span></h2>
+    <div class="card-body open" id="schema-workspace-card-body">
     <div class="config-bar">
       <span class="cb-label">Export</span>
       <button onclick="exportConfig('source')">Source Schema</button>
@@ -1206,64 +1175,164 @@ tbody tr:hover { background: #f9fafb; }
         <div class="chart-bars" id="chart-bars"></div>
       </div>
     </div>
-  </div>
+  </div><!-- /card-body -->
+  </div><!-- /schema-workspace-card -->
 
-  <div class="actions">
-    <button class="primary" id="btn-run" onclick="runMigration()">Run Migration Validation</button>
-    <button class="secondary" onclick="loadSampleData()">Use Sample Data</button>
-  </div>
+  <!-- Migration Workspace -->
+  <div class="card card-collapsible" id="migration-workspace-card">
+    <div class="card-header" onclick="toggleCard('migration-workspace-card')">
+      <span class="card-arrow open" id="migration-workspace-card-arrow">&#9654;</span>
+      <h2>Migration Workspace <span class="badge" id="env-badge">DEV</span></h2>
+    </div>
+    <div class="card-body open" id="migration-workspace-card-body">
 
-  <!-- Results -->
-  <div id="results">
-    <div class="card">
-      <h2>Summary</h2>
-      <div class="stats-row" id="stats-row"></div>
-      <div class="progress-bar"><div class="fill" id="pass-bar"></div></div>
+    <!-- Environment Selector -->
+    <div class="env-bar" style="margin-top:16px;">
+      <button class="env-tab env-dev active" onclick="switchEnv('dev')"><span class="env-dot"></span>DEV</button>
+      <button class="env-tab env-sit" onclick="switchEnv('sit')"><span class="env-dot"></span>SIT</button>
+      <button class="env-tab env-uat" onclick="switchEnv('uat')"><span class="env-dot"></span>UAT</button>
+      <button class="env-tab env-prod" onclick="switchEnv('prod')"><span class="env-dot"></span>PROD</button>
+      <span class="env-summary" id="env-summary"></span>
     </div>
 
-    <div class="card">
-      <h2>Breakdowns</h2>
-      <div class="summary-grid" id="summary-grid"></div>
-    </div>
-
-    <div class="card" id="remediation-card" style="display:none">
-      <h2>Remediation Steps</h2>
-      <div id="remediation-list"></div>
-    </div>
-
-    <div class="card" id="issues-card" style="display:none">
-      <h2>All Issues</h2>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Severity</th>
-              <th>Invoice</th>
-              <th>Field</th>
-              <th>Value</th>
-              <th>Message</th>
-              <th>Resolution</th>
-              <th>SAP Tcode</th>
-              <th>Owner</th>
-            </tr>
-          </thead>
-          <tbody id="issues-tbody"></tbody>
-        </table>
+    <!-- AP Data Upload -->
+    <h3 style="font-size:0.95rem;margin-bottom:8px;">AP Invoice Data <span class="badge">Required</span></h3>
+    <div class="upload-grid" style="margin-bottom:20px;">
+      <div class="upload-item" id="drop-ap" onclick="document.getElementById('file-ap').click()">
+        <label>AP Invoices</label>
+        <div class="hint">Columns: invoice_ref, vendor_id, customer_id, company_code, invoice_date, ...</div>
+        <input type="file" id="file-ap" accept=".csv" onchange="handleFile(this,'ap')">
+        <div class="file-info" id="info-ap"></div>
+        <div class="file-version" id="ver-ap"></div>
       </div>
     </div>
 
-    <div class="card" id="lsmw-card" style="display:none">
-      <h2>LSMW Output (Valid Records)</h2>
-      <div class="table-wrap">
-        <pre id="lsmw-output" style="font-size:0.8rem;overflow-x:auto;white-space:pre;background:var(--bg);padding:12px;border-radius:var(--radius);"></pre>
+    <!-- Master Data Uploads -->
+    <h3 style="font-size:0.95rem;margin-bottom:8px;">Master Data <span class="badge optional">Optional — sample data used if omitted</span></h3>
+    <div class="upload-grid" style="margin-bottom:20px;">
+      <div class="upload-item" id="drop-customers" onclick="document.getElementById('file-customers').click()">
+        <label>Customers</label>
+        <div class="hint">Column: customer_id</div>
+        <input type="file" id="file-customers" accept=".csv" onchange="handleFile(this,'customers')">
+        <div class="file-info" id="info-customers"></div>
+        <div class="file-version" id="ver-customers"></div>
+      </div>
+      <div class="upload-item" id="drop-vendors" onclick="document.getElementById('file-vendors').click()">
+        <label>Vendors</label>
+        <div class="hint">Column: vendor_id</div>
+        <input type="file" id="file-vendors" accept=".csv" onchange="handleFile(this,'vendors')">
+        <div class="file-info" id="info-vendors"></div>
+        <div class="file-version" id="ver-vendors"></div>
+      </div>
+      <div class="upload-item" id="drop-cost_centres" onclick="document.getElementById('file-cost_centres').click()">
+        <label>Cost Centres</label>
+        <div class="hint">Column: cost_centre_id</div>
+        <input type="file" id="file-cost_centres" accept=".csv" onchange="handleFile(this,'cost_centres')">
+        <div class="file-info" id="info-cost_centres"></div>
+        <div class="file-version" id="ver-cost_centres"></div>
+      </div>
+      <div class="upload-item" id="drop-gl_accounts" onclick="document.getElementById('file-gl_accounts').click()">
+        <label>GL Accounts</label>
+        <div class="hint">Column: gl_account</div>
+        <input type="file" id="file-gl_accounts" accept=".csv" onchange="handleFile(this,'gl_accounts')">
+        <div class="file-info" id="info-gl_accounts"></div>
+        <div class="file-version" id="ver-gl_accounts"></div>
+      </div>
+      <div class="upload-item" id="drop-company_codes" onclick="document.getElementById('file-company_codes').click()">
+        <label>Company Codes</label>
+        <div class="hint">Column: company_code</div>
+        <input type="file" id="file-company_codes" accept=".csv" onchange="handleFile(this,'company_codes')">
+        <div class="file-info" id="info-company_codes"></div>
+        <div class="file-version" id="ver-company_codes"></div>
       </div>
     </div>
 
-    <div class="download-row">
-      <button class="secondary" id="btn-dl-lsmw" onclick="downloadLSMW()">Download LSMW File</button>
-      <button class="secondary" id="btn-dl-report" onclick="downloadReport()">Download JSON Report</button>
+    <!-- Run Actions -->
+    <div class="actions" style="text-align:left;margin:16px 0;">
+      <button class="primary" id="btn-run" onclick="runMigration()">Run Migration Validation</button>
+      <button class="secondary" onclick="loadSampleData()">Use Sample Data</button>
     </div>
-  </div>
+
+    <!-- Validation Results (collapsible) -->
+    <div id="results" style="display:none;">
+      <div class="download-row" style="margin-bottom:16px;">
+        <button class="secondary" id="btn-dl-lsmw" onclick="downloadLSMW()">Download LSMW File</button>
+        <button class="secondary" id="btn-dl-report" onclick="downloadReport()">Download JSON Report</button>
+      </div>
+
+      <div class="card-collapsible" id="results-summary-card" style="border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px;">
+        <div class="card-header" onclick="toggleCard('results-summary-card')">
+          <span class="card-arrow open" id="results-summary-card-arrow">&#9654;</span>
+          <h3 style="font-size:0.95rem;font-weight:600;margin:0;">Summary</h3>
+        </div>
+        <div class="card-body open" id="results-summary-card-body" style="padding-top:12px;">
+          <div class="stats-row" id="stats-row"></div>
+          <div class="progress-bar"><div class="fill" id="pass-bar"></div></div>
+        </div>
+      </div>
+
+      <div class="card-collapsible" id="results-breakdowns-card" style="border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px;">
+        <div class="card-header" onclick="toggleCard('results-breakdowns-card')">
+          <span class="card-arrow open" id="results-breakdowns-card-arrow">&#9654;</span>
+          <h3 style="font-size:0.95rem;font-weight:600;margin:0;">Breakdowns</h3>
+        </div>
+        <div class="card-body open" id="results-breakdowns-card-body" style="padding-top:12px;">
+          <div class="summary-grid" id="summary-grid"></div>
+        </div>
+      </div>
+
+      <div class="card-collapsible" id="remediation-card" style="display:none;border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px;">
+        <div class="card-header" onclick="toggleCard('remediation-card')">
+          <span class="card-arrow open" id="remediation-card-arrow">&#9654;</span>
+          <h3 style="font-size:0.95rem;font-weight:600;margin:0;">Remediation Steps</h3>
+        </div>
+        <div class="card-body open" id="remediation-card-body" style="padding-top:12px;">
+          <div id="remediation-list"></div>
+        </div>
+      </div>
+
+      <div class="card-collapsible" id="issues-card" style="display:none;border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px;">
+        <div class="card-header" onclick="toggleCard('issues-card')">
+          <span class="card-arrow" id="issues-card-arrow">&#9654;</span>
+          <h3 style="font-size:0.95rem;font-weight:600;margin:0;">All Issues</h3>
+          <span class="badge" id="issues-count-badge" style="font-size:0.7rem;"></span>
+        </div>
+        <div class="card-body" id="issues-card-body" style="padding-top:12px;">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Severity</th>
+                  <th>Invoice</th>
+                  <th>Field</th>
+                  <th>Value</th>
+                  <th>Message</th>
+                  <th>Resolution</th>
+                  <th>SAP Tcode</th>
+                  <th>Owner</th>
+                </tr>
+              </thead>
+              <tbody id="issues-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-collapsible" id="lsmw-card" style="display:none;border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px;">
+        <div class="card-header" onclick="toggleCard('lsmw-card')">
+          <span class="card-arrow" id="lsmw-card-arrow">&#9654;</span>
+          <h3 style="font-size:0.95rem;font-weight:600;margin:0;">LSMW Output (Valid Records)</h3>
+        </div>
+        <div class="card-body" id="lsmw-card-body" style="padding-top:12px;">
+          <div class="table-wrap">
+            <pre id="lsmw-output" style="font-size:0.8rem;overflow-x:auto;white-space:pre;background:var(--bg);padding:12px;border-radius:var(--radius);"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /card-body -->
+  </div><!-- /migration-workspace-card -->
 </div>
 
 <script>
@@ -1613,8 +1682,15 @@ function initMappings() {
 
 // ── Workspace Tabs ──
 const TAB_IDS = ['tab-source', 'tab-target', 'tab-mapping', 'tab-keydate'];
+function toggleCard(cardId) {
+  const body = document.getElementById(cardId + '-body');
+  const arrow = document.getElementById(cardId + '-arrow');
+  if (body) body.classList.toggle('open');
+  if (arrow) arrow.classList.toggle('open');
+}
+
 function toggleWorkspaceTab(btn, tabId) {
-  document.querySelectorAll('#workspace-card .workspace-toggle button').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#schema-workspace-card .workspace-toggle button').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   TAB_IDS.forEach(id => {
     document.getElementById(id).style.display = id === tabId ? '' : 'none';
@@ -2601,6 +2677,11 @@ function runMigration() {
   lastReport = {
     run_timestamp: new Date().toISOString(),
     environment: activeEnv.toUpperCase(),
+    schema_versions: {
+      source_schema: configVersions.source,
+      target_schema: configVersions.target,
+      mapping: configVersions.mapping,
+    },
     data_versions: getFileVersionSummary(),
     total_records: apRows.length,
     passed: passedRows.length,
@@ -2666,6 +2747,7 @@ function renderResults(r, passedRows) {
   const tbody = document.getElementById('issues-tbody');
   if (r.issues.length > 0) {
     issCard.style.display = 'block';
+    document.getElementById('issues-count-badge').textContent = r.issues.length + ' issues';
     tbody.innerHTML = r.issues.map(i =>
       '<tr>' +
       '<td><span class="severity-tag ' + i.severity + '">' + i.severity + '</span></td>' +
@@ -2691,6 +2773,12 @@ function renderResults(r, passedRows) {
     lsmwCard.style.display = 'none';
   }
 
+  // Ensure migration workspace is open and scroll to results
+  const mwBody = document.getElementById('migration-workspace-card-body');
+  if (!mwBody.classList.contains('open')) {
+    mwBody.classList.add('open');
+    document.getElementById('migration-workspace-card-arrow').classList.add('open');
+  }
   document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
 }
 
