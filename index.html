@@ -998,6 +998,269 @@ header p { color: var(--text-muted); font-size: 0.95rem; }
   .dash-download-footer { flex-direction: column; text-align: center; }
 }
 
+/* ── Drag & Drop Mapping ── */
+.dnd-mapping-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+  background: #fafbfc;
+}
+.dnd-mapping-zone.drag-over { border-color: var(--primary); background: #eff6ff; }
+.dnd-field-pool {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 36px;
+  margin-bottom: 12px;
+}
+.dnd-field-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: grab;
+  transition: all 0.15s;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+.dnd-field-chip:active { cursor: grabbing; }
+.dnd-field-chip.source { background: #dbeafe; border-color: #93c5fd; color: #1e40af; }
+.dnd-field-chip.target { background: #dcfce7; border-color: #86efac; color: #166534; }
+.dnd-field-chip.mapped { opacity: 0.4; }
+.dnd-field-chip.drag-ghost { opacity: 0.6; transform: scale(1.05); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+.dnd-drop-target {
+  min-height: 32px;
+  border: 1px dashed #d1d5db;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  transition: all 0.15s;
+  padding: 2px 8px;
+}
+.dnd-drop-target.drop-active { border-color: var(--primary); background: #eff6ff; }
+.dnd-drop-target.has-value { border-style: solid; border-color: #86efac; background: #f0fdf4; }
+.dnd-connector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+.dnd-connector .dnd-arrow { color: var(--text-muted); font-size: 1.1rem; flex-shrink: 0; }
+
+/* ── Validation Rule Builder ── */
+.vrb-panel {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  padding: 14px;
+  margin-bottom: 16px;
+}
+.vrb-panel h4 { margin: 0 0 10px; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
+.vrb-rule {
+  display: grid;
+  grid-template-columns: 140px 120px 1fr auto;
+  gap: 6px;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.82rem;
+}
+.vrb-rule select, .vrb-rule input {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+.vrb-rule .vrb-remove { cursor: pointer; color: var(--critical); font-size: 1.1rem; padding: 2px 6px; }
+.vrb-add-btn {
+  margin-top: 8px;
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  border: 1px dashed var(--border);
+  background: transparent;
+  border-radius: 4px;
+  color: var(--primary);
+}
+
+/* ── Bulk Fix Suggestions ── */
+.bulk-fix-panel {
+  border: 1px solid #fef3c7;
+  border-radius: var(--radius);
+  background: #fffbeb;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+.bulk-fix-panel h4 { margin: 0 0 8px; font-size: 0.88rem; color: #92400e; }
+.bulk-fix-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: white;
+  border: 1px solid #fde68a;
+  margin-bottom: 6px;
+  font-size: 0.82rem;
+}
+.bulk-fix-item .fix-desc { flex: 1; }
+.bulk-fix-item .fix-count { font-weight: 700; color: #92400e; min-width: 50px; }
+.bulk-fix-item button {
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid var(--primary);
+  background: var(--primary);
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* ── Audit Trail ── */
+.audit-panel {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+.audit-entry {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.8rem;
+}
+.audit-entry:last-child { border-bottom: none; }
+.audit-ts { font-size: 0.72rem; color: var(--text-muted); min-width: 130px; flex-shrink: 0; }
+.audit-icon { font-size: 1rem; flex-shrink: 0; }
+.audit-msg { flex: 1; }
+.audit-env-badge {
+  font-size: 0.65rem; font-weight: 700; padding: 1px 6px;
+  border-radius: 3px; color: #fff; text-transform: uppercase;
+}
+
+/* ── File Diff ── */
+.diff-panel {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  padding: 14px;
+  margin-bottom: 16px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+.diff-panel h4 { margin: 0 0 8px; font-size: 0.9rem; }
+.diff-stats { display: flex; gap: 16px; margin-bottom: 10px; font-size: 0.82rem; }
+.diff-stats .diff-added { color: var(--success); font-weight: 600; }
+.diff-stats .diff-removed { color: var(--critical); font-weight: 600; }
+.diff-stats .diff-modified { color: var(--warning); font-weight: 600; }
+.diff-row { font-size: 0.78rem; font-family: monospace; padding: 2px 6px; }
+.diff-row.added { background: #dcfce7; color: #166534; }
+.diff-row.removed { background: #fef2f2; color: #991b1b; }
+.diff-row.modified { background: #fef9c3; color: #854d0e; }
+
+/* ── Environment Comparison ── */
+.env-compare-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+.env-compare-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  padding: 12px;
+}
+.env-compare-card h4 { margin: 0 0 8px; font-size: 0.85rem; font-weight: 700; }
+.env-compare-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  padding: 3px 0;
+  border-bottom: 1px solid #f8fafc;
+}
+.env-compare-row .ecr-label { color: var(--text-muted); }
+.env-compare-row .ecr-val { font-weight: 600; }
+.env-compare-diff { color: var(--critical); font-weight: 700; font-size: 0.72rem; }
+
+/* ── Analytics: Completeness Heatmap ── */
+.heatmap-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+.heatmap-table th, .heatmap-table td {
+  padding: 4px 6px;
+  text-align: center;
+  border: 1px solid #f1f5f9;
+}
+.heatmap-table th { font-weight: 600; background: #f8fafc; position: sticky; top: 0; }
+.heatmap-table td { font-weight: 600; }
+.heatmap-cell { border-radius: 3px; padding: 3px 6px; }
+
+/* ── Analytics: Trend Chart ── */
+.trend-chart-container {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  padding: 14px;
+  margin-bottom: 16px;
+}
+.trend-chart-container h4 { margin: 0 0 10px; font-size: 0.9rem; }
+.trend-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  font-size: 0.78rem;
+}
+.trend-bar-label { min-width: 100px; font-size: 0.72rem; color: var(--text-muted); }
+.trend-bar-track { flex: 1; height: 18px; background: #f1f5f9; border-radius: 4px; overflow: hidden; display: flex; }
+.trend-bar-seg { height: 100%; transition: width 0.3s; display: flex; align-items: center; justify-content: center; font-size: 0.68rem; color: white; font-weight: 600; }
+.trend-bar-seg.passed { background: var(--success); }
+.trend-bar-seg.failed { background: var(--critical); }
+.trend-bar-seg.excluded { background: #94a3b8; }
+.trend-bar-pct { min-width: 40px; text-align: right; font-weight: 600; }
+
+/* ── Analytics: Anomaly Detection ── */
+.anomaly-panel {
+  border: 1px solid #fef3c7;
+  border-radius: var(--radius);
+  background: #fffbeb;
+  padding: 14px;
+  margin-bottom: 16px;
+}
+.anomaly-panel h4 { margin: 0 0 8px; font-size: 0.9rem; color: #92400e; }
+.anomaly-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 8px; border-radius: 6px; background: white;
+  border: 1px solid #fde68a; margin-bottom: 4px; font-size: 0.8rem;
+}
+.anomaly-item .anomaly-icon { font-size: 1rem; }
+.anomaly-item .anomaly-desc { flex: 1; }
+.anomaly-item .anomaly-val { font-weight: 700; font-family: monospace; }
+
+/* ── New Sidebar Items ── */
+.nav-divider { height: 1px; background: rgba(255,255,255,0.08); margin: 6px 12px; }
+.nav-section-label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.35);
+  padding: 8px 16px 2px;
+  display: none;
+}
+.sidebar.expanded .nav-section-label { display: block; }
+
 .actions { text-align: center; margin: 24px 0; }
 
 button.primary {
@@ -2152,6 +2415,23 @@ tbody tr:hover { background: #f9fafb; }
       <span class="nav-label">Download</span>
       <span class="nav-tooltip">Download LSMW + Report</span>
     </div>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">Analytics</div>
+    <div class="nav-item" onclick="showSection('analytics-section')" data-nav="analytics-section" role="button" tabindex="0" aria-label="Analytics">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 3v18h18M9 17V9m4 8V5m4 12v-4"/></svg></span>
+      <span class="nav-label">Analytics</span>
+      <span class="nav-tooltip">Analytics</span>
+    </div>
+    <div class="nav-item" onclick="showSection('env-compare-section')" data-nav="env-compare-section" role="button" tabindex="0" aria-label="Compare Environments">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M9 19V6l12-3v13M9 19c0 1.1-1.3 2-3 2s-3-.9-3-2 1.3-2 3-2 3 .9 3 2zm12-3c0 1.1-1.3 2-3 2s-3-.9-3-2 1.3-2 3-2 3 .9 3 2z"/></svg></span>
+      <span class="nav-label">Compare</span>
+      <span class="nav-tooltip">Environment Comparison</span>
+    </div>
+    <div class="nav-item" onclick="showSection('audit-section')" data-nav="audit-section" role="button" tabindex="0" aria-label="Audit Trail">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span>
+      <span class="nav-label">Audit</span>
+      <span class="nav-tooltip">Audit Trail</span>
+    </div>
   </div>
 
   <div class="sidebar-bottom">
@@ -2177,6 +2457,10 @@ tbody tr:hover { background: #f9fafb; }
       <div class="dashboard-header">
         <h1>Migration Dashboard</h1>
         <p>SAP LSMW Invoice Migration &mdash; schema once, migrate everywhere</p>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <button class="secondary" onclick="exportProject()" style="font-size:0.78rem;padding:4px 12px;">Export Project</button>
+          <button class="secondary" onclick="importProject()" style="font-size:0.78rem;padding:4px 12px;">Import Project</button>
+        </div>
       </div>
 
       <!-- Workflow Steps -->
@@ -2298,8 +2582,32 @@ tbody tr:hover { background: #f9fafb; }
     <!-- Mapping Tab -->
     <div id="tab-mapping" style="display:none;">
       <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:6px;">
-        Map each target field to a source field. Chain multiple Excel-like formula transformations per field.
+        Map each target field to a source field. Drag source chips onto target fields, or use the table below.
       </p>
+      <!-- Drag & Drop Mapping Zone -->
+      <div class="dnd-mapping-zone" id="dnd-mapping-zone">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <strong style="font-size:0.85rem;">Drag-and-Drop Mapping</strong>
+          <button class="secondary" onclick="clearAllMappings()" style="font-size:0.72rem;padding:2px 8px;">Clear All</button>
+        </div>
+        <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:8px;">
+          <span class="dnd-field-chip source" style="cursor:default;font-size:0.7rem;">Source</span> Drag onto
+          <span class="dnd-field-chip target" style="cursor:default;font-size:0.7rem;">Target</span> fields below
+        </div>
+        <div style="font-size:0.78rem;font-weight:600;margin-bottom:4px;">Unmapped Source Fields</div>
+        <div class="dnd-field-pool" id="dnd-source-pool"></div>
+        <div style="font-size:0.78rem;font-weight:600;margin:8px 0 4px;">Target Fields</div>
+        <div id="dnd-target-list"></div>
+      </div>
+      <!-- Validation Rule Builder -->
+      <div class="vrb-panel" id="vrb-panel">
+        <h4>
+          <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--primary);fill:none;stroke-width:2"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          Custom Validation Rules
+          <button class="vrb-add-btn" onclick="addValidationRule()">+ Add Rule</button>
+        </h4>
+        <div id="vrb-rules-list"></div>
+      </div>
       <div class="tf-ref-toggle" onclick="document.getElementById('tf-ref-panel').classList.toggle('open')">
         <span id="tf-ref-arrow">&#9654;</span> Formula Reference
       </div>
@@ -2487,6 +2795,7 @@ tbody tr:hover { background: #f9fafb; }
 
     <!-- AP Data Upload -->
     <h3 style="font-size:0.95rem;margin-bottom:8px;">AP Invoice Data <span class="badge">Required</span></h3>
+    <div id="file-diff-panel"></div>
     <div class="upload-grid" style="margin-bottom:20px;">
       <div class="upload-item" id="drop-ap" onclick="document.getElementById('file-ap').click()">
         <label>AP Invoices</label>
@@ -2617,6 +2926,7 @@ tbody tr:hover { background: #f9fafb; }
           <span class="badge" id="issues-count-badge" style="font-size:0.7rem;"></span>
         </div>
         <div class="card-body" id="issues-card-body" style="padding-top:12px;">
+          <div id="bulk-fix-container"></div>
           <div class="issues-toolbar">
             <input type="text" id="issues-search" placeholder="Filter by invoice, field, or value..." oninput="renderIssueRows()">
             <select id="issues-sev-filter" onchange="renderIssueRows()">
@@ -2649,6 +2959,48 @@ tbody tr:hover { background: #f9fafb; }
   </div><!-- /card-body -->
   </div><!-- /migration-workspace-card -->
   </div><!-- /migration-section -->
+
+  <!-- Analytics Section -->
+  <div class="workspace-section" id="analytics-section">
+    <div class="card card-collapsible">
+      <div class="card-header">
+        <h2>Advanced Analytics</h2>
+      </div>
+      <div class="card-body open">
+        <div id="analytics-heatmap"></div>
+        <div id="analytics-trends"></div>
+        <div id="analytics-anomalies"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Environment Comparison Section -->
+  <div class="workspace-section" id="env-compare-section">
+    <div class="card card-collapsible">
+      <div class="card-header">
+        <h2>Environment Comparison</h2>
+      </div>
+      <div class="card-body open">
+        <div id="env-compare-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audit Trail Section -->
+  <div class="workspace-section" id="audit-section">
+    <div class="card card-collapsible">
+      <div class="card-header">
+        <h2>Audit Trail</h2>
+        <div style="display:flex;gap:8px;margin-left:auto;">
+          <button class="secondary" onclick="exportAuditLog()" style="font-size:0.78rem;padding:4px 10px;">Export Log</button>
+          <button class="secondary" onclick="clearAuditLog()" style="font-size:0.78rem;padding:4px 10px;">Clear</button>
+        </div>
+      </div>
+      <div class="card-body open">
+        <div class="audit-panel" id="audit-panel"></div>
+      </div>
+    </div>
+  </div>
 
 </div>
 </div><!-- /main-content -->
@@ -4389,17 +4741,35 @@ function renderDayChart(apRows, failedRefs) {
 
 // Init all workspace tables on load
 document.addEventListener('DOMContentLoaded', function() {
+  // Restore saved state before rendering
+  const restored = restoreState();
+
+  // Apply restored env to sidebar
+  if (restored) {
+    document.querySelectorAll('.sidebar-env-btn').forEach(b => {
+      b.className = 'sidebar-env-btn';
+      if (b.textContent.trim().toLowerCase() === activeEnv) b.classList.add('active-' + activeEnv);
+    });
+    const sidebar = document.getElementById('sidebar');
+    sidebar.className = sidebar.className.replace(/env-\w+/g, '').trim() + ' env-' + activeEnv;
+    if (keyDate) document.getElementById('key-date-input').value = keyDate;
+  }
+
   renderSourceSchemaTable();
   renderKeyPills();
   renderSchemaTable();
-  initMappings();
+  if (!restored || mappings.length === 0) initMappings();
+  renderMappingTable();
   renderExtDatasetList();
   updateConfigVersionDisplay();
   updateEnvSummary();
+  refreshUploadUI();
   renderMdTable();
   renderDepMap();
   initHierTabs();
   renderDashboard();
+
+  if (restored) showRecoveryBanner(restored);
 });
 
 // ── Dynamic Validation (uses schema) ──
@@ -4963,6 +5333,9 @@ const SECTION_MAP = {
   'results': 'migration-section',
   'issues-card': 'migration-section',
   'lsmw-card': 'migration-section',
+  'analytics-section': 'analytics-section',
+  'env-compare-section': 'env-compare-section',
+  'audit-section': 'audit-section',
 };
 
 const ENV_COLORS = { dev: '#3b82f6', sit: '#f59e0b', uat: '#8b5cf6', prod: '#10b981' };
@@ -5747,6 +6120,228 @@ function download(name, content, type) {
   a.download = name;
   a.click();
   URL.revokeObjectURL(a.href);
+}
+
+// ════════════════════════════════════════════════
+// ── localStorage Persistence + Project Files ──
+// ════════════════════════════════════════════════
+const LS_KEY = 'lsmw_migration_state';
+let _savePending = null;
+
+function getSerializableState() {
+  return {
+    _v: 1,
+    activeEnv: activeEnv,
+    schema: schema,
+    sourceSchema: sourceSchema,
+    keyDate: keyDate,
+    mappings: mappings,
+    configVersions: { source: configVersions.source, target: configVersions.target, mapping: configVersions.mapping },
+    configMeta: configMeta,
+    envFiles: serializeEnvFiles(),
+    mdEdits: serializeMdEdits(),
+    hierarchies: hierarchies,
+    externalDatasets: serializeExtDatasets(),
+    savedAt: new Date().toISOString(),
+  };
+}
+
+function serializeEnvFiles() {
+  const out = {};
+  ENVS.forEach(e => {
+    out[e] = {};
+    FILE_KEYS.forEach(k => {
+      const f = envFiles[e][k];
+      if (f) out[e][k] = { name: f.name, rows: f.rows, version: f.version, loadedAt: f.loadedAt };
+    });
+  });
+  return out;
+}
+
+function serializeMdEdits() {
+  const out = {};
+  ENVS.forEach(e => {
+    out[e] = {};
+    Object.keys(mdEdits[e]).forEach(k => {
+      if (mdEdits[e][k] && mdEdits[e][k].length > 0) out[e][k] = mdEdits[e][k];
+    });
+  });
+  return out;
+}
+
+function serializeExtDatasets() {
+  const out = {};
+  Object.keys(externalDatasets).forEach(n => {
+    const ds = externalDatasets[n];
+    out[n] = { rows: ds.rows, headers: ds.headers, fileName: ds.fileName };
+  });
+  return out;
+}
+
+function saveState() {
+  if (_savePending) clearTimeout(_savePending);
+  _savePending = setTimeout(() => {
+    try {
+      const json = JSON.stringify(getSerializableState());
+      localStorage.setItem(LS_KEY, json);
+    } catch (e) {
+      console.warn('Auto-save failed:', e.message);
+    }
+    _savePending = null;
+  }, 500);
+}
+
+function restoreState() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return false;
+    const s = JSON.parse(raw);
+    if (!s || !s._v) return false;
+
+    // Restore state
+    activeEnv = s.activeEnv || 'dev';
+    if (s.schema && s.schema.length > 0) schema = s.schema;
+    if (s.sourceSchema && s.sourceSchema.length > 0) sourceSchema = s.sourceSchema;
+    keyDate = s.keyDate || null;
+    if (s.mappings) mappings = s.mappings;
+    if (s.configVersions) {
+      configVersions.source = s.configVersions.source || 1;
+      configVersions.target = s.configVersions.target || 1;
+      configVersions.mapping = s.configVersions.mapping || 1;
+    }
+    if (s.configMeta) configMeta = s.configMeta;
+
+    // Restore envFiles
+    if (s.envFiles) {
+      ENVS.forEach(e => {
+        if (s.envFiles[e]) {
+          FILE_KEYS.forEach(k => {
+            if (s.envFiles[e][k]) envFiles[e][k] = s.envFiles[e][k];
+          });
+        }
+      });
+    }
+
+    // Restore mdEdits
+    if (s.mdEdits) {
+      ENVS.forEach(e => {
+        if (s.mdEdits[e]) {
+          Object.keys(s.mdEdits[e]).forEach(k => { mdEdits[e][k] = s.mdEdits[e][k]; });
+        }
+      });
+    }
+
+    // Restore hierarchies
+    if (s.hierarchies) {
+      ENVS.forEach(e => {
+        if (s.hierarchies[e]) hierarchies[e] = s.hierarchies[e];
+      });
+    }
+
+    // Restore external datasets
+    if (s.externalDatasets) {
+      Object.keys(s.externalDatasets).forEach(n => { externalDatasets[n] = s.externalDatasets[n]; });
+    }
+
+    return s.savedAt || true;
+  } catch (e) {
+    console.warn('Restore failed:', e.message);
+    return false;
+  }
+}
+
+function clearSavedState() {
+  localStorage.removeItem(LS_KEY);
+}
+
+// ── Project File Export/Import ──
+function exportProject() {
+  const state = getSerializableState();
+  state._type = 'lsmw_project';
+  const json = JSON.stringify(state, null, 2);
+  download('lsmw_project_' + new Date().toISOString().slice(0, 10) + '.json', json, 'application/json');
+}
+
+function importProject() {
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = '.json';
+  inp.onchange = () => {
+    const file = inp.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const s = JSON.parse(reader.result);
+        if (!s._v || s._type !== 'lsmw_project') {
+          alert('Invalid project file. Expected an LSMW project export.');
+          return;
+        }
+        localStorage.setItem(LS_KEY, reader.result);
+        location.reload();
+      } catch (e) {
+        alert('Failed to parse project file: ' + e.message);
+      }
+    };
+    reader.readAsText(file);
+  };
+  inp.click();
+}
+
+// ── Hook auto-save into state changes ──
+const _origHandleFile = handleFile;
+handleFile = function(input, key) {
+  _origHandleFile(input, key);
+  // handleFile is async (FileReader), so save after a delay
+  setTimeout(saveState, 800);
+};
+
+const _origLoadSampleData = loadSampleData;
+loadSampleData = function() {
+  _origLoadSampleData();
+  saveState();
+};
+
+// Patch initMappings to auto-save
+const _origInitMappings = initMappings;
+initMappings = function() {
+  _origInitMappings();
+  saveState();
+};
+
+// Patch runMigration to auto-save after run
+const _origRunMigration = runMigration;
+runMigration = function() {
+  _origRunMigration();
+  saveState();
+};
+
+// Patch switchEnvSidebar to save env choice
+const _origSwitchEnv = switchEnvSidebar;
+switchEnvSidebar = function(env) {
+  _origSwitchEnv(env);
+  saveState();
+};
+
+// Save when schema/mapping changes are made
+const _origOnSourceSchemaChanged = onSourceSchemaChanged;
+onSourceSchemaChanged = function() { _origOnSourceSchemaChanged(); saveState(); };
+const _origOnTargetSchemaChanged = onTargetSchemaChanged;
+onTargetSchemaChanged = function() { _origOnTargetSchemaChanged(); saveState(); };
+const _origOnMappingChanged = onMappingChanged;
+onMappingChanged = function() { _origOnMappingChanged(); saveState(); };
+
+// ── Recovery Banner + Init ──
+function showRecoveryBanner(savedAt) {
+  const ts = typeof savedAt === 'string' ? formatTimestamp(savedAt) : '';
+  const banner = document.createElement('div');
+  banner.id = 'recovery-banner';
+  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#059669;color:white;padding:10px 20px;display:flex;align-items:center;justify-content:center;gap:12px;font-size:0.85rem;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,0.15);';
+  banner.innerHTML = 'Session restored' + (ts ? ' from ' + ts : '') +
+    '<button onclick="this.parentElement.remove()" style="background:rgba(255,255,255,0.2);border:none;color:white;padding:3px 10px;border-radius:4px;cursor:pointer;font-size:0.78rem;">Dismiss</button>' +
+    '<button onclick="clearSavedState();location.reload()" style="background:rgba(255,255,255,0.2);border:none;color:white;padding:3px 10px;border-radius:4px;cursor:pointer;font-size:0.78rem;">Start Fresh</button>';
+  document.body.prepend(banner);
+  setTimeout(() => { if (document.getElementById('recovery-banner')) banner.remove(); }, 8000);
 }
 </script>
 </body>
