@@ -1982,10 +1982,10 @@ tbody tr:hover { background: #f9fafb; }
       <span class="nav-tooltip">All Issues</span>
     </div>
 
-    <div class="nav-item" onclick="showSection('migration-workspace-card','lsmw-card')" data-nav="lsmw-card" role="button" tabindex="0" aria-label="LSMW Output">
+    <div class="nav-item" onclick="downloadAll()" data-nav="lsmw-card" role="button" tabindex="0" aria-label="Download LSMW">
       <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></span>
-      <span class="nav-label">LSMW Output</span>
-      <span class="nav-tooltip">LSMW Output</span>
+      <span class="nav-label">Download</span>
+      <span class="nav-tooltip">Download LSMW + Report</span>
     </div>
   </div>
 
@@ -5205,6 +5205,14 @@ function downloadLSMW() {
 }
 function downloadReport() {
   download('migration_report_' + activeEnv + '.json', JSON.stringify(lastReport, null, 2), 'application/json');
+}
+function downloadAll() {
+  if (!lastLSMW && !lastReport) {
+    alert('No migration data to download. Run a migration validation first.');
+    return;
+  }
+  if (lastLSMW) downloadLSMW();
+  if (lastReport) setTimeout(downloadReport, 200);
 }
 function download(name, content, type) {
   const blob = new Blob([content], { type });
