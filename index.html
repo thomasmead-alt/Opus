@@ -833,6 +833,171 @@ header p { color: var(--text-muted); font-size: 0.95rem; }
   font-style: italic;
 }
 
+/* ── Dashboard Workflow Steps ── */
+.dash-workflow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  margin-bottom: 28px;
+  position: relative;
+}
+.dash-workflow::before {
+  content: '';
+  position: absolute;
+  top: 36px;
+  left: 10%;
+  right: 10%;
+  height: 3px;
+  background: var(--border);
+  z-index: 0;
+}
+.dash-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  z-index: 1;
+  padding: 0 8px;
+}
+.dash-step-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  border: 3px solid var(--border);
+  background: var(--card);
+  margin-bottom: 10px;
+  transition: all 0.2s;
+}
+.dash-step-icon svg { width: 24px; height: 24px; stroke: var(--text-muted); fill: none; stroke-width: 2; }
+.dash-step.complete .dash-step-icon { border-color: var(--success); background: #ecfdf5; }
+.dash-step.complete .dash-step-icon svg { stroke: var(--success); }
+.dash-step.active .dash-step-icon { border-color: var(--primary); background: #eff6ff; box-shadow: 0 0 0 4px rgba(59,130,246,0.15); }
+.dash-step.active .dash-step-icon svg { stroke: var(--primary); }
+.dash-step-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin-bottom: 3px;
+  color: var(--text);
+}
+.dash-step-desc {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+  max-width: 160px;
+}
+.dash-step-badge {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* ── Dashboard Upload Zone ── */
+.dash-upload-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  padding: 24px;
+  margin-bottom: 24px;
+  text-align: center;
+  transition: border-color 0.2s, background 0.2s;
+}
+.dash-upload-zone:hover { border-color: var(--primary); background: #f8faff; }
+.dash-upload-zone h3 {
+  font-size: 1rem;
+  margin: 0 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.dash-upload-zone p {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin: 0 0 14px;
+}
+.dash-upload-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+.dash-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  transition: all 0.15s;
+}
+.dash-upload-btn:hover { border-color: var(--primary); color: var(--primary); }
+.dash-upload-btn.primary-upload {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+.dash-upload-btn.primary-upload:hover { background: #2563eb; }
+.dash-upload-btn svg { width: 16px; height: 16px; }
+.dash-upload-btn input[type="file"] { display: none; }
+
+/* ── Dashboard LSMW Download Footer ── */
+.dash-download-footer {
+  margin-top: 24px;
+  padding: 16px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.dash-download-footer .dash-dl-info {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.dash-download-footer .dash-dl-info strong { color: var(--text); }
+.dash-dl-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  background: var(--success);
+  color: white;
+  transition: background 0.15s;
+}
+.dash-dl-btn:hover { background: #059669; }
+.dash-dl-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.dash-dl-btn svg { width: 16px; height: 16px; }
+
+@media (max-width: 700px) {
+  .dash-workflow { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .dash-workflow::before { display: none; }
+  .dash-download-footer { flex-direction: column; text-align: center; }
+}
+
 .actions { text-align: center; margin: 24px 0; }
 
 button.primary {
@@ -2011,13 +2176,27 @@ tbody tr:hover { background: #f9fafb; }
     <div class="dashboard">
       <div class="dashboard-header">
         <h1>Migration Dashboard</h1>
-        <p>Cross-environment overview of data migration readiness and quality</p>
+        <p>SAP LSMW Invoice Migration &mdash; schema once, migrate everywhere</p>
       </div>
+
+      <!-- Workflow Steps -->
+      <div class="dash-workflow" id="dash-workflow"></div>
+
+      <!-- Upload Zone -->
+      <div class="dash-upload-zone" id="dash-upload-zone"></div>
+
+      <!-- Environment Progress -->
+      <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:12px;">Environment Progress</h2>
       <div class="dash-env-grid" id="dash-env-grid"></div>
+
+      <!-- Data Quality -->
       <div class="dash-quality-section">
         <h2>Data Quality by Environment</h2>
         <div class="dash-quality-grid" id="dash-quality-grid"></div>
       </div>
+
+      <!-- LSMW Download Footer -->
+      <div class="dash-download-footer" id="dash-download-footer"></div>
     </div>
   </div>
 
@@ -4895,11 +5074,122 @@ function updateSidebarEnv() {
 }
 
 // ── Dashboard Rendering ──
+function dashUploadFile(key) {
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = '.csv,.tsv,.txt';
+  inp.onchange = () => { handleFile(inp, key); renderDashboard(); };
+  inp.click();
+}
+
 function renderDashboard() {
   const envGrid = document.getElementById('dash-env-grid');
   const qualGrid = document.getElementById('dash-quality-grid');
+  const workflowEl = document.getElementById('dash-workflow');
+  const uploadEl = document.getElementById('dash-upload-zone');
+  const dlFooter = document.getElementById('dash-download-footer');
 
-  // Environment cards
+  // ── Workflow Steps ──
+  const hasSchema = schema && schema.length > 0;
+  const ef = envFiles[activeEnv];
+  const hasAP = !!(ef && ef.ap);
+  const hasAnyMD = FILE_KEYS.slice(1).some(k => ef && ef[k]);
+  const hasMigration = !!lastLSMW;
+
+  const steps = [
+    {
+      label: 'Define Schema',
+      desc: 'Configure once — shared across all environments',
+      badge: 'Configure Once',
+      icon: '<svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+      done: hasSchema,
+      action: "showSection('schema-workspace-card')"
+    },
+    {
+      label: 'Upload Data',
+      desc: 'AP invoices + master data for ' + ENV_LABELS[activeEnv],
+      icon: '<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+      done: hasAP && hasAnyMD,
+      action: "showSection('migration-workspace-card')"
+    },
+    {
+      label: 'Validate & Map',
+      desc: 'Review mappings, resolve issues, check quality',
+      icon: '<svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+      done: hasAP && hasSchema,
+      action: "showSection('migration-workspace-card')"
+    },
+    {
+      label: 'Download LSMW',
+      desc: 'Export flat file + reconciliation report',
+      icon: '<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+      done: hasMigration,
+      action: 'downloadAll()'
+    }
+  ];
+
+  // Determine active step (first incomplete)
+  let activeIdx = steps.findIndex(s => !s.done);
+  if (activeIdx === -1) activeIdx = steps.length - 1;
+
+  workflowEl.innerHTML = steps.map((s, i) => {
+    const cls = s.done ? 'complete' : (i === activeIdx ? 'active' : '');
+    return '<div class="dash-step ' + cls + '" onclick="' + s.action + '">' +
+      '<div class="dash-step-icon">' + s.icon + '</div>' +
+      '<div class="dash-step-label">' + s.label + '</div>' +
+      '<div class="dash-step-desc">' + s.desc + '</div>' +
+      (s.badge ? '<span class="dash-step-badge">' + s.badge + '</span>' : '') +
+    '</div>';
+  }).join('');
+
+  // ── Upload Zone ──
+  const envLabel = ENV_LABELS[activeEnv];
+  const envColor = ENV_COLORS[activeEnv];
+  const apLoaded = ef && ef.ap;
+  const mdLoaded = FILE_KEYS.slice(1).filter(k => ef && ef[k]).length;
+  const mdTotal = FILE_KEYS.length - 1;
+
+  uploadEl.innerHTML = '<h3>' +
+    '<svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:' + envColor + ';fill:none;stroke-width:2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+    'Upload Files for <span style="color:' + envColor + '">' + envLabel + '</span></h3>' +
+    '<p>AP invoices: ' + (apLoaded ? '<span style="color:var(--success);font-weight:600">' + ef.ap.rows.length + ' rows loaded</span>' : '<span style="color:var(--text-muted)">not loaded</span>') +
+    ' &middot; Master data: <span style="font-weight:600">' + mdLoaded + '/' + mdTotal + '</span> types loaded</p>' +
+    '<div class="dash-upload-actions">' +
+      '<label class="dash-upload-btn primary-upload">' +
+        '<svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M12 18v-6M9 15h6"/></svg>' +
+        'Upload AP Invoices' +
+        '<input type="file" accept=".csv,.tsv,.txt" onchange="handleFile(this,\'ap\');renderDashboard()">' +
+      '</label>' +
+      '<button class="dash-upload-btn" onclick="showSection(\'masterdata-workspace-card\')">' +
+        '<svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:2"><path d="M2 20h20M5 20V10l7-7 7 7v10M9 20v-6h6v6"/></svg>' +
+        'Manage Master Data' +
+      '</button>' +
+      '<button class="dash-upload-btn" onclick="loadSampleData();renderDashboard()">' +
+        '<svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>' +
+        'Load Sample Data' +
+      '</button>' +
+    '</div>';
+
+  // ── LSMW Download Footer ──
+  if (lastLSMW || lastReport) {
+    dlFooter.style.display = 'flex';
+    const rowCount = lastReport ? lastReport.reconciliation.row_accounting.passed : '?';
+    dlFooter.innerHTML = '<div class="dash-dl-info">' +
+      '<strong>LSMW output ready</strong> &mdash; ' + rowCount + ' rows passed validation' +
+    '</div>' +
+    '<button class="dash-dl-btn" onclick="downloadAll()">' +
+      '<svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+      'Download LSMW + Report' +
+    '</button>';
+  } else {
+    dlFooter.style.display = 'flex';
+    dlFooter.innerHTML = '<div class="dash-dl-info">' +
+      '<strong>No LSMW output yet</strong> &mdash; run a migration to generate the flat file' +
+    '</div>' +
+    '<button class="dash-dl-btn" disabled>Download LSMW + Report</button>';
+  }
+
+  // ── Environment cards ──
   envGrid.innerHTML = ENVS.map(env => {
     const ef = envFiles[env];
     const loaded = FILE_KEYS.filter(k => ef[k]);
