@@ -6123,6 +6123,109 @@ function download(name, content, type) {
 }
 
 // ════════════════════════════════════════════
+// ── Drag-and-Drop Mapping Builder ──
+// ════════════════════════════════════════════
+let _dndDragField = null;
+
+function renderDndMapping() {
+  const pool = document.getElementById('dnd-source-pool');
+  const list = document.getElementById('dnd-target-list');
+  if (!pool || !list) return;
+
+  // Determine which source fields are already mapped
+  const mappedSources = new Set(mappings.filter(m => m.sourceField).map(m => m.sourceField));
+
+  // Unmapped source chips
+  const unmapped = sourceSchema.filter(s => !mappedSources.has(s.field));
+  pool.innerHTML = unmapped.length === 0
+    ? '<span style="font-size:0.75rem;color:var(--text-muted);font-style:italic;">All source fields mapped!</span>'
+    : unmapped.map(s =>
+      '<div class="dnd-field-chip source" draggable="true" data-field="' + esc(s.field) + '" ' +
+        'ondragstart="dndDragStart(event,\'' + esc(s.field) + '\')" ' +
+        'ondragend="dndDragEnd(event)">' +
+        esc(s.field) +
+      '</div>'
+    ).join('');
+
+  // Target field rows with drop zones
+  list.innerHTML = mappings.map((m, i) => {
+    const hasSrc = !!m.sourceField;
+    return '<div class="dnd-connector">' +
+      '<div class="dnd-field-chip target" style="min-width:130px;">' + esc(m.targetField) + '</div>' +
+      '<span class="dnd-arrow">\u2190</span>' +
+      '<div class="dnd-drop-target' + (hasSrc ? ' has-value' : '') + '" ' +
+        'data-idx="' + i + '" ' +
+        'ondragover="dndDragOver(event)" ' +
+        'ondragleave="dndDragLeave(event)" ' +
+        'ondrop="dndDrop(event,' + i + ')">' +
+        (hasSrc
+          ? '<span class="dnd-field-chip source" style="margin:0;cursor:default;">' + esc(m.sourceField) +
+            ' <span onclick="dndRemoveMapping(' + i + ')" style="cursor:pointer;margin-left:4px;color:#1e40af;" title="Remove">&times;</span></span>'
+          : 'Drop source field here') +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function dndDragStart(e, field) {
+  _dndDragField = field;
+  e.dataTransfer.setData('text/plain', field);
+  e.dataTransfer.effectAllowed = 'move';
+  e.target.classList.add('drag-ghost');
+  // Highlight all drop targets
+  document.querySelectorAll('.dnd-drop-target:not(.has-value)').forEach(d => d.classList.add('drop-active'));
+}
+
+function dndDragEnd(e) {
+  _dndDragField = null;
+  e.target.classList.remove('drag-ghost');
+  document.querySelectorAll('.dnd-drop-target').forEach(d => d.classList.remove('drop-active'));
+}
+
+function dndDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.classList.add('drop-active');
+}
+
+function dndDragLeave(e) {
+  e.currentTarget.classList.remove('drop-active');
+}
+
+function dndDrop(e, idx) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drop-active');
+  const field = e.dataTransfer.getData('text/plain') || _dndDragField;
+  if (!field) return;
+
+  // Set the mapping
+  mappings[idx].sourceField = field;
+  onMappingChanged();
+  renderMappingTable();
+  // renderMappingTable calls renderDndMapping via the patch below
+}
+
+function dndRemoveMapping(idx) {
+  mappings[idx].sourceField = '';
+  onMappingChanged();
+  renderMappingTable();
+}
+
+function clearAllMappings() {
+  if (!confirm('Clear all source-to-target mappings?')) return;
+  mappings.forEach(m => { m.sourceField = ''; });
+  onMappingChanged();
+  renderMappingTable();
+}
+
+// Patch renderMappingTable to also render DnD zone
+const _origRenderMappingTable = renderMappingTable;
+renderMappingTable = function() {
+  _origRenderMappingTable();
+  renderDndMapping();
+};
+
+// ════════════════════════════════════════════
 // ── Audit Trail / Change Log ──
 // ════════════════════════════════════════════
 let auditLog = [];
