@@ -24,6 +24,14 @@
   --success: #16a34a;
   --success-bg: #f0fdf4;
   --radius: 8px;
+  --sidebar-width: 64px;
+  --sidebar-expanded: 240px;
+  --sidebar-bg: #1B1D1F;
+  --sidebar-hover: rgba(255,255,255,0.06);
+  --sidebar-active: rgba(255,255,255,0.1);
+  --sidebar-accent: #FF3621;
+  --sidebar-text: #9ca3af;
+  --sidebar-text-active: #ffffff;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -33,7 +41,237 @@ body {
   background: var(--bg);
   color: var(--text);
   line-height: 1.6;
+  display: flex;
+  min-height: 100vh;
 }
+
+/* ── Sidebar ── */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  background: var(--sidebar-bg);
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+  transition: width 0.2s ease;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.sidebar.expanded { width: var(--sidebar-expanded); }
+.sidebar.expanded .nav-label { opacity: 1; }
+.sidebar.expanded .sidebar-top-name { display: block; }
+.sidebar.expanded .sidebar-toggle-icon { transform: rotate(180deg); }
+
+.sidebar-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  min-height: 56px;
+  flex-shrink: 0;
+}
+.sidebar-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, var(--sidebar-accent), #ff6b4a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.sidebar-logo svg { width: 18px; height: 18px; fill: #fff; }
+.sidebar-top-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--sidebar-text-active);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: none;
+}
+
+.sidebar-toggle {
+  position: absolute;
+  top: 16px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: var(--sidebar-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background 0.15s;
+  font-size: 0.7rem;
+}
+.sidebar-toggle:hover { background: var(--sidebar-hover); color: var(--sidebar-text-active); }
+.sidebar-toggle-icon { transition: transform 0.2s ease; display: inline-block; }
+
+.sidebar-nav {
+  flex: 1;
+  padding: 8px 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.sidebar-nav::-webkit-scrollbar { width: 0; }
+
+.nav-section-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.3);
+  padding: 12px 20px 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.sidebar.expanded .nav-section-label { opacity: 1; }
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 20px;
+  gap: 12px;
+  cursor: pointer;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  position: relative;
+  transition: background 0.12s, color 0.12s;
+  border-left: 3px solid transparent;
+  white-space: nowrap;
+}
+.nav-item:hover {
+  background: var(--sidebar-hover);
+  color: var(--sidebar-text-active);
+}
+.nav-item.active {
+  border-left-color: var(--sidebar-accent);
+  background: var(--sidebar-active);
+  color: var(--sidebar-text-active);
+}
+.nav-item.active .nav-icon { color: var(--sidebar-text-active); }
+
+.nav-icon {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.nav-icon svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+.nav-label {
+  font-size: 0.84rem;
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity 0.15s ease 0.05s;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.nav-badge {
+  margin-left: auto;
+  font-size: 0.65rem;
+  font-weight: 600;
+  background: var(--sidebar-accent);
+  color: #fff;
+  padding: 1px 6px;
+  border-radius: 8px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.sidebar.expanded .nav-badge { opacity: 1; }
+
+/* Tooltip for collapsed sidebar */
+.nav-item .nav-tooltip {
+  position: absolute;
+  left: calc(var(--sidebar-width) - 4px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: #374151;
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 5px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s;
+  z-index: 1001;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.nav-item .nav-tooltip::before {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 4px solid transparent;
+  border-right-color: #374151;
+}
+.sidebar:not(.expanded) .nav-item:hover .nav-tooltip { opacity: 1; }
+
+.sidebar-bottom {
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding: 8px 0;
+  flex-shrink: 0;
+}
+
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background 0.12s;
+  border-left: 3px solid transparent;
+}
+.sidebar-user:hover { background: var(--sidebar-hover); }
+.sidebar-user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.sidebar-user-name {
+  font-size: 0.82rem;
+  color: var(--sidebar-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.sidebar.expanded .sidebar-user-name { opacity: 1; }
+
+/* ── Main Content ── */
+.main-content {
+  margin-left: var(--sidebar-width);
+  flex: 1;
+  min-width: 0;
+  transition: margin-left 0.2s ease;
+}
+body.sidebar-expanded .main-content { margin-left: var(--sidebar-expanded); }
 
 .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
 
@@ -1422,8 +1660,96 @@ tbody tr:hover { background: #f9fafb; }
 </style>
 </head>
 <body>
+
+<!-- ── Sidebar Navigation ── -->
+<nav class="sidebar" id="sidebar" aria-label="Main navigation">
+  <div class="sidebar-top">
+    <div class="sidebar-logo">
+      <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>
+    </div>
+    <span class="sidebar-top-name">SAP LSMW Migration</span>
+  </div>
+  <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar" title="Toggle sidebar">
+    <span class="sidebar-toggle-icon">&#9654;</span>
+  </button>
+
+  <div class="sidebar-nav">
+    <div class="nav-section-label">Navigation</div>
+
+    <div class="nav-item active" onclick="navTo('header')" data-nav="header" role="button" tabindex="0" aria-label="Home">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1"/></svg></span>
+      <span class="nav-label">Home</span>
+      <span class="nav-tooltip">Home</span>
+    </div>
+
+    <div class="nav-item" onclick="navTo('schema-workspace-card')" data-nav="schema-workspace-card" role="button" tabindex="0" aria-label="Schema">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></span>
+      <span class="nav-label">Schema</span>
+      <span class="nav-tooltip">Schema Workspace</span>
+    </div>
+
+    <div class="nav-item" onclick="navTo('masterdata-workspace-card')" data-nav="masterdata-workspace-card" role="button" tabindex="0" aria-label="Master Data">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 7v10c0 2 3.6 4 8 4s8-2 8-4V7M4 7c0 2 3.6 4 8 4s8-2 8-4M4 7c0-2 3.6-4 8-4s8 2 8 4M4 12c0 2 3.6 4 8 4s8-2 8-4"/></svg></span>
+      <span class="nav-label">Master Data</span>
+      <span class="nav-tooltip">Master Data Explorer</span>
+    </div>
+
+    <div class="nav-item" onclick="navTo('hier-panel')" data-nav="hier-panel" role="button" tabindex="0" aria-label="Hierarchies">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 6h18M6 6v6M18 6v6M6 12h12M9 12v6M15 12v6"/></svg></span>
+      <span class="nav-label">Hierarchies</span>
+      <span class="nav-tooltip">Hierarchy Editor</span>
+    </div>
+
+    <div class="nav-section-label">Migration</div>
+
+    <div class="nav-item" onclick="navTo('migration-workspace-card')" data-nav="migration-workspace-card" role="button" tabindex="0" aria-label="Migration">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></span>
+      <span class="nav-label">Migration</span>
+      <span class="nav-tooltip">Migration Workspace</span>
+    </div>
+
+    <div class="nav-item" onclick="navTo('results')" data-nav="results" role="button" tabindex="0" aria-label="Results">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></span>
+      <span class="nav-label">Results</span>
+      <span class="nav-tooltip">Validation Results</span>
+    </div>
+
+    <div class="nav-item" onclick="navTo('issues-card')" data-nav="issues-card" role="button" tabindex="0" aria-label="Issues">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"/></svg></span>
+      <span class="nav-label">Issues</span>
+      <span class="nav-badge" id="sidebar-issue-count" style="display:none;">0</span>
+      <span class="nav-tooltip">All Issues</span>
+    </div>
+
+    <div class="nav-item" onclick="navTo('lsmw-card')" data-nav="lsmw-card" role="button" tabindex="0" aria-label="LSMW Output">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></span>
+      <span class="nav-label">LSMW Output</span>
+      <span class="nav-tooltip">LSMW Output</span>
+    </div>
+  </div>
+
+  <div class="sidebar-bottom">
+    <div class="nav-item" onclick="navTo('env-badge')" data-nav="env-badge" role="button" tabindex="0" aria-label="Environment">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+      <span class="nav-label" id="sidebar-env-label">DEV</span>
+      <span class="nav-tooltip">Environment</span>
+    </div>
+    <div class="nav-item" onclick="window.scrollTo({top:0,behavior:'smooth'})" role="button" tabindex="0" aria-label="Help">
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01"/></svg></span>
+      <span class="nav-label">Help</span>
+      <span class="nav-tooltip">Help</span>
+    </div>
+    <div class="sidebar-user" onclick="toggleSidebar()">
+      <div class="sidebar-user-avatar">DM</div>
+      <span class="sidebar-user-name">Data Migration</span>
+    </div>
+  </div>
+</nav>
+
+<!-- ── Main Content ── -->
+<div class="main-content" id="main-content">
 <div class="container">
-  <header>
+  <header id="header">
     <h1>SAP LSMW Invoice Migration</h1>
     <p>Upload AP invoice data and master data CSVs to validate and generate LSMW flat files</p>
   </header>
@@ -1870,6 +2196,7 @@ tbody tr:hover { background: #f9fafb; }
   </div><!-- /card-body -->
   </div><!-- /migration-workspace-card -->
 </div>
+</div><!-- /main-content -->
 
 <script>
 // ── State ──
@@ -2099,6 +2426,7 @@ function switchEnv(env) {
   refreshUploadUI();
   updateEnvSummary();
   renderMdTable();
+  if (typeof updateSidebarEnv === 'function') updateSidebarEnv();
 }
 
 function refreshUploadUI() {
@@ -3785,6 +4113,7 @@ function renderResults(r, passedRows) {
     document.getElementById('migration-workspace-card-arrow').classList.add('open');
   }
   document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+  if (typeof updateSidebarBadge === 'function') updateSidebarBadge();
 }
 
 function statCard(label, value, cls) {
@@ -3930,6 +4259,121 @@ function getWorstSeverity(issues) {
   issues.forEach(i => { if (sevRank(i.severity) > sevRank(worst)) worst = i.severity; });
   return worst;
 }
+
+// ── Sidebar Navigation ──
+let sidebarPinned = false;
+
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  sidebarPinned = !sidebarPinned;
+  if (sidebarPinned) {
+    sb.classList.add('expanded');
+    document.body.classList.add('sidebar-expanded');
+  } else {
+    sb.classList.remove('expanded');
+    document.body.classList.remove('sidebar-expanded');
+  }
+}
+
+function navTo(targetId) {
+  const el = document.getElementById(targetId);
+  if (!el) return;
+
+  // Open parent cards if collapsed
+  const card = el.closest('.card-collapsible') || el;
+  const body = card.querySelector('.card-body');
+  if (body && !body.classList.contains('open')) {
+    body.classList.add('open');
+    const arrow = card.querySelector('.card-arrow');
+    if (arrow) arrow.classList.add('open');
+  }
+
+  // For items inside a card, also open the card itself
+  if (targetId === 'hier-panel') {
+    const mdBody = document.getElementById('masterdata-workspace-card-body');
+    if (mdBody && !mdBody.classList.contains('open')) {
+      mdBody.classList.add('open');
+      document.getElementById('masterdata-workspace-card-arrow').classList.add('open');
+    }
+  }
+
+  // Make results visible if navigating to results/issues/lsmw
+  if (['results', 'issues-card', 'lsmw-card'].includes(targetId)) {
+    const mwBody = document.getElementById('migration-workspace-card-body');
+    if (mwBody && !mwBody.classList.contains('open')) {
+      mwBody.classList.add('open');
+      document.getElementById('migration-workspace-card-arrow').classList.add('open');
+    }
+  }
+
+  // Update active state
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const navItem = document.querySelector('[data-nav="' + targetId + '"]');
+  if (navItem) navItem.classList.add('active');
+
+  // Scroll
+  setTimeout(() => {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+}
+
+// Track scroll position to highlight active nav item
+function updateActiveNav() {
+  const sections = ['header', 'schema-workspace-card', 'masterdata-workspace-card', 'hier-panel', 'migration-workspace-card', 'results', 'issues-card', 'lsmw-card'];
+  let activeId = 'header';
+  const scrollY = window.scrollY + 100;
+
+  for (const id of sections) {
+    const el = document.getElementById(id);
+    if (el && el.offsetTop <= scrollY) {
+      activeId = id;
+    }
+  }
+
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const navItem = document.querySelector('[data-nav="' + activeId + '"]');
+  if (navItem) navItem.classList.add('active');
+}
+
+// Update sidebar issue badge when results change
+function updateSidebarBadge() {
+  const badge = document.getElementById('sidebar-issue-count');
+  if (lastReport && lastReport.issues && lastReport.issues.length > 0) {
+    badge.style.display = '';
+    badge.textContent = lastReport.issues.length;
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+// Update sidebar env label
+function updateSidebarEnv() {
+  const el = document.getElementById('sidebar-env-label');
+  if (el) el.textContent = ENV_LABELS[activeEnv] || activeEnv.toUpperCase();
+}
+
+let scrollTimer;
+window.addEventListener('scroll', () => {
+  clearTimeout(scrollTimer);
+  scrollTimer = setTimeout(updateActiveNav, 50);
+}, { passive: true });
+
+// Keyboard navigation for sidebar
+document.addEventListener('keydown', (e) => {
+  if (!e.target.closest('.sidebar')) return;
+  const items = Array.from(document.querySelectorAll('.nav-item[tabindex]'));
+  const idx = items.indexOf(document.activeElement);
+  if (e.key === 'ArrowDown' && idx < items.length - 1) {
+    e.preventDefault();
+    items[idx + 1].focus();
+  } else if (e.key === 'ArrowUp' && idx > 0) {
+    e.preventDefault();
+    items[idx - 1].focus();
+  } else if (e.key === 'Enter' && idx >= 0) {
+    e.preventDefault();
+    items[idx].click();
+  }
+});
 
 // ── Hierarchy Editor ──
 let activeHierTab = '';
