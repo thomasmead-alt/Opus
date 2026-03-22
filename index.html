@@ -583,6 +583,254 @@ header p { color: var(--text-muted); font-size: 0.95rem; }
   font-style: italic;
 }
 
+/* ── Environment-themed Sidebar ── */
+.sidebar.env-dev { border-right: 2px solid #3b82f6; }
+.sidebar.env-sit { border-right: 2px solid #f59e0b; }
+.sidebar.env-uat { border-right: 2px solid #8b5cf6; }
+.sidebar.env-prod { border-right: 2px solid #10b981; }
+
+.sidebar.env-dev .sidebar-env-strip { background: #3b82f6; }
+.sidebar.env-sit .sidebar-env-strip { background: #f59e0b; }
+.sidebar.env-uat .sidebar-env-strip { background: #8b5cf6; }
+.sidebar.env-prod .sidebar-env-strip { background: #10b981; }
+
+.sidebar-env-strip {
+  height: 3px;
+  width: 100%;
+  transition: background 0.3s;
+}
+
+.sidebar-env-selector {
+  padding: 8px 10px;
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.sidebar.expanded .sidebar-env-selector { padding: 8px 14px; }
+
+.sidebar-env-btn {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 2px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--sidebar-text);
+  font-size: 0.65rem;
+  font-weight: 700;
+  font-family: inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+.sidebar-env-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.sidebar-env-btn.active-dev { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+.sidebar-env-btn.active-sit { background: #f59e0b; color: #fff; border-color: #f59e0b; }
+.sidebar-env-btn.active-uat { background: #8b5cf6; color: #fff; border-color: #8b5cf6; }
+.sidebar-env-btn.active-prod { background: #10b981; color: #fff; border-color: #10b981; }
+
+/* ── Section Visibility ── */
+.workspace-section { display: none; }
+.workspace-section.section-visible { display: block; }
+
+/* ── Dashboard ── */
+.dashboard { padding: 0; }
+.dashboard-header {
+  margin-bottom: 24px;
+}
+.dashboard-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.dashboard-header p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.dash-env-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.dash-env-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  overflow: hidden;
+  transition: box-shadow 0.15s;
+  cursor: pointer;
+}
+.dash-env-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+.dash-env-card.active { box-shadow: 0 0 0 2px var(--primary); }
+
+.dash-env-card-strip {
+  height: 4px;
+}
+.dash-env-card-strip.env-dev { background: #3b82f6; }
+.dash-env-card-strip.env-sit { background: #f59e0b; }
+.dash-env-card-strip.env-uat { background: #8b5cf6; }
+.dash-env-card-strip.env-prod { background: #10b981; }
+
+.dash-env-card-body {
+  padding: 14px 16px;
+}
+.dash-env-card-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.dash-env-card-title h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 0;
+}
+.dash-env-card-title .dash-env-pct {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.dash-progress-bar {
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.dash-progress-bar .dash-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+.dash-fill.env-dev { background: #3b82f6; }
+.dash-fill.env-sit { background: #f59e0b; }
+.dash-fill.env-uat { background: #8b5cf6; }
+.dash-fill.env-prod { background: #10b981; }
+
+.dash-file-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 8px;
+}
+.dash-file-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  padding: 2px 0;
+}
+.dash-file-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.dash-file-dot.loaded { background: var(--success); }
+.dash-file-dot.missing { background: #d1d5db; }
+.dash-file-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+.dash-file-name.loaded { color: var(--text); font-weight: 500; }
+.dash-file-rows {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.dash-quality-section {
+  margin-top: 24px;
+}
+.dash-quality-section h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.dash-quality-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.dash-quality-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  padding: 12px 14px;
+}
+.dash-quality-card h4 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.dash-quality-card h4 .dash-q-env {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 3px;
+  color: #fff;
+  text-transform: uppercase;
+}
+.dash-q-env.env-dev { background: #3b82f6; }
+.dash-q-env.env-sit { background: #f59e0b; }
+.dash-q-env.env-uat { background: #8b5cf6; }
+.dash-q-env.env-prod { background: #10b981; }
+
+.dash-quality-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.dash-quality-bar .dash-q-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  min-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dash-quality-bar .dash-q-track {
+  flex: 1;
+  height: 5px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.dash-quality-bar .dash-q-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+.dash-q-fill.green { background: var(--success); }
+.dash-q-fill.amber { background: var(--warning); }
+.dash-q-fill.red { background: var(--critical); }
+.dash-quality-bar .dash-q-pct {
+  font-size: 0.72rem;
+  font-weight: 600;
+  min-width: 32px;
+  text-align: right;
+}
+
+.dash-last-run {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 8px;
+  font-style: italic;
+}
+
 .actions { text-align: center; margin: 24px 0; }
 
 button.primary {
@@ -1662,7 +1910,8 @@ tbody tr:hover { background: #f9fafb; }
 <body>
 
 <!-- ── Sidebar Navigation ── -->
-<nav class="sidebar" id="sidebar" aria-label="Main navigation">
+<nav class="sidebar env-dev" id="sidebar" aria-label="Main navigation">
+  <div class="sidebar-env-strip"></div>
   <div class="sidebar-top">
     <div class="sidebar-logo">
       <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>
@@ -1673,28 +1922,38 @@ tbody tr:hover { background: #f9fafb; }
     <span class="sidebar-toggle-icon">&#9654;</span>
   </button>
 
-  <div class="sidebar-nav">
-    <div class="nav-section-label">Navigation</div>
+  <!-- Environment Selector -->
+  <div class="sidebar-env-selector" id="sidebar-env-selector">
+    <button class="sidebar-env-btn active-dev" onclick="switchEnvSidebar('dev')">DEV</button>
+    <button class="sidebar-env-btn" onclick="switchEnvSidebar('sit')">SIT</button>
+    <button class="sidebar-env-btn" onclick="switchEnvSidebar('uat')">UAT</button>
+    <button class="sidebar-env-btn" onclick="switchEnvSidebar('prod')">PROD</button>
+  </div>
 
-    <div class="nav-item active" onclick="navTo('header')" data-nav="header" role="button" tabindex="0" aria-label="Home">
+  <div class="sidebar-nav">
+    <div class="nav-section-label">Overview</div>
+
+    <div class="nav-item active" onclick="showSection('dashboard')" data-nav="dashboard" role="button" tabindex="0" aria-label="Dashboard">
       <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1"/></svg></span>
-      <span class="nav-label">Home</span>
-      <span class="nav-tooltip">Home</span>
+      <span class="nav-label">Dashboard</span>
+      <span class="nav-tooltip">Dashboard</span>
     </div>
 
-    <div class="nav-item" onclick="navTo('schema-workspace-card')" data-nav="schema-workspace-card" role="button" tabindex="0" aria-label="Schema">
+    <div class="nav-section-label">Configuration</div>
+
+    <div class="nav-item" onclick="showSection('schema-workspace-card')" data-nav="schema-workspace-card" role="button" tabindex="0" aria-label="Schema">
       <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></span>
       <span class="nav-label">Schema</span>
       <span class="nav-tooltip">Schema Workspace</span>
     </div>
 
-    <div class="nav-item" onclick="navTo('masterdata-workspace-card')" data-nav="masterdata-workspace-card" role="button" tabindex="0" aria-label="Master Data">
+    <div class="nav-item" onclick="showSection('masterdata-workspace-card')" data-nav="masterdata-workspace-card" role="button" tabindex="0" aria-label="Master Data">
       <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 7v10c0 2 3.6 4 8 4s8-2 8-4V7M4 7c0 2 3.6 4 8 4s8-2 8-4M4 7c0-2 3.6-4 8-4s8 2 8 4M4 12c0 2 3.6 4 8 4s8-2 8-4"/></svg></span>
       <span class="nav-label">Master Data</span>
       <span class="nav-tooltip">Master Data Explorer</span>
     </div>
 
-    <div class="nav-item" onclick="navTo('hier-panel')" data-nav="hier-panel" role="button" tabindex="0" aria-label="Hierarchies">
+    <div class="nav-item" onclick="showSection('masterdata-workspace-card','hier-panel')" data-nav="hier-panel" role="button" tabindex="0" aria-label="Hierarchies">
       <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 6h18M6 6v6M18 6v6M6 12h12M9 12v6M15 12v6"/></svg></span>
       <span class="nav-label">Hierarchies</span>
       <span class="nav-tooltip">Hierarchy Editor</span>
@@ -1702,26 +1961,26 @@ tbody tr:hover { background: #f9fafb; }
 
     <div class="nav-section-label">Migration</div>
 
-    <div class="nav-item" onclick="navTo('migration-workspace-card')" data-nav="migration-workspace-card" role="button" tabindex="0" aria-label="Migration">
+    <div class="nav-item" onclick="showSection('migration-workspace-card')" data-nav="migration-workspace-card" role="button" tabindex="0" aria-label="Migration">
       <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></span>
       <span class="nav-label">Migration</span>
       <span class="nav-tooltip">Migration Workspace</span>
     </div>
 
-    <div class="nav-item" onclick="navTo('results')" data-nav="results" role="button" tabindex="0" aria-label="Results">
+    <div class="nav-item" onclick="showSection('migration-workspace-card','results')" data-nav="results" role="button" tabindex="0" aria-label="Results">
       <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></span>
       <span class="nav-label">Results</span>
       <span class="nav-tooltip">Validation Results</span>
     </div>
 
-    <div class="nav-item" onclick="navTo('issues-card')" data-nav="issues-card" role="button" tabindex="0" aria-label="Issues">
+    <div class="nav-item" onclick="showSection('migration-workspace-card','issues-card')" data-nav="issues-card" role="button" tabindex="0" aria-label="Issues">
       <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"/></svg></span>
       <span class="nav-label">Issues</span>
       <span class="nav-badge" id="sidebar-issue-count" style="display:none;">0</span>
       <span class="nav-tooltip">All Issues</span>
     </div>
 
-    <div class="nav-item" onclick="navTo('lsmw-card')" data-nav="lsmw-card" role="button" tabindex="0" aria-label="LSMW Output">
+    <div class="nav-item" onclick="showSection('migration-workspace-card','lsmw-card')" data-nav="lsmw-card" role="button" tabindex="0" aria-label="LSMW Output">
       <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></span>
       <span class="nav-label">LSMW Output</span>
       <span class="nav-tooltip">LSMW Output</span>
@@ -1729,11 +1988,6 @@ tbody tr:hover { background: #f9fafb; }
   </div>
 
   <div class="sidebar-bottom">
-    <div class="nav-item" onclick="navTo('env-badge')" data-nav="env-badge" role="button" tabindex="0" aria-label="Environment">
-      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
-      <span class="nav-label" id="sidebar-env-label">DEV</span>
-      <span class="nav-tooltip">Environment</span>
-    </div>
     <div class="nav-item" onclick="window.scrollTo({top:0,behavior:'smooth'})" role="button" tabindex="0" aria-label="Help">
       <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01"/></svg></span>
       <span class="nav-label">Help</span>
@@ -1749,12 +2003,24 @@ tbody tr:hover { background: #f9fafb; }
 <!-- ── Main Content ── -->
 <div class="main-content" id="main-content">
 <div class="container">
-  <header id="header">
-    <h1>SAP LSMW Invoice Migration</h1>
-    <p>Upload AP invoice data and master data CSVs to validate and generate LSMW flat files</p>
-  </header>
+
+  <!-- Dashboard (Landing Page) -->
+  <div class="workspace-section section-visible" id="dashboard-section">
+    <div class="dashboard">
+      <div class="dashboard-header">
+        <h1>Migration Dashboard</h1>
+        <p>Cross-environment overview of data migration readiness and quality</p>
+      </div>
+      <div class="dash-env-grid" id="dash-env-grid"></div>
+      <div class="dash-quality-section">
+        <h2>Data Quality by Environment</h2>
+        <div class="dash-quality-grid" id="dash-quality-grid"></div>
+      </div>
+    </div>
+  </div>
 
   <!-- Schema Workspace -->
+  <div class="workspace-section" id="schema-section">
   <div class="card card-collapsible" id="schema-workspace-card">
     <div class="card-header" onclick="toggleCard('schema-workspace-card')">
       <span class="card-arrow open" id="schema-workspace-card-arrow">&#9654;</span>
@@ -1956,8 +2222,10 @@ tbody tr:hover { background: #f9fafb; }
     </div>
   </div><!-- /card-body -->
   </div><!-- /schema-workspace-card -->
+  </div><!-- /schema-section -->
 
   <!-- Master Data Workspace -->
+  <div class="workspace-section" id="masterdata-section">
   <div class="card card-collapsible" id="masterdata-workspace-card">
     <div class="card-header" onclick="toggleCard('masterdata-workspace-card')">
       <span class="card-arrow open" id="masterdata-workspace-card-arrow">&#9654;</span>
@@ -2015,8 +2283,10 @@ tbody tr:hover { background: #f9fafb; }
 
     </div><!-- /card-body -->
   </div><!-- /masterdata-workspace-card -->
+  </div><!-- /masterdata-section -->
 
   <!-- Migration Workspace -->
+  <div class="workspace-section" id="migration-section">
   <div class="card card-collapsible" id="migration-workspace-card">
     <div class="card-header" onclick="toggleCard('migration-workspace-card')">
       <span class="card-arrow open" id="migration-workspace-card-arrow">&#9654;</span>
@@ -2024,12 +2294,12 @@ tbody tr:hover { background: #f9fafb; }
     </div>
     <div class="card-body open" id="migration-workspace-card-body">
 
-    <!-- Environment Selector -->
+    <!-- Environment Selector (secondary - primary is in sidebar) -->
     <div class="env-bar" style="margin-top:16px;">
-      <button class="env-tab env-dev active" onclick="switchEnv('dev')"><span class="env-dot"></span>DEV</button>
-      <button class="env-tab env-sit" onclick="switchEnv('sit')"><span class="env-dot"></span>SIT</button>
-      <button class="env-tab env-uat" onclick="switchEnv('uat')"><span class="env-dot"></span>UAT</button>
-      <button class="env-tab env-prod" onclick="switchEnv('prod')"><span class="env-dot"></span>PROD</button>
+      <button class="env-tab env-dev active" onclick="switchEnvSidebar('dev')"><span class="env-dot"></span>DEV</button>
+      <button class="env-tab env-sit" onclick="switchEnvSidebar('sit')"><span class="env-dot"></span>SIT</button>
+      <button class="env-tab env-uat" onclick="switchEnvSidebar('uat')"><span class="env-dot"></span>UAT</button>
+      <button class="env-tab env-prod" onclick="switchEnvSidebar('prod')"><span class="env-dot"></span>PROD</button>
       <span class="env-summary" id="env-summary"></span>
     </div>
 
@@ -2195,6 +2465,8 @@ tbody tr:hover { background: #f9fafb; }
 
   </div><!-- /card-body -->
   </div><!-- /migration-workspace-card -->
+  </div><!-- /migration-section -->
+
 </div>
 </div><!-- /main-content -->
 
@@ -3793,6 +4065,7 @@ document.addEventListener('DOMContentLoaded', function() {
   renderMdTable();
   renderDepMap();
   initHierTabs();
+  renderDashboard();
 });
 
 // ── Dynamic Validation (uses schema) ──
@@ -4262,6 +4535,20 @@ function getWorstSeverity(issues) {
 
 // ── Sidebar Navigation ──
 let sidebarPinned = false;
+let activeSection = 'dashboard';
+
+const SECTION_MAP = {
+  'dashboard': 'dashboard-section',
+  'schema-workspace-card': 'schema-section',
+  'masterdata-workspace-card': 'masterdata-section',
+  'hier-panel': 'masterdata-section',
+  'migration-workspace-card': 'migration-section',
+  'results': 'migration-section',
+  'issues-card': 'migration-section',
+  'lsmw-card': 'migration-section',
+};
+
+const ENV_COLORS = { dev: '#3b82f6', sit: '#f59e0b', uat: '#8b5cf6', prod: '#10b981' };
 
 function toggleSidebar() {
   const sb = document.getElementById('sidebar');
@@ -4275,67 +4562,86 @@ function toggleSidebar() {
   }
 }
 
-function navTo(targetId) {
-  const el = document.getElementById(targetId);
-  if (!el) return;
+function showSection(sectionTarget, scrollTarget) {
+  // Hide all workspace sections
+  document.querySelectorAll('.workspace-section').forEach(s => s.classList.remove('section-visible'));
 
-  // Open parent cards if collapsed
-  const card = el.closest('.card-collapsible') || el;
-  const body = card.querySelector('.card-body');
-  if (body && !body.classList.contains('open')) {
-    body.classList.add('open');
-    const arrow = card.querySelector('.card-arrow');
-    if (arrow) arrow.classList.add('open');
-  }
+  // Determine which wrapper section to show
+  const sectionId = SECTION_MAP[sectionTarget] || 'dashboard-section';
+  document.getElementById(sectionId).classList.add('section-visible');
 
-  // For items inside a card, also open the card itself
-  if (targetId === 'hier-panel') {
-    const mdBody = document.getElementById('masterdata-workspace-card-body');
-    if (mdBody && !mdBody.classList.contains('open')) {
-      mdBody.classList.add('open');
-      document.getElementById('masterdata-workspace-card-arrow').classList.add('open');
-    }
-  }
-
-  // Make results visible if navigating to results/issues/lsmw
-  if (['results', 'issues-card', 'lsmw-card'].includes(targetId)) {
-    const mwBody = document.getElementById('migration-workspace-card-body');
-    if (mwBody && !mwBody.classList.contains('open')) {
-      mwBody.classList.add('open');
-      document.getElementById('migration-workspace-card-arrow').classList.add('open');
-    }
-  }
-
-  // Update active state
+  // Update active nav
+  const navTarget = scrollTarget || sectionTarget;
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const navItem = document.querySelector('[data-nav="' + targetId + '"]');
+  const navItem = document.querySelector('[data-nav="' + navTarget + '"]');
   if (navItem) navItem.classList.add('active');
+  activeSection = navTarget;
 
-  // Scroll
-  setTimeout(() => {
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, 100);
+  // Open card bodies
+  const cardId = sectionTarget;
+  const card = document.getElementById(cardId);
+  if (card) {
+    const body = card.querySelector('.card-body');
+    if (body && !body.classList.contains('open')) {
+      body.classList.add('open');
+      const arrow = card.querySelector('.card-arrow');
+      if (arrow) arrow.classList.add('open');
+    }
+  }
+
+  // For sub-targets (hier-panel, results, issues-card, lsmw-card)
+  if (scrollTarget) {
+    // Also open the parent card
+    if (['results', 'issues-card', 'lsmw-card'].includes(scrollTarget)) {
+      const mwBody = document.getElementById('migration-workspace-card-body');
+      if (mwBody && !mwBody.classList.contains('open')) {
+        mwBody.classList.add('open');
+        document.getElementById('migration-workspace-card-arrow').classList.add('open');
+      }
+    }
+    if (scrollTarget === 'hier-panel') {
+      const mdBody = document.getElementById('masterdata-workspace-card-body');
+      if (mdBody && !mdBody.classList.contains('open')) {
+        mdBody.classList.add('open');
+        document.getElementById('masterdata-workspace-card-arrow').classList.add('open');
+      }
+    }
+    setTimeout(() => {
+      const el = document.getElementById(scrollTarget);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 120);
+  } else {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Refresh dashboard if navigating there
+  if (sectionId === 'dashboard-section') renderDashboard();
 }
 
-// Track scroll position to highlight active nav item
-function updateActiveNav() {
-  const sections = ['header', 'schema-workspace-card', 'masterdata-workspace-card', 'hier-panel', 'migration-workspace-card', 'results', 'issues-card', 'lsmw-card'];
-  let activeId = 'header';
-  const scrollY = window.scrollY + 100;
-
-  for (const id of sections) {
-    const el = document.getElementById(id);
-    if (el && el.offsetTop <= scrollY) {
-      activeId = id;
-    }
+function switchEnvSidebar(env) {
+  // Update sidebar env buttons
+  document.querySelectorAll('.sidebar-env-btn').forEach(b => {
+    b.className = 'sidebar-env-btn';
+  });
+  const btns = document.querySelectorAll('.sidebar-env-btn');
+  const envIdx = ENVS.indexOf(env);
+  if (envIdx >= 0 && btns[envIdx]) {
+    btns[envIdx].classList.add('active-' + env);
   }
 
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const navItem = document.querySelector('[data-nav="' + activeId + '"]');
-  if (navItem) navItem.classList.add('active');
+  // Update sidebar theme
+  const sb = document.getElementById('sidebar');
+  ENVS.forEach(e => sb.classList.remove('env-' + e));
+  sb.classList.add('env-' + env);
+
+  // Call original switchEnv
+  switchEnv(env);
+
+  // Refresh dashboard if visible
+  const dashSection = document.getElementById('dashboard-section');
+  if (dashSection.classList.contains('section-visible')) renderDashboard();
 }
 
-// Update sidebar issue badge when results change
 function updateSidebarBadge() {
   const badge = document.getElementById('sidebar-issue-count');
   if (lastReport && lastReport.issues && lastReport.issues.length > 0) {
@@ -4346,17 +4652,108 @@ function updateSidebarBadge() {
   }
 }
 
-// Update sidebar env label
 function updateSidebarEnv() {
-  const el = document.getElementById('sidebar-env-label');
-  if (el) el.textContent = ENV_LABELS[activeEnv] || activeEnv.toUpperCase();
+  // Env is now shown via the sidebar buttons, no separate label needed
 }
 
-let scrollTimer;
-window.addEventListener('scroll', () => {
-  clearTimeout(scrollTimer);
-  scrollTimer = setTimeout(updateActiveNav, 50);
-}, { passive: true });
+// ── Dashboard Rendering ──
+function renderDashboard() {
+  const envGrid = document.getElementById('dash-env-grid');
+  const qualGrid = document.getElementById('dash-quality-grid');
+
+  // Environment cards
+  envGrid.innerHTML = ENVS.map(env => {
+    const ef = envFiles[env];
+    const loaded = FILE_KEYS.filter(k => ef[k]);
+    const total = FILE_KEYS.length;
+    const pct = Math.round((loaded.length / total) * 100);
+    const isActive = env === activeEnv;
+    const label = ENV_LABELS[env];
+
+    // File items
+    const fileItems = FILE_KEYS.map(k => {
+      const f = ef[k];
+      const name = k.replace(/_/g, ' ');
+      const capName = name.charAt(0).toUpperCase() + name.slice(1);
+      if (f) {
+        return '<div class="dash-file-item">' +
+          '<span class="dash-file-dot loaded"></span>' +
+          '<span class="dash-file-name loaded">' + esc(capName) + '</span>' +
+          '<span class="dash-file-rows">' + f.rows.length + ' rows</span>' +
+          '</div>';
+      }
+      return '<div class="dash-file-item">' +
+        '<span class="dash-file-dot missing"></span>' +
+        '<span class="dash-file-name">' + esc(capName) + '</span>' +
+        '</div>';
+    }).join('');
+
+    return '<div class="dash-env-card' + (isActive ? ' active' : '') + '" onclick="switchEnvSidebar(\'' + env + '\')">' +
+      '<div class="dash-env-card-strip env-' + env + '"></div>' +
+      '<div class="dash-env-card-body">' +
+        '<div class="dash-env-card-title">' +
+          '<h3>' + esc(label) + '</h3>' +
+          '<span class="dash-env-pct" style="color:' + ENV_COLORS[env] + '">' + pct + '%</span>' +
+        '</div>' +
+        '<div class="dash-progress-bar"><div class="dash-fill env-' + env + '" style="width:' + pct + '%"></div></div>' +
+        '<div class="dash-file-grid">' + fileItems + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  // Data quality cards — compute per-field quality for envs that have AP data
+  let qualHtml = '';
+  ENVS.forEach(env => {
+    const ef = envFiles[env];
+    if (!ef.ap || !ef.ap.rows || ef.ap.rows.length === 0) return;
+
+    const rows = ef.ap.rows;
+    const totalRows = rows.length;
+    const label = ENV_LABELS[env];
+
+    // Calculate per-field fill rate
+    const fields = schema.map(s => s.field);
+    const fieldStats = fields.map(f => {
+      const filled = rows.filter(r => (r[f] || '').trim()).length;
+      const pct = Math.round((filled / totalRows) * 100);
+      return { field: f, filled, pct };
+    });
+
+    // Overall quality score
+    const avgPct = Math.round(fieldStats.reduce((s, f) => s + f.pct, 0) / fieldStats.length);
+
+    // Build quality bars
+    const bars = fieldStats.filter(f => f.field !== 'invoice_ref').map(f => {
+      const cls = f.pct >= 95 ? 'green' : (f.pct >= 70 ? 'amber' : 'red');
+      const displayName = f.field.replace(/_/g, ' ');
+      return '<div class="dash-quality-bar">' +
+        '<span class="dash-q-label" title="' + esc(f.field) + '">' + esc(displayName) + '</span>' +
+        '<span class="dash-q-track"><span class="dash-q-fill ' + cls + '" style="width:' + f.pct + '%"></span></span>' +
+        '<span class="dash-q-pct">' + f.pct + '%</span>' +
+      '</div>';
+    }).join('');
+
+    // Last run info
+    const lastRunInfo = ef.ap.loadedAt
+      ? '<div class="dash-last-run">Loaded: ' + formatTimestamp(ef.ap.loadedAt) + ' &middot; ' + totalRows + ' records</div>'
+      : '';
+
+    qualHtml += '<div class="dash-quality-card">' +
+      '<h4><span class="dash-q-env env-' + env + '">' + esc(label) + '</span> Field Completeness <span style="margin-left:auto;font-size:0.9rem;font-weight:700;color:' +
+        (avgPct >= 95 ? 'var(--success)' : (avgPct >= 70 ? 'var(--warning)' : 'var(--critical)')) + '">' + avgPct + '%</span></h4>' +
+      bars + lastRunInfo +
+    '</div>';
+  });
+
+  if (!qualHtml) {
+    qualHtml = '<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--text-muted);font-size:0.9rem;">' +
+      '<p>No AP data loaded in any environment.</p>' +
+      '<p style="margin-top:4px;font-size:0.82rem;">Load sample data or upload CSVs to see quality metrics.</p>' +
+      '</div>';
+  }
+
+  qualGrid.innerHTML = qualHtml;
+}
 
 // Keyboard navigation for sidebar
 document.addEventListener('keydown', (e) => {
