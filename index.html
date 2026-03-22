@@ -6122,6 +6122,133 @@ function download(name, content, type) {
   URL.revokeObjectURL(a.href);
 }
 
+// ════════════════════════════════════════════
+// ── Audit Trail / Change Log ──
+// ════════════════════════════════════════════
+let auditLog = [];
+const AUDIT_MAX = 500;
+
+function audit(action, detail, icon) {
+  auditLog.unshift({
+    ts: new Date().toISOString(),
+    env: activeEnv,
+    action: action,
+    detail: detail || '',
+    icon: icon || '\u2022',
+  });
+  if (auditLog.length > AUDIT_MAX) auditLog.length = AUDIT_MAX;
+  // Update badge on sidebar
+  const badge = document.querySelector('[data-nav="audit-section"] .nav-label');
+  if (badge) badge.textContent = 'Audit (' + auditLog.length + ')';
+  // If audit section is visible, re-render
+  const panel = document.getElementById('audit-panel');
+  if (panel && panel.closest('.section-visible')) renderAuditLog();
+}
+
+function renderAuditLog() {
+  const panel = document.getElementById('audit-panel');
+  if (!panel) return;
+  if (auditLog.length === 0) {
+    panel.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:0.85rem;">No actions recorded yet.</div>';
+    return;
+  }
+  panel.innerHTML = auditLog.map(e => {
+    const envColor = ENV_COLORS[e.env] || '#6b7280';
+    return '<div class="audit-entry">' +
+      '<span class="audit-ts">' + formatTimestamp(e.ts) + '</span>' +
+      '<span class="audit-env-badge" style="background:' + envColor + '">' + ENV_LABELS[e.env] + '</span>' +
+      '<span class="audit-icon">' + e.icon + '</span>' +
+      '<span class="audit-msg"><strong>' + esc(e.action) + '</strong>' +
+        (e.detail ? ' &mdash; ' + esc(e.detail) : '') +
+      '</span>' +
+    '</div>';
+  }).join('');
+}
+
+function exportAuditLog() {
+  if (auditLog.length === 0) { alert('No audit entries to export.'); return; }
+  const csv = 'Timestamp,Environment,Action,Detail\n' +
+    auditLog.map(e =>
+      '"' + e.ts + '","' + ENV_LABELS[e.env] + '","' + e.action.replace(/"/g, '""') + '","' + (e.detail || '').replace(/"/g, '""') + '"'
+    ).join('\n');
+  download('audit_log_' + new Date().toISOString().slice(0, 10) + '.csv', csv, 'text/csv');
+}
+
+function clearAuditLog() {
+  if (!confirm('Clear all ' + auditLog.length + ' audit entries?')) return;
+  auditLog = [];
+  renderAuditLog();
+  saveState();
+}
+
+// ── Hook audit logging into key operations ──
+(function hookAuditTrail() {
+  // File upload
+  const _hf = handleFile;
+  handleFile = function(input, key) {
+    const fileName = input.files && input.files[0] ? input.files[0].name : key;
+    _hf(input, key);
+    setTimeout(() => {
+      const f = envFiles[activeEnv][key];
+      const rows = f ? f.rows.length : 0;
+      audit('File uploaded', key + ': ' + fileName + ' (' + rows + ' rows)', '\uD83D\uDCC4');
+    }, 600);
+  };
+
+  // Sample data
+  const _ls = loadSampleData;
+  loadSampleData = function() {
+    _ls();
+    audit('Sample data loaded', 'All file types populated', '\uD83D\uDCE6');
+  };
+
+  // Migration run
+  const _rm = runMigration;
+  runMigration = function() {
+    _rm();
+    if (lastReport) {
+      audit('Migration run',
+        lastReport.passed + ' passed, ' + lastReport.failed + ' failed of ' + lastReport.total_records + ' total',
+        lastReport.passed === lastReport.total_records ? '\u2705' : '\u26A0\uFE0F');
+    }
+  };
+
+  // Env switch
+  const _se = switchEnvSidebar;
+  switchEnvSidebar = function(env) {
+    const prev = activeEnv;
+    _se(env);
+    if (env !== prev) audit('Environment changed', ENV_LABELS[prev] + ' \u2192 ' + ENV_LABELS[env], '\uD83D\uDD04');
+  };
+
+  // Schema changes
+  const _osc = onSourceSchemaChanged;
+  onSourceSchemaChanged = function() { _osc(); audit('Source schema modified', 'v' + configVersions.source, '\uD83D\uDCDD'); };
+  const _otc = onTargetSchemaChanged;
+  onTargetSchemaChanged = function() { _otc(); audit('Target schema modified', 'v' + configVersions.target, '\uD83D\uDCDD'); };
+  const _omc = onMappingChanged;
+  onMappingChanged = function() { _omc(); audit('Mapping modified', 'v' + configVersions.mapping, '\uD83D\uDD17'); };
+
+  // Downloads
+  const _dl = downloadLSMW;
+  downloadLSMW = function() { _dl(); audit('LSMW file downloaded', 'lsmw_invoices_' + activeEnv + '.txt', '\u2B07\uFE0F'); };
+  const _dr = downloadReport;
+  downloadReport = function() { _dr(); audit('Report downloaded', 'migration_report_' + activeEnv + '.json', '\u2B07\uFE0F'); };
+
+  // Project export/import
+  const _ep = exportProject;
+  exportProject = function() { _ep(); audit('Project exported', '', '\uD83D\uDCBE'); };
+})();
+
+// Render audit when navigating to the section
+const _origShowSection = showSection;
+showSection = function(target, scroll) {
+  _origShowSection(target, scroll);
+  if (SECTION_MAP[target] === 'audit-section') renderAuditLog();
+  if (SECTION_MAP[target] === 'analytics-section') renderAnalytics();
+  if (SECTION_MAP[target] === 'env-compare-section') renderEnvComparison();
+};
+
 // ════════════════════════════════════════════════
 // ── localStorage Persistence + Project Files ──
 // ════════════════════════════════════════════════
@@ -6142,6 +6269,7 @@ function getSerializableState() {
     mdEdits: serializeMdEdits(),
     hierarchies: hierarchies,
     externalDatasets: serializeExtDatasets(),
+    auditLog: auditLog,
     savedAt: new Date().toISOString(),
   };
 }
@@ -6243,6 +6371,9 @@ function restoreState() {
       Object.keys(s.externalDatasets).forEach(n => { externalDatasets[n] = s.externalDatasets[n]; });
     }
 
+    // Restore audit log
+    if (s.auditLog && Array.isArray(s.auditLog)) auditLog = s.auditLog;
+
     return s.savedAt || true;
   } catch (e) {
     console.warn('Restore failed:', e.message);
@@ -6332,6 +6463,10 @@ const _origOnMappingChanged = onMappingChanged;
 onMappingChanged = function() { _origOnMappingChanged(); saveState(); };
 
 // ── Recovery Banner + Init ──
+// Stubs for sections — will be implemented in later features
+function renderAnalytics() {}
+function renderEnvComparison() {}
+
 function showRecoveryBanner(savedAt) {
   const ts = typeof savedAt === 'string' ? formatTimestamp(savedAt) : '';
   const banner = document.createElement('div');
