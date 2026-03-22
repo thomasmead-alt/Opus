@@ -2184,6 +2184,7 @@ tbody tr:hover { background: #f9fafb; }
           <tbody id="mapping-tbody"></tbody>
         </table>
       </div>
+      <div id="mapping-coverage-panel" style="margin:10px 0;"></div>
 
       <div class="ext-dataset-panel">
         <h4>External Dataset Lookups</h4>
@@ -2316,6 +2317,7 @@ tbody tr:hover { background: #f9fafb; }
         <div class="file-version" id="ver-ap"></div>
       </div>
     </div>
+    <div id="col-recon-panel" style="margin-bottom:16px;"></div>
 
     <!-- Master Data Uploads -->
     <h3 style="font-size:0.95rem;margin-bottom:8px;">Master Data <span class="badge optional">Optional — sample data used if omitted</span></h3>
@@ -2762,11 +2764,103 @@ function handleFile(input, key) {
     envFiles[activeEnv][key] = { name: file.name, rows, version, loadedAt: new Date().toISOString() };
     refreshUploadUI();
     updateEnvSummary();
-    if (key === 'ap') runDataQualityReview();
+    if (key === 'ap') {
+      reconcileAPColumns();
+      runDataQualityReview();
+    }
     // Clear edits for this type so uploaded data shows fresh
     if (key !== 'ap') { delete mdEdits[activeEnv][key]; renderMdTable(); }
   };
   reader.readAsText(file);
+}
+
+// ── Column Reconciliation ──
+// Compares AP file headers against source schema. Every column must be accounted for.
+// Stores reconciliation state so migration can gate on it.
+let columnReconciliation = { unmapped: [], extra: [], missing: [], status: 'ok' };
+
+function reconcileAPColumns() {
+  const ap = getFiles().ap;
+  if (!ap || !ap.rows || ap.rows.length === 0) {
+    columnReconciliation = { unmapped: [], extra: [], missing: [], status: 'ok' };
+    renderColumnReconciliation();
+    return;
+  }
+
+  const apHeaders = Object.keys(ap.rows[0]);
+  const schemaFields = new Set(sourceSchema.map(s => s.field));
+  const mappedSources = new Set(mappings.filter(m => m.sourceField).map(m => m.sourceField));
+
+  // Columns in AP file but not in source schema
+  const extra = apHeaders.filter(h => !schemaFields.has(h));
+
+  // Source schema fields not present in AP file
+  const missing = sourceSchema.filter(s => !apHeaders.includes(s.field)).map(s => s.field);
+
+  // Source schema fields that exist in AP but have no mapping to a target field
+  const unmapped = sourceSchema
+    .filter(s => apHeaders.includes(s.field) && !mappedSources.has(s.field))
+    .map(s => s.field);
+
+  const status = (extra.length > 0 || missing.length > 0 || unmapped.length > 0) ? 'warning' : 'ok';
+  columnReconciliation = { unmapped, extra, missing, status };
+
+  // Auto-add extra columns to source schema so they can be mapped
+  if (extra.length > 0) {
+    extra.forEach(col => {
+      if (!sourceSchema.some(s => s.field === col)) {
+        sourceSchema.push({
+          field: col, header: col, type: 'text',
+          isKey: false, nullable: true, sample: (ap.rows[0][col] || '').substring(0, 30),
+        });
+      }
+    });
+    renderSourceSchemaTable();
+    renderKeyPills();
+  }
+
+  renderColumnReconciliation();
+}
+
+function renderColumnReconciliation() {
+  let el = document.getElementById('col-recon-panel');
+  if (!el) return;
+
+  const r = columnReconciliation;
+  if (r.status === 'ok') {
+    el.innerHTML = '<div style="display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--success-bg);border:1px solid var(--success);border-radius:var(--radius);font-size:0.82rem;">' +
+      '<span style="color:var(--success);font-weight:700;">&#10003;</span>' +
+      '<span>All ' + sourceSchema.length + ' source columns accounted for in schema and mappings.</span>' +
+      '</div>';
+    return;
+  }
+
+  let html = '';
+
+  if (r.extra.length > 0) {
+    html += '<div style="padding:8px 12px;background:var(--warning-bg);border:1px solid var(--warning);border-radius:var(--radius);margin-bottom:6px;font-size:0.82rem;">' +
+      '<strong style="color:var(--warning);">Unrecognised columns in AP file (' + r.extra.length + ')</strong>' +
+      '<span style="font-size:0.78rem;color:var(--text-muted);"> — added to source schema, please map or exclude them</span>' +
+      '<div style="margin-top:4px;font-family:monospace;font-size:0.78rem;">' + r.extra.map(esc).join(', ') + '</div>' +
+      '</div>';
+  }
+
+  if (r.missing.length > 0) {
+    html += '<div style="padding:8px 12px;background:var(--critical-bg);border:1px solid var(--critical);border-radius:var(--radius);margin-bottom:6px;font-size:0.82rem;">' +
+      '<strong style="color:var(--critical);">Schema columns missing from AP file (' + r.missing.length + ')</strong>' +
+      '<div style="margin-top:4px;font-family:monospace;font-size:0.78rem;">' + r.missing.map(esc).join(', ') + '</div>' +
+      '</div>';
+  }
+
+  if (r.unmapped.length > 0) {
+    html += '<div style="padding:8px 12px;background:var(--info-bg);border:1px solid var(--info);border-radius:var(--radius);margin-bottom:6px;font-size:0.82rem;">' +
+      '<strong style="color:var(--info);">Source columns with no target mapping (' + r.unmapped.length + ')</strong>' +
+      '<span style="font-size:0.78rem;color:var(--text-muted);"> — assign a mapping or mark as excluded</span>' +
+      '<div style="margin-top:4px;font-family:monospace;font-size:0.78rem;">' + r.unmapped.map(esc).join(', ') + '</div>' +
+      '</div>';
+  }
+
+  el.innerHTML = html;
 }
 
 function sampleMdToRows(type) {
@@ -2785,6 +2879,7 @@ function loadSampleData() {
   refreshUploadUI();
   updateEnvSummary();
   renderMdTable();
+  reconcileAPColumns();
   runDataQualityReview();
   runMigration();
 }
@@ -3827,12 +3922,70 @@ function renderMappingTable() {
       '<td>' + previewHTML + '</td>' +
       '</tr>';
   }).join('');
+
+  // Render coverage panel after table is built
+  setTimeout(renderMappingCoverage, 0);
+}
+
+function renderMappingCoverage() {
+  const el = document.getElementById('mapping-coverage-panel');
+  if (!el) return;
+
+  const totalTarget = mappings.length;
+  const mappedTarget = mappings.filter(m => m.sourceField).length;
+  const targetPct = totalTarget > 0 ? Math.round((mappedTarget / totalTarget) * 100) : 0;
+
+  // Source fields that are mapped to at least one target
+  const mappedSources = new Set(mappings.filter(m => m.sourceField).map(m => m.sourceField));
+  const totalSource = sourceSchema.length;
+  const unmappedSource = sourceSchema.filter(s => !mappedSources.has(s.field));
+  const sourcePct = totalSource > 0 ? Math.round((mappedSources.size / totalSource) * 100) : 0;
+
+  const allOk = targetPct === 100 && unmappedSource.length === 0;
+
+  let html = '<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;font-size:0.82rem;">';
+
+  // Target coverage
+  const tColor = targetPct === 100 ? 'var(--success)' : (targetPct >= 80 ? 'var(--warning)' : 'var(--critical)');
+  html += '<div style="flex:1;min-width:200px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--card);">' +
+    '<div style="display:flex;justify-content:space-between;margin-bottom:4px;">' +
+    '<span style="font-weight:600;">Target coverage</span>' +
+    '<span style="font-weight:700;color:' + tColor + '">' + mappedTarget + '/' + totalTarget + ' (' + targetPct + '%)</span>' +
+    '</div>' +
+    '<div style="height:4px;background:#e5e7eb;border-radius:2px;overflow:hidden;">' +
+    '<div style="height:100%;width:' + targetPct + '%;background:' + tColor + ';border-radius:2px;"></div></div>';
+  if (targetPct < 100) {
+    const unmappedTargets = mappings.filter(m => !m.sourceField).map(m => m.targetField);
+    html += '<div style="margin-top:4px;font-size:0.75rem;color:var(--text-muted);">Unmapped: <code>' + unmappedTargets.map(esc).join('</code>, <code>') + '</code></div>';
+  }
+  html += '</div>';
+
+  // Source coverage
+  const sColor = sourcePct === 100 ? 'var(--success)' : (sourcePct >= 80 ? 'var(--warning)' : 'var(--critical)');
+  html += '<div style="flex:1;min-width:200px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--card);">' +
+    '<div style="display:flex;justify-content:space-between;margin-bottom:4px;">' +
+    '<span style="font-weight:600;">Source coverage</span>' +
+    '<span style="font-weight:700;color:' + sColor + '">' + mappedSources.size + '/' + totalSource + ' (' + sourcePct + '%)</span>' +
+    '</div>' +
+    '<div style="height:4px;background:#e5e7eb;border-radius:2px;overflow:hidden;">' +
+    '<div style="height:100%;width:' + sourcePct + '%;background:' + sColor + ';border-radius:2px;"></div></div>';
+  if (unmappedSource.length > 0) {
+    html += '<div style="margin-top:4px;font-size:0.75rem;color:var(--text-muted);">Unmapped: <code>' + unmappedSource.map(s => esc(s.field)).join('</code>, <code>') + '</code></div>';
+  }
+  html += '</div>';
+
+  html += '</div>';
+  el.innerHTML = html;
+
+  // Update column reconciliation too
+  reconcileAPColumns();
 }
 
 function updateMappingField(i, value) {
   mappings[i].sourceField = value;
   onMappingChanged();
   renderMappingTable();
+  renderMappingCoverage();
 }
 
 function addTransformStep(i) {
@@ -4207,11 +4360,53 @@ function getLSMWHeaderDynamic() {
 }
 
 // ── Main ──
+// Simple hash for reconciliation checksums
+function hashRows(rows, fields) {
+  let h = 0;
+  rows.forEach(r => {
+    fields.forEach(f => {
+      const v = r[f] || '';
+      for (let i = 0; i < v.length; i++) {
+        h = ((h << 5) - h + v.charCodeAt(i)) | 0;
+      }
+    });
+  });
+  return 'H' + (h >>> 0).toString(16).padStart(8, '0');
+}
+
 function runMigration() {
   const apRows = getFiles().ap ? getFiles().ap.rows : null;
   if (!apRows || apRows.length === 0) {
     alert('Please upload AP invoice data or click "Use Sample Data" first.');
     return;
+  }
+
+  // ── Column reconciliation gate ──
+  reconcileAPColumns();
+  const recon = columnReconciliation;
+  if (recon.extra.length > 0) {
+    const proceed = confirm(
+      'Column reconciliation warning:\n\n' +
+      recon.extra.length + ' column(s) in the AP file are not in the source schema:\n' +
+      recon.extra.join(', ') + '\n\n' +
+      'These have been added to the source schema. Please map them to target fields or they will be excluded from the LSMW output.\n\n' +
+      'Proceed anyway?'
+    );
+    if (!proceed) return;
+  }
+
+  // Check for unmapped source fields
+  const mappedSources = new Set(mappings.filter(m => m.sourceField).map(m => m.sourceField));
+  const unmappedSrc = sourceSchema.filter(s => !mappedSources.has(s.field)).map(s => s.field);
+  if (unmappedSrc.length > 0) {
+    const proceed = confirm(
+      'Mapping coverage warning:\n\n' +
+      unmappedSrc.length + ' source field(s) have no target mapping:\n' +
+      unmappedSrc.join(', ') + '\n\n' +
+      'These fields will NOT appear in the LSMW output. Data will be lost.\n\n' +
+      'Proceed anyway?'
+    );
+    if (!proceed) return;
   }
 
   // Use edited master data if available, then uploaded files, then sample data
@@ -4290,6 +4485,46 @@ function runMigration() {
     }
   });
 
+  // ── Reconciliation block ──
+  const sourceFields = sourceSchema.map(s => s.field);
+  const targetFields = schema.map(s => s.field);
+  const apHeaders = apRows.length > 0 ? Object.keys(apRows[0]) : [];
+
+  const reconciliation = {
+    source: {
+      columns: apHeaders.length,
+      rows: apRows.length,
+      hash: hashRows(apRows, apHeaders),
+      fields: apHeaders,
+    },
+    target: {
+      columns: targetFields.length,
+      rows: passedRows.length + failedRefs.size + excludedByDate.length,
+      hash: hashRows(targetRows, targetFields),
+      fields: targetFields,
+    },
+    lsmw_output: {
+      columns: targetFields.length,
+      rows: passedRows.length,
+      hash: hashRows(passedRows, targetFields),
+    },
+    mapping_coverage: {
+      target_fields_mapped: mappings.filter(m => m.sourceField).length,
+      target_fields_total: mappings.length,
+      source_fields_mapped: new Set(mappings.filter(m => m.sourceField).map(m => m.sourceField)).size,
+      source_fields_total: sourceSchema.length,
+      unmapped_source_fields: unmappedSrc,
+    },
+    row_accounting: {
+      input: apRows.length,
+      passed: passedRows.length,
+      failed: failedRefs.size,
+      excluded_by_date: excludedByDate.length,
+      accounted: passedRows.length + failedRefs.size + excludedByDate.length,
+      balanced: apRows.length === passedRows.length + failedRefs.size + excludedByDate.length,
+    },
+  };
+
   lastReport = {
     run_timestamp: new Date().toISOString(),
     environment: activeEnv.toUpperCase(),
@@ -4299,6 +4534,7 @@ function runMigration() {
       mapping: configVersions.mapping,
     },
     data_versions: getFileVersionSummary(),
+    reconciliation: reconciliation,
     total_records: apRows.length,
     passed: passedRows.length,
     failed: failedRefs.size,
