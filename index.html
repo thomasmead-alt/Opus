@@ -626,6 +626,8 @@ header p { color: var(--text-muted); font-size: 0.95rem; }
   text-align: center;
 }
 .sidebar-env-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.sidebar:not(.expanded) .sidebar-env-btn { display: none; }
+.sidebar:not(.expanded) .sidebar-env-btn[class*="active-"] { display: block; flex: none; width: 100%; }
 .sidebar-env-btn.active-dev { background: #3b82f6; color: #fff; border-color: #3b82f6; }
 .sidebar-env-btn.active-sit { background: #f59e0b; color: #fff; border-color: #f59e0b; }
 .sidebar-env-btn.active-uat { background: #8b5cf6; color: #fff; border-color: #8b5cf6; }
