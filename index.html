@@ -5249,8 +5249,11 @@ function renderResults(r, passedRows) {
     document.getElementById('issues-sev-filter').value = '';
     issuesPage = 0;
     renderIssueRows();
+    renderBulkFixes();
   } else {
     issCard.style.display = 'none';
+    const bfc = document.getElementById('bulk-fix-container');
+    if (bfc) bfc.innerHTML = '';
   }
 
   // LSMW output
@@ -5414,6 +5417,256 @@ function getWorstSeverity(issues) {
   let worst = 'INFO';
   issues.forEach(i => { if (sevRank(i.severity) > sevRank(worst)) worst = i.severity; });
   return worst;
+}
+
+// ── Bulk Fix Suggestions ──
+function analyzeBulkFixes() {
+  if (!lastReport || !lastReport.issues || lastReport.issues.length === 0) return [];
+
+  const issues = lastReport.issues;
+  const suggestions = [];
+
+  // Group issues by field+message pattern
+  const byField = {};
+  issues.forEach(iss => {
+    const key = iss.field_name;
+    if (!byField[key]) byField[key] = [];
+    byField[key].push(iss);
+  });
+
+  Object.entries(byField).forEach(([field, fieldIssues]) => {
+    // Pattern 1: Many blank/required fields
+    const blanks = fieldIssues.filter(i => i.supplied_value === '(blank)');
+    if (blanks.length >= 3) {
+      suggestions.push({
+        type: 'fill_blanks', icon: '&#9998;', severity: blanks[0].severity,
+        title: 'Fill ' + blanks.length + ' blank "' + field + '" values',
+        description: blanks.length + ' records have empty "' + field + '". Provide a default value to apply to all.',
+        affected: blanks.length,
+        field: field,
+        action: 'fill',
+        invoices: blanks.map(b => b.invoice_ref),
+      });
+    }
+
+    // Pattern 2: Many invalid lookup values - suggest adding to master data
+    const invalidLookups = fieldIssues.filter(i => i.message.includes('not found in master data'));
+    if (invalidLookups.length >= 2) {
+      const uniqueVals = [...new Set(invalidLookups.map(i => i.supplied_value))];
+      const mdType = (schema.find(s => s.field === field) || {}).masterData;
+      if (mdType) {
+        suggestions.push({
+          type: 'add_master_data', icon: '&#128203;', severity: invalidLookups[0].severity,
+          title: 'Add ' + uniqueVals.length + ' missing "' + field + '" values to master data',
+          description: 'Values not found: ' + uniqueVals.slice(0, 5).join(', ') + (uniqueVals.length > 5 ? '...' : '') +
+            '. Add them to ' + mdType + ' master data.',
+          affected: invalidLookups.length,
+          field: field,
+          action: 'add_md',
+          mdType: mdType,
+          values: uniqueVals,
+        });
+      }
+    }
+
+    // Pattern 3: Common value that could be replaced
+    const byValue = {};
+    fieldIssues.filter(i => i.supplied_value !== '(blank)').forEach(i => {
+      byValue[i.supplied_value] = (byValue[i.supplied_value] || 0) + 1;
+    });
+    Object.entries(byValue).forEach(([val, count]) => {
+      if (count >= 3) {
+        suggestions.push({
+          type: 'replace_value', icon: '&#8644;', severity: fieldIssues[0].severity,
+          title: 'Replace "' + val + '" in "' + field + '" (' + count + ' records)',
+          description: count + ' records have "' + val + '" which failed validation. Replace with a valid value.',
+          affected: count,
+          field: field,
+          action: 'replace',
+          oldValue: val,
+          invoices: fieldIssues.filter(i => i.supplied_value === val).map(i => i.invoice_ref),
+        });
+      }
+    });
+
+    // Pattern 4: Date format issues
+    const dateIssues = fieldIssues.filter(i => i.message.includes('not in YYYY-MM-DD'));
+    if (dateIssues.length >= 2) {
+      suggestions.push({
+        type: 'fix_dates', icon: '&#128197;', severity: 'ERROR',
+        title: 'Auto-fix ' + dateIssues.length + ' date formats in "' + field + '"',
+        description: 'Attempt to parse and reformat dates to YYYY-MM-DD.',
+        affected: dateIssues.length,
+        field: field,
+        action: 'fix_dates',
+        invoices: dateIssues.map(i => i.invoice_ref),
+        values: dateIssues.map(i => i.supplied_value),
+      });
+    }
+
+    // Pattern 5: Negative amounts
+    const negatives = fieldIssues.filter(i => i.message.includes('Negative amount'));
+    if (negatives.length >= 2) {
+      suggestions.push({
+        type: 'abs_amounts', icon: '&#177;', severity: 'WARNING',
+        title: 'Convert ' + negatives.length + ' negative "' + field + '" to absolute',
+        description: 'Convert negative amounts to positive values (if they are not credit memos).',
+        affected: negatives.length,
+        field: field,
+        action: 'abs',
+        invoices: negatives.map(i => i.invoice_ref),
+      });
+    }
+  });
+
+  // Sort: highest affected count first, then by severity
+  suggestions.sort((a, b) => sevRank(b.severity) - sevRank(a.severity) || b.affected - a.affected);
+  return suggestions;
+}
+
+function renderBulkFixes() {
+  const container = document.getElementById('bulk-fix-container');
+  if (!container) return;
+
+  const suggestions = analyzeBulkFixes();
+  if (suggestions.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  container.innerHTML =
+    '<div style="margin-bottom:14px;padding:14px;border:1px solid var(--border);border-radius:var(--radius);background:linear-gradient(135deg,#fef3c7 0%,#fffbeb 100%);">' +
+    '<h4 style="margin:0 0 10px;font-size:0.9rem;font-weight:600;">Bulk Fix Suggestions <span class="badge" style="font-size:0.7rem;">' + suggestions.length + '</span></h4>' +
+    '<div style="display:flex;flex-direction:column;gap:8px;">' +
+    suggestions.map((s, i) => {
+      const sevColor = s.severity === 'CRITICAL' ? 'var(--critical)' : s.severity === 'ERROR' ? 'var(--error,#dc2626)' :
+        s.severity === 'WARNING' ? 'var(--warning,#f59e0b)' : 'var(--info,#3b82f6)';
+      return '<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);border-left:3px solid ' + sevColor + ';">' +
+        '<span style="font-size:1.1rem;flex-shrink:0;">' + s.icon + '</span>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="font-size:0.82rem;font-weight:600;">' + esc(s.title) + '</div>' +
+          '<div style="font-size:0.72rem;color:var(--text-muted);">' + esc(s.description) + '</div>' +
+        '</div>' +
+        '<span class="badge" style="font-size:0.68rem;flex-shrink:0;">' + s.affected + ' records</span>' +
+        '<button class="primary" style="font-size:0.75rem;padding:4px 10px;white-space:nowrap;" onclick="applyBulkFix(' + i + ')">Apply</button>' +
+      '</div>';
+    }).join('') +
+    '</div></div>';
+
+  // Store for application
+  container._suggestions = suggestions;
+}
+
+function applyBulkFix(idx) {
+  const container = document.getElementById('bulk-fix-container');
+  const suggestions = container && container._suggestions;
+  if (!suggestions || !suggestions[idx]) return;
+
+  const s = suggestions[idx];
+  const env = activeEnv;
+  const apFile = envFiles[env].ap;
+  if (!apFile || !apFile.rows) { alert('No AP data loaded to fix.'); return; }
+
+  switch (s.action) {
+    case 'fill': {
+      const val = prompt('Enter default value for "' + s.field + '" (will apply to ' + s.affected + ' blank records):');
+      if (!val) return;
+      let fixed = 0;
+      apFile.rows.forEach(row => {
+        if (s.invoices.includes(row.invoice_ref) && !(row[s.field] || '').trim()) {
+          row[s.field] = val;
+          fixed++;
+        }
+      });
+      logChange('bulk_fill', { field: s.field, value: val, count: fixed });
+      alert('Filled ' + fixed + ' records. Re-run validation to see updated results.');
+      break;
+    }
+
+    case 'replace': {
+      const val = prompt('Replace "' + s.oldValue + '" with (in "' + s.field + '"):');
+      if (val === null) return;
+      let fixed = 0;
+      apFile.rows.forEach(row => {
+        if (s.invoices.includes(row.invoice_ref) && (row[s.field] || '').trim() === s.oldValue) {
+          row[s.field] = val;
+          fixed++;
+        }
+      });
+      logChange('bulk_replace', { field: s.field, from: s.oldValue, to: val, count: fixed });
+      alert('Replaced ' + fixed + ' values. Re-run validation to see updated results.');
+      break;
+    }
+
+    case 'add_md': {
+      if (!confirm('Add ' + s.values.length + ' values to ' + s.mdType + ' master data?\n\nValues: ' + s.values.slice(0, 10).join(', '))) return;
+      const edits = mdEdits[env][s.mdType] || [];
+      s.values.forEach(v => {
+        if (!edits.some(e => e.value === v)) {
+          edits.push({ op: 'add', value: v, addedBy: 'bulk-fix', addedAt: new Date().toISOString() });
+        }
+      });
+      mdEdits[env][s.mdType] = edits;
+      logChange('bulk_add_md', { mdType: s.mdType, count: s.values.length });
+      alert('Added ' + s.values.length + ' values to ' + s.mdType + '. Re-run validation to see updated results.');
+      break;
+    }
+
+    case 'fix_dates': {
+      if (!confirm('Attempt to auto-fix ' + s.affected + ' date values in "' + s.field + '"?')) return;
+      let fixed = 0;
+      apFile.rows.forEach(row => {
+        if (!s.invoices.includes(row.invoice_ref)) return;
+        const v = (row[s.field] || '').trim();
+        if (!v || /^\d{4}-\d{2}-\d{2}$/.test(v)) return;
+        // Try common date formats
+        const parsed = tryParseDate(v);
+        if (parsed) { row[s.field] = parsed; fixed++; }
+      });
+      logChange('bulk_fix_dates', { field: s.field, count: fixed });
+      alert('Fixed ' + fixed + ' of ' + s.affected + ' dates. Re-run validation to see updated results.');
+      break;
+    }
+
+    case 'abs': {
+      if (!confirm('Convert ' + s.affected + ' negative values in "' + s.field + '" to positive?')) return;
+      let fixed = 0;
+      apFile.rows.forEach(row => {
+        if (!s.invoices.includes(row.invoice_ref)) return;
+        const n = parseFloat(row[s.field]);
+        if (!isNaN(n) && n < 0) {
+          row[s.field] = String(Math.abs(n));
+          fixed++;
+        }
+      });
+      logChange('bulk_abs', { field: s.field, count: fixed });
+      alert('Converted ' + fixed + ' values. Re-run validation to see updated results.');
+      break;
+    }
+  }
+
+  saveState();
+}
+
+function tryParseDate(v) {
+  // DD/MM/YYYY or DD.MM.YYYY
+  let m = v.match(/^(\d{1,2})[\/.](\d{1,2})[\/.](\d{4})$/);
+  if (m) return m[3] + '-' + m[2].padStart(2, '0') + '-' + m[1].padStart(2, '0');
+  // MM/DD/YYYY
+  m = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m && parseInt(m[1]) <= 12) return m[3] + '-' + m[1].padStart(2, '0') + '-' + m[2].padStart(2, '0');
+  // YYYYMMDD
+  m = v.match(/^(\d{4})(\d{2})(\d{2})$/);
+  if (m) return m[1] + '-' + m[2] + '-' + m[3];
+  // DD.MM.YY
+  m = v.match(/^(\d{1,2})[\/.](\d{1,2})[\/.](\d{2})$/);
+  if (m) return '20' + m[3] + '-' + m[2].padStart(2, '0') + '-' + m[1].padStart(2, '0');
+  // Try native Date parse as fallback
+  const d = new Date(v);
+  if (!isNaN(d.getTime())) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  return null;
 }
 
 // ── Sidebar Navigation ──
