@@ -2469,38 +2469,14 @@ tbody tr:hover { background: #f9fafb; }
       <!-- Upload Zone -->
       <div class="dash-upload-zone" id="dash-upload-zone"></div>
 
-      <!-- Environment Progress -->
-      <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:12px;">Environment Progress</h2>
+      <!-- Upload Progress -->
+      <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:12px;">Upload Progress</h2>
       <div class="dash-env-grid" id="dash-env-grid"></div>
 
       <!-- Data Quality -->
       <div class="dash-quality-section">
         <h2>Data Quality by Environment</h2>
         <div class="dash-quality-grid" id="dash-quality-grid"></div>
-      </div>
-
-      <!-- Environment Comparison -->
-      <div style="margin-top:20px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-          <h2 style="font-size:1.1rem;font-weight:700;margin:0;">Environment Comparison</h2>
-          <div style="display:flex;gap:6px;align-items:center;">
-            <select id="env-compare-a" style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:0.8rem;">
-              <option value="dev">DEV</option>
-              <option value="sit">SIT</option>
-              <option value="uat">UAT</option>
-              <option value="prod">PROD</option>
-            </select>
-            <span style="font-size:0.8rem;color:var(--text-muted);">vs</span>
-            <select id="env-compare-b" style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:0.8rem;">
-              <option value="dev">DEV</option>
-              <option value="sit" selected>SIT</option>
-              <option value="uat">UAT</option>
-              <option value="prod">PROD</option>
-            </select>
-            <button class="primary" style="font-size:0.78rem;padding:4px 12px;" onclick="runEnvComparison()">Compare</button>
-          </div>
-        </div>
-        <div id="env-compare-result"></div>
       </div>
 
       <!-- LSMW Download Footer -->
@@ -3100,7 +3076,26 @@ tbody tr:hover { background: #f9fafb; }
         <h2>Environment Comparison</h2>
       </div>
       <div class="card-body open">
-        <div id="env-compare-content"></div>
+        <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:16px;">
+          Compare data, master data edits, and records across environments side by side.
+        </p>
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:16px;">
+          <select id="env-compare-a" style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:0.8rem;">
+            <option value="dev">DEV</option>
+            <option value="sit">SIT</option>
+            <option value="uat">UAT</option>
+            <option value="prod">PROD</option>
+          </select>
+          <span style="font-size:0.8rem;color:var(--text-muted);">vs</span>
+          <select id="env-compare-b" style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:0.8rem;">
+            <option value="dev">DEV</option>
+            <option value="sit" selected>SIT</option>
+            <option value="uat">UAT</option>
+            <option value="prod">PROD</option>
+          </select>
+          <button class="primary" style="font-size:0.78rem;padding:4px 12px;" onclick="runEnvComparison()">Compare</button>
+        </div>
+        <div id="env-compare-result"></div>
       </div>
     </div>
   </div>
@@ -5833,6 +5828,22 @@ function dashUploadFile(key) {
   inp.click();
 }
 
+// Build master data lookup sets for a given environment (used for quick validation counts)
+function buildMasterDataSets(env) {
+  const md = {};
+  Object.keys(MD_TYPES).forEach(t => {
+    const key = MD_TYPES[t].key;
+    if (mdEdits[env][t] && mdEdits[env][t].length > 0) {
+      md[t] = loadSetFromCSV(mdEdits[env][t], key);
+    } else if (envFiles[env][t] && envFiles[env][t].rows && envFiles[env][t].rows.length > 0) {
+      md[t] = loadSetFromCSV(envFiles[env][t].rows, key);
+    } else {
+      md[t] = SAMPLE_MD[t] || new Set();
+    }
+  });
+  return md;
+}
+
 function renderDashboard() {
   const envGrid = document.getElementById('dash-env-grid');
   const qualGrid = document.getElementById('dash-quality-grid');
@@ -5949,6 +5960,25 @@ function renderDashboard() {
     const isActive = env === activeEnv;
     const label = ENV_LABELS[env];
 
+    // Quick validation count for AP rows
+    let validInfo = '';
+    if (ef.ap && ef.ap.rows && ef.ap.rows.length > 0) {
+      const apRows = ef.ap.rows;
+      const md = buildMasterDataSets(env);
+      let validCount = 0;
+      apRows.forEach(row => {
+        const issues = _origValidate(row, md);
+        const hasCritical = issues.some(i => i.severity === 'CRITICAL' || i.severity === 'ERROR');
+        if (!hasCritical) validCount++;
+      });
+      const validPct = Math.round((validCount / apRows.length) * 100);
+      const validColor = validPct >= 80 ? 'var(--success,#059669)' : validPct >= 50 ? 'var(--warning,#d97706)' : 'var(--critical,#dc2626)';
+      validInfo = '<div style="margin-top:6px;padding:6px 8px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:4px;font-size:0.75rem;">' +
+        '<span style="color:' + validColor + ';font-weight:700;">' + validCount + '/' + apRows.length + '</span>' +
+        ' rows valid for LSMW (' + validPct + '%)' +
+      '</div>';
+    }
+
     // File items
     const fileItems = FILE_KEYS.map(k => {
       const f = ef[k];
@@ -5975,6 +6005,7 @@ function renderDashboard() {
           '<span class="dash-env-pct" style="color:' + ENV_COLORS[env] + '">' + pct + '%</span>' +
         '</div>' +
         '<div class="dash-progress-bar"><div class="dash-fill env-' + env + '" style="width:' + pct + '%"></div></div>' +
+        validInfo +
         '<div class="dash-file-grid">' + fileItems + '</div>' +
       '</div>' +
     '</div>';
