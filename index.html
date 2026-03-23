@@ -7300,7 +7300,246 @@ onMappingChanged = function() { _origOnMappingChanged(); saveState(); };
 
 // ── Recovery Banner + Init ──
 // Stubs for sections — will be implemented in later features
-function renderAnalytics() {}
+function renderAnalytics() {
+  renderCompletenessHeatmap();
+  renderTrends();
+  renderAnomalies();
+}
+
+function renderCompletenessHeatmap() {
+  const container = document.getElementById('analytics-heatmap');
+  if (!container) return;
+
+  const ap = getFiles().ap;
+  if (!ap || !ap.rows || ap.rows.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.85rem;">Load AP data to see completeness heatmap.</div>';
+    return;
+  }
+
+  const fields = schema.map(s => s.field);
+  const rows = ap.rows;
+  const totalRows = rows.length;
+
+  // Calculate fill rate per field
+  const stats = fields.map(f => {
+    let filled = 0, blank = 0, unique = new Set();
+    rows.forEach(r => {
+      const v = (r[f] || '').trim();
+      if (v) { filled++; unique.add(v); } else { blank++; }
+    });
+    return { field: f, filled, blank, total: totalRows, pct: totalRows > 0 ? Math.round((filled / totalRows) * 100) : 0, unique: unique.size };
+  });
+
+  let html = '<h3 style="font-size:0.95rem;font-weight:600;margin-bottom:12px;">Data Completeness Heatmap</h3>';
+  html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px;margin-bottom:20px;">';
+  stats.forEach(s => {
+    const hue = s.pct >= 90 ? 140 : s.pct >= 70 ? 50 : s.pct >= 40 ? 30 : 0;
+    const sat = Math.min(80, Math.max(30, s.pct));
+    const bg = 'hsl(' + hue + ',' + sat + '%,92%)';
+    const borderColor = 'hsl(' + hue + ',' + sat + '%,70%)';
+    html += '<div style="padding:8px;border-radius:6px;background:' + bg + ';border:1px solid ' + borderColor + ';text-align:center;" title="' + s.field + ': ' + s.filled + '/' + s.total + ' filled, ' + s.unique + ' unique">' +
+      '<div style="font-size:0.72rem;font-weight:600;color:#374151;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + esc(s.field) + '</div>' +
+      '<div style="font-size:1.1rem;font-weight:700;color:hsl(' + hue + ',' + Math.max(40, sat) + '%,35%);">' + s.pct + '%</div>' +
+      '<div style="font-size:0.65rem;color:#6b7280;">' + s.unique + ' unique</div>' +
+    '</div>';
+  });
+  html += '</div>';
+
+  // Summary bar
+  const avgPct = stats.length > 0 ? Math.round(stats.reduce((s, f) => s + f.pct, 0) / stats.length) : 0;
+  const fullFields = stats.filter(s => s.pct === 100).length;
+  const emptyFields = stats.filter(s => s.pct === 0).length;
+  html += '<div style="display:flex;gap:10px;flex-wrap:wrap;font-size:0.78rem;">' +
+    '<span style="padding:3px 8px;border-radius:4px;background:#e0e7ff;color:#3730a3;font-weight:600;">Avg completeness: ' + avgPct + '%</span>' +
+    '<span style="padding:3px 8px;border-radius:4px;background:#d1fae5;color:#065f46;font-weight:600;">' + fullFields + ' fully complete</span>' +
+    (emptyFields > 0 ? '<span style="padding:3px 8px;border-radius:4px;background:#fee2e2;color:#991b1b;font-weight:600;">' + emptyFields + ' completely empty</span>' : '') +
+  '</div>';
+
+  container.innerHTML = html;
+}
+
+function renderTrends() {
+  const container = document.getElementById('analytics-trends');
+  if (!container) return;
+
+  // Use audit log to show activity trends
+  if (!auditLog || auditLog.length < 2) {
+    container.innerHTML = '<div style="margin-top:20px;"><h3 style="font-size:0.95rem;font-weight:600;margin-bottom:8px;">Activity Trends</h3>' +
+      '<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:0.85rem;">Not enough activity data yet. Trends appear after several actions.</div></div>';
+    return;
+  }
+
+  // Group by date
+  const byDate = {};
+  const byType = {};
+  auditLog.forEach(e => {
+    const date = (e.ts || e.timestamp || '').substring(0, 10);
+    if (date) {
+      byDate[date] = (byDate[date] || 0) + 1;
+    }
+    const type = e.action || e.type || 'unknown';
+    byType[type] = (byType[type] || 0) + 1;
+  });
+
+  const dates = Object.entries(byDate).sort((a, b) => a[0].localeCompare(b[0]));
+  const maxCount = Math.max(...dates.map(d => d[1]), 1);
+
+  let html = '<div style="margin-top:20px;"><h3 style="font-size:0.95rem;font-weight:600;margin-bottom:12px;">Activity Trends</h3>';
+
+  // Activity bar chart
+  if (dates.length > 0) {
+    html += '<div style="display:flex;align-items:flex-end;gap:3px;height:80px;margin-bottom:8px;padding:4px 0;border-bottom:1px solid var(--border);">';
+    dates.slice(-30).forEach(([date, count]) => {
+      const h = Math.max(4, Math.round((count / maxCount) * 72));
+      html += '<div style="flex:1;min-width:8px;max-width:24px;height:' + h + 'px;background:var(--primary,#3b82f6);border-radius:2px 2px 0 0;cursor:default;" title="' + date + ': ' + count + ' actions"></div>';
+    });
+    html += '</div>';
+    html += '<div style="display:flex;justify-content:space-between;font-size:0.65rem;color:var(--text-muted);">' +
+      '<span>' + dates[Math.max(0, dates.length - 30)][0] + '</span><span>' + dates[dates.length - 1][0] + '</span></div>';
+  }
+
+  // Top action types
+  const topTypes = Object.entries(byType).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  html += '<div style="margin-top:16px;"><h4 style="font-size:0.85rem;font-weight:600;margin-bottom:8px;">Top Actions</h4>';
+  html += '<div style="display:flex;flex-direction:column;gap:4px;">';
+  const maxTypeCount = topTypes.length > 0 ? topTypes[0][1] : 1;
+  topTypes.forEach(([type, count]) => {
+    const w = Math.round((count / maxTypeCount) * 100);
+    html += '<div style="display:flex;align-items:center;gap:8px;font-size:0.78rem;">' +
+      '<span style="min-width:120px;text-align:right;color:var(--text-muted);">' + esc(type) + '</span>' +
+      '<div style="flex:1;height:14px;background:#e5e7eb;border-radius:3px;overflow:hidden;">' +
+        '<div style="height:100%;width:' + w + '%;background:var(--primary,#3b82f6);border-radius:3px;"></div>' +
+      '</div>' +
+      '<span style="min-width:24px;font-weight:600;">' + count + '</span>' +
+    '</div>';
+  });
+  html += '</div></div></div>';
+
+  container.innerHTML = html;
+}
+
+function renderAnomalies() {
+  const container = document.getElementById('analytics-anomalies');
+  if (!container) return;
+
+  const ap = getFiles().ap;
+  if (!ap || !ap.rows || ap.rows.length < 5) {
+    container.innerHTML = '<div style="margin-top:20px;"><h3 style="font-size:0.95rem;font-weight:600;margin-bottom:8px;">Anomaly Detection</h3>' +
+      '<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:0.85rem;">Need at least 5 AP records for anomaly detection.</div></div>';
+    return;
+  }
+
+  const rows = ap.rows;
+  const anomalies = [];
+
+  // Numeric field outlier detection (IQR method)
+  ['gross_amount', 'tax_amount'].forEach(field => {
+    const vals = rows.map(r => parseFloat(r[field])).filter(n => !isNaN(n)).sort((a, b) => a - b);
+    if (vals.length < 4) return;
+
+    const q1 = vals[Math.floor(vals.length * 0.25)];
+    const q3 = vals[Math.floor(vals.length * 0.75)];
+    const iqr = q3 - q1;
+    const lower = q1 - 1.5 * iqr;
+    const upper = q3 + 1.5 * iqr;
+    const mean = vals.reduce((s, v) => s + v, 0) / vals.length;
+
+    rows.forEach(r => {
+      const v = parseFloat(r[field]);
+      if (isNaN(v)) return;
+      if (v < lower || v > upper) {
+        anomalies.push({
+          type: 'outlier', field, ref: r.invoice_ref || '?',
+          value: v, message: esc(field) + ' = ' + v.toFixed(2) + ' is outside expected range [' + lower.toFixed(2) + ', ' + upper.toFixed(2) + ']',
+          severity: Math.abs(v - mean) > 3 * iqr ? 'high' : 'medium'
+        });
+      }
+    });
+  });
+
+  // Duplicate detection
+  const refCounts = {};
+  rows.forEach(r => {
+    const ref = r.invoice_ref || '';
+    refCounts[ref] = (refCounts[ref] || 0) + 1;
+  });
+  Object.entries(refCounts).forEach(([ref, count]) => {
+    if (count > 1) {
+      anomalies.push({
+        type: 'duplicate', field: 'invoice_ref', ref,
+        value: count, message: 'Invoice "' + esc(ref) + '" appears ' + count + ' times',
+        severity: 'high'
+      });
+    }
+  });
+
+  // Date anomalies: future dates, very old dates
+  const now = new Date();
+  const fiveYearsAgo = new Date(now.getFullYear() - 5, 0, 1);
+  ['invoice_date', 'posting_date', 'baseline_date'].forEach(field => {
+    rows.forEach(r => {
+      const v = (r[field] || '').trim();
+      if (!v || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return;
+      const d = new Date(v);
+      if (d > now) {
+        anomalies.push({ type: 'future_date', field, ref: r.invoice_ref || '?', value: v,
+          message: esc(field) + ' = ' + v + ' is in the future', severity: 'medium' });
+      } else if (d < fiveYearsAgo) {
+        anomalies.push({ type: 'old_date', field, ref: r.invoice_ref || '?', value: v,
+          message: esc(field) + ' = ' + v + ' is more than 5 years old', severity: 'low' });
+      }
+    });
+  });
+
+  // Value concentration: fields where one value dominates > 90%
+  schema.forEach(s => {
+    const f = s.field;
+    const valCounts = {};
+    let total = 0;
+    rows.forEach(r => {
+      const v = (r[f] || '').trim();
+      if (v) { valCounts[v] = (valCounts[v] || 0) + 1; total++; }
+    });
+    if (total < 5) return;
+    Object.entries(valCounts).forEach(([val, count]) => {
+      if (count / total > 0.9 && count < total) {
+        anomalies.push({ type: 'concentration', field: f, ref: '--', value: val,
+          message: esc(f) + ': "' + esc(val) + '" appears in ' + Math.round(count / total * 100) + '% of records',
+          severity: 'low' });
+      }
+    });
+  });
+
+  let html = '<div style="margin-top:20px;"><h3 style="font-size:0.95rem;font-weight:600;margin-bottom:12px;">Anomaly Detection</h3>';
+
+  if (anomalies.length === 0) {
+    html += '<div style="text-align:center;padding:20px;color:#059669;font-size:0.85rem;">No anomalies detected. Data looks clean!</div>';
+  } else {
+    const bySev = { high: [], medium: [], low: [] };
+    anomalies.forEach(a => { (bySev[a.severity] || bySev.low).push(a); });
+
+    html += '<div style="display:flex;gap:8px;margin-bottom:12px;">' +
+      (bySev.high.length > 0 ? '<span style="padding:3px 8px;border-radius:4px;background:#fee2e2;color:#991b1b;font-size:0.78rem;font-weight:600;">' + bySev.high.length + ' high</span>' : '') +
+      (bySev.medium.length > 0 ? '<span style="padding:3px 8px;border-radius:4px;background:#fef3c7;color:#92400e;font-size:0.78rem;font-weight:600;">' + bySev.medium.length + ' medium</span>' : '') +
+      (bySev.low.length > 0 ? '<span style="padding:3px 8px;border-radius:4px;background:#e0e7ff;color:#3730a3;font-size:0.78rem;font-weight:600;">' + bySev.low.length + ' low</span>' : '') +
+    '</div>';
+
+    const sevColors = { high: '#dc2626', medium: '#d97706', low: '#6b7280' };
+    anomalies.slice(0, 30).forEach(a => {
+      html += '<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-left:3px solid ' + (sevColors[a.severity] || '#6b7280') + ';margin-bottom:4px;font-size:0.78rem;background:#f9fafb;border-radius:0 4px 4px 0;">' +
+        '<span style="min-width:70px;font-weight:600;color:' + (sevColors[a.severity] || '#6b7280') + ';">' + a.type + '</span>' +
+        '<span style="color:#6b7280;min-width:80px;">' + esc(a.ref) + '</span>' +
+        '<span style="flex:1;">' + a.message + '</span>' +
+      '</div>';
+    });
+    if (anomalies.length > 30) {
+      html += '<div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">...and ' + (anomalies.length - 30) + ' more anomalies</div>';
+    }
+  }
+  html += '</div>';
+  container.innerHTML = html;
+}
+
 function renderEnvComparison() {}
 
 function showRecoveryBanner(savedAt) {
