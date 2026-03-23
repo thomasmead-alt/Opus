@@ -3387,6 +3387,7 @@ function handleFile(input, key) {
   reader.onload = () => {
     const rows = parseCSV(reader.result);
     const version = getNextFileVersion(activeEnv, key);
+    const prev = envFiles[activeEnv][key];
     envFiles[activeEnv][key] = { name: file.name, rows, version, loadedAt: new Date().toISOString() };
     refreshUploadUI();
     updateEnvSummary();
@@ -3396,6 +3397,10 @@ function handleFile(input, key) {
     }
     // Clear edits for this type so uploaded data shows fresh
     if (key !== 'ap') { delete mdEdits[activeEnv][key]; renderMdTable(); }
+    // Show diff if replacing existing data
+    if (prev && prev.rows && prev.rows.length > 0) {
+      showFileDiff(key, prev, envFiles[activeEnv][key]);
+    }
   };
   reader.readAsText(file);
 }
@@ -7284,6 +7289,152 @@ function showRecoveryBanner(savedAt) {
     '<button onclick="clearSavedState();location.reload()" style="background:rgba(255,255,255,0.2);border:none;color:white;padding:3px 10px;border-radius:4px;cursor:pointer;font-size:0.78rem;">Start Fresh</button>';
   document.body.prepend(banner);
   setTimeout(() => { if (document.getElementById('recovery-banner')) banner.remove(); }, 8000);
+}
+
+// ════════════════════════════════════════════
+// ── File Version Diffing ──
+// ════════════════════════════════════════════
+function showFileDiff(key, prev, curr) {
+  const diff = computeFileDiff(key, prev, curr);
+  if (!diff) return;
+
+  // Build modal
+  const overlay = document.createElement('div');
+  overlay.id = 'diff-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1001;display:flex;align-items:center;justify-content:center;';
+
+  const modal = document.createElement('div');
+  modal.style.cssText = 'background:var(--bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:8px;padding:24px;width:700px;max-width:92vw;max-height:85vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.2);';
+
+  const keyLabel = key === 'ap' ? 'AP Invoice Data' : key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+  let html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">' +
+    '<h3 style="margin:0;font-size:1rem;">File Diff: ' + esc(keyLabel) + '</h3>' +
+    '<button onclick="document.getElementById(\'diff-overlay\').remove()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;">&times;</button></div>';
+
+  // Summary stats
+  html += '<div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">' +
+    diffStatBadge('v' + prev.version + ' → v' + curr.version, '#6b7280') +
+    diffStatBadge(prev.rows.length + ' → ' + curr.rows.length + ' rows', curr.rows.length > prev.rows.length ? '#059669' : curr.rows.length < prev.rows.length ? '#dc2626' : '#6b7280') +
+    diffStatBadge('+' + diff.added.length + ' added', '#059669') +
+    diffStatBadge('-' + diff.removed.length + ' removed', '#dc2626') +
+    diffStatBadge('~' + diff.modified.length + ' modified', '#d97706') +
+    diffStatBadge('=' + diff.unchanged + ' unchanged', '#6b7280') +
+  '</div>';
+
+  // Column changes
+  if (diff.columnsAdded.length > 0 || diff.columnsRemoved.length > 0) {
+    html += '<div style="margin-bottom:12px;padding:8px 12px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;font-size:0.8rem;">';
+    if (diff.columnsAdded.length > 0) html += '<div style="color:#059669;">+ Columns added: ' + diff.columnsAdded.map(esc).join(', ') + '</div>';
+    if (diff.columnsRemoved.length > 0) html += '<div style="color:#dc2626;">- Columns removed: ' + diff.columnsRemoved.map(esc).join(', ') + '</div>';
+    html += '</div>';
+  }
+
+  // Detail sections
+  if (diff.added.length > 0) {
+    html += diffSection('Added Records', diff.added.slice(0, 20), '#059669', '+', diff.keyField);
+    if (diff.added.length > 20) html += '<div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:8px;">...and ' + (diff.added.length - 20) + ' more</div>';
+  }
+  if (diff.removed.length > 0) {
+    html += diffSection('Removed Records', diff.removed.slice(0, 20), '#dc2626', '-', diff.keyField);
+    if (diff.removed.length > 20) html += '<div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:8px;">...and ' + (diff.removed.length - 20) + ' more</div>';
+  }
+  if (diff.modified.length > 0) {
+    html += '<div style="margin-bottom:8px;"><strong style="font-size:0.85rem;color:#d97706;">Modified Records (' + diff.modified.length + ')</strong></div>';
+    diff.modified.slice(0, 15).forEach(m => {
+      html += '<div style="margin-bottom:6px;padding:6px 10px;border:1px solid #fcd34d;border-radius:4px;background:#fffbeb;font-size:0.78rem;">' +
+        '<div style="font-weight:600;margin-bottom:4px;">' + esc(m.key) + '</div>';
+      m.changes.slice(0, 6).forEach(c => {
+        html += '<div style="display:flex;gap:6px;"><span style="color:#6b7280;min-width:100px;">' + esc(c.field) + ':</span>' +
+          '<span style="color:#dc2626;text-decoration:line-through;">' + esc(c.old || '(blank)') + '</span>' +
+          '<span style="color:#059669;">' + esc(c.new || '(blank)') + '</span></div>';
+      });
+      if (m.changes.length > 6) html += '<div style="color:#6b7280;">...and ' + (m.changes.length - 6) + ' more fields changed</div>';
+      html += '</div>';
+    });
+    if (diff.modified.length > 15) html += '<div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:8px;">...and ' + (diff.modified.length - 15) + ' more modified records</div>';
+  }
+
+  if (diff.added.length === 0 && diff.removed.length === 0 && diff.modified.length === 0) {
+    html += '<div style="text-align:center;padding:20px;color:var(--text-muted);">No data changes detected (files are identical).</div>';
+  }
+
+  html += '<div style="display:flex;justify-content:flex-end;margin-top:16px;">' +
+    '<button class="primary" onclick="document.getElementById(\'diff-overlay\').remove()">Close</button></div>';
+
+  modal.innerHTML = html;
+  overlay.appendChild(modal);
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+  logChange('file_diff_viewed', { key, prevVersion: prev.version, newVersion: curr.version, added: diff.added.length, removed: diff.removed.length, modified: diff.modified.length });
+}
+
+function computeFileDiff(key, prev, curr) {
+  if (!prev.rows || !curr.rows) return null;
+
+  // Determine key field
+  const keyField = key === 'ap' ? 'invoice_ref' : Object.keys(curr.rows[0] || {})[0] || 'id';
+
+  // Column diff
+  const prevCols = prev.rows.length > 0 ? Object.keys(prev.rows[0]) : [];
+  const currCols = curr.rows.length > 0 ? Object.keys(curr.rows[0]) : [];
+  const columnsAdded = currCols.filter(c => !prevCols.includes(c));
+  const columnsRemoved = prevCols.filter(c => !currCols.includes(c));
+
+  // Index by key
+  const prevMap = {};
+  prev.rows.forEach(r => { prevMap[r[keyField] || ''] = r; });
+  const currMap = {};
+  curr.rows.forEach(r => { currMap[r[keyField] || ''] = r; });
+
+  const added = [];
+  const removed = [];
+  const modified = [];
+  let unchanged = 0;
+
+  // Check current rows
+  curr.rows.forEach(r => {
+    const k = r[keyField] || '';
+    const old = prevMap[k];
+    if (!old) {
+      added.push(r);
+    } else {
+      const changes = [];
+      const allFields = new Set([...Object.keys(old), ...Object.keys(r)]);
+      allFields.forEach(f => {
+        const ov = String(old[f] || '');
+        const nv = String(r[f] || '');
+        if (ov !== nv) changes.push({ field: f, old: old[f], new: r[f] });
+      });
+      if (changes.length > 0) {
+        modified.push({ key: k, changes });
+      } else {
+        unchanged++;
+      }
+    }
+  });
+
+  // Check removed
+  prev.rows.forEach(r => {
+    const k = r[keyField] || '';
+    if (!currMap[k]) removed.push(r);
+  });
+
+  return { keyField, added, removed, modified, unchanged, columnsAdded, columnsRemoved };
+}
+
+function diffStatBadge(text, color) {
+  return '<span style="font-size:0.75rem;padding:3px 8px;border-radius:4px;background:' + color + '15;color:' + color + ';border:1px solid ' + color + '30;font-weight:600;">' + text + '</span>';
+}
+
+function diffSection(title, rows, color, prefix, keyField) {
+  let html = '<div style="margin-bottom:8px;"><strong style="font-size:0.85rem;color:' + color + ';">' + title + ' (' + rows.length + ')</strong></div>';
+  html += '<div style="margin-bottom:12px;font-size:0.78rem;">';
+  rows.forEach(r => {
+    html += '<div style="padding:2px 8px;color:' + color + ';">' + prefix + ' ' + esc(r[keyField] || JSON.stringify(r).substring(0, 80)) + '</div>';
+  });
+  html += '</div>';
+  return html;
 }
 </script>
 </body>
