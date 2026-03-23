@@ -2509,6 +2509,7 @@ tbody tr:hover { background: #f9fafb; }
       <button onclick="toggleWorkspaceTab(this,'tab-target')">Target Schema</button>
       <button onclick="toggleWorkspaceTab(this,'tab-mapping')">Mapping</button>
       <button onclick="toggleWorkspaceTab(this,'tab-keydate')">Key Date &amp; Chart</button>
+      <button onclick="toggleWorkspaceTab(this,'tab-rules')">Validation Rules</button>
     </div>
 
     <!-- Source Schema Tab -->
@@ -2710,6 +2711,100 @@ tbody tr:hover { background: #f9fafb; }
         <div class="chart-bars" id="chart-bars"></div>
       </div>
     </div>
+
+    <!-- Validation Rules Tab -->
+    <div id="tab-rules" style="display:none;">
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:12px;">
+        Define custom validation rules that run on every data row during processing.
+      </p>
+
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+        <button class="primary" onclick="addCustomRule()">+ Add Rule</button>
+        <button class="secondary" onclick="exportCustomRules()">Export Rules</button>
+        <button class="secondary" onclick="importCustomRules()">Import Rules</button>
+        <input type="file" id="rules-import-file" accept=".json" style="display:none;" onchange="handleRulesImport(this)">
+      </div>
+
+      <div id="rules-empty" style="text-align:center;padding:32px;color:var(--text-muted);font-size:0.85rem;">
+        No custom validation rules defined. Click <strong>+ Add Rule</strong> to create one.
+      </div>
+
+      <div id="rules-list"></div>
+
+      <!-- Rule Editor Modal -->
+      <div id="rule-editor-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;display:none;align-items:center;justify-content:center;">
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;width:560px;max-width:90vw;max-height:85vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.15);">
+          <h3 style="margin:0 0 16px;font-size:1rem;">
+            <span id="rule-editor-title">Add Validation Rule</span>
+          </h3>
+
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div>
+              <label style="font-size:0.78rem;font-weight:600;display:block;margin-bottom:4px;">Rule Name</label>
+              <input type="text" id="rule-name" placeholder="e.g. Tax code required for taxable items" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:0.85rem;">
+            </div>
+
+            <div style="display:flex;gap:12px;">
+              <div style="flex:1;">
+                <label style="font-size:0.78rem;font-weight:600;display:block;margin-bottom:4px;">Target Field</label>
+                <select id="rule-field" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:0.85rem;">
+                  <option value="">Select field...</option>
+                </select>
+              </div>
+              <div style="flex:1;">
+                <label style="font-size:0.78rem;font-weight:600;display:block;margin-bottom:4px;">Severity</label>
+                <select id="rule-severity" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:0.85rem;">
+                  <option value="CRITICAL">Critical</option>
+                  <option value="ERROR" selected>Error</option>
+                  <option value="WARNING">Warning</option>
+                  <option value="INFO">Info</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label style="font-size:0.78rem;font-weight:600;display:block;margin-bottom:4px;">Condition Type</label>
+              <select id="rule-condition" onchange="onRuleConditionChange()" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:0.85rem;">
+                <option value="required">Required (not empty)</option>
+                <option value="regex">Matches pattern (regex)</option>
+                <option value="not_regex">Does NOT match pattern</option>
+                <option value="min_length">Minimum length</option>
+                <option value="max_length">Maximum length</option>
+                <option value="in_list">Value in list</option>
+                <option value="not_in_list">Value NOT in list</option>
+                <option value="numeric_range">Numeric range</option>
+                <option value="date_range">Date range</option>
+                <option value="cross_field">Cross-field comparison</option>
+                <option value="custom_js">Custom expression (JS)</option>
+              </select>
+            </div>
+
+            <div id="rule-params" style="display:flex;flex-direction:column;gap:8px;"></div>
+
+            <div>
+              <label style="font-size:0.78rem;font-weight:600;display:block;margin-bottom:4px;">Error Message</label>
+              <input type="text" id="rule-message" placeholder="e.g. Tax code is required when amount > 0" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:0.85rem;">
+            </div>
+
+            <div>
+              <label style="font-size:0.78rem;font-weight:600;display:block;margin-bottom:4px;">Resolution (optional)</label>
+              <input type="text" id="rule-resolution" placeholder="e.g. Add the tax code in column G" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:0.85rem;">
+            </div>
+
+            <div style="display:flex;align-items:center;gap:8px;">
+              <input type="checkbox" id="rule-enabled" checked>
+              <label for="rule-enabled" style="font-size:0.78rem;font-weight:600;">Enabled</label>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px;">
+            <button class="secondary" onclick="closeRuleEditor()">Cancel</button>
+            <button class="primary" onclick="saveRule()">Save Rule</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div><!-- /card-body -->
   </div><!-- /schema-workspace-card -->
   </div><!-- /schema-section -->
@@ -3851,7 +3946,7 @@ function initMappings() {
 }
 
 // ── Workspace Tabs ──
-const TAB_IDS = ['tab-source', 'tab-target', 'tab-mapping', 'tab-keydate'];
+const TAB_IDS = ['tab-source', 'tab-target', 'tab-mapping', 'tab-keydate', 'tab-rules'];
 function toggleCard(cardId) {
   const body = document.getElementById(cardId + '-body');
   const arrow = document.getElementById(cardId + '-arrow');
@@ -3867,6 +3962,7 @@ function toggleWorkspaceTab(btn, tabId) {
   });
   if (tabId === 'tab-mapping') renderMappingTable();
   if (tabId === 'tab-source') { renderSourceSchemaTable(); renderKeyPills(); }
+  if (tabId === 'tab-rules') renderRulesList();
 }
 
 // ── Source Schema Editor ──
@@ -6123,6 +6219,357 @@ function download(name, content, type) {
 }
 
 // ════════════════════════════════════════════
+// ── Custom Validation Rule Builder ──
+// ════════════════════════════════════════════
+let customRules = [];
+let _editingRuleIdx = -1;
+
+function renderRulesList() {
+  const list = document.getElementById('rules-list');
+  const empty = document.getElementById('rules-empty');
+  if (!list || !empty) return;
+
+  if (customRules.length === 0) {
+    empty.style.display = '';
+    list.innerHTML = '';
+    return;
+  }
+  empty.style.display = 'none';
+
+  const condLabels = {
+    required: 'Required', regex: 'Matches regex', not_regex: 'Not matching regex',
+    min_length: 'Min length', max_length: 'Max length', in_list: 'In list',
+    not_in_list: 'Not in list', numeric_range: 'Numeric range', date_range: 'Date range',
+    cross_field: 'Cross-field', custom_js: 'Custom JS'
+  };
+
+  list.innerHTML = customRules.map((r, i) => {
+    const sevColor = r.severity === 'CRITICAL' ? 'var(--critical)' : r.severity === 'ERROR' ? 'var(--error,#dc2626)' :
+      r.severity === 'WARNING' ? 'var(--warning,#f59e0b)' : 'var(--info,#3b82f6)';
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;' +
+      'background:' + (r.enabled ? 'var(--bg)' : '#f3f4f6') + ';opacity:' + (r.enabled ? '1' : '0.6') + ';">' +
+      '<span style="width:8px;height:8px;border-radius:50%;background:' + sevColor + ';flex-shrink:0;" title="' + esc(r.severity) + '"></span>' +
+      '<div style="flex:1;min-width:0;">' +
+        '<div style="font-size:0.85rem;font-weight:600;">' + esc(r.name || 'Unnamed Rule') + '</div>' +
+        '<div style="font-size:0.75rem;color:var(--text-muted);">' +
+          esc(r.field) + ' &middot; ' + (condLabels[r.condition] || r.condition) +
+          (r.enabled ? '' : ' &middot; <em>disabled</em>') +
+        '</div>' +
+      '</div>' +
+      '<button onclick="toggleRuleEnabled(' + i + ')" title="' + (r.enabled ? 'Disable' : 'Enable') + '" style="background:none;border:none;cursor:pointer;font-size:1rem;">' +
+        (r.enabled ? '&#9989;' : '&#9898;') + '</button>' +
+      '<button onclick="editRule(' + i + ')" title="Edit" style="background:none;border:none;cursor:pointer;font-size:0.9rem;">&#9998;</button>' +
+      '<button onclick="duplicateRule(' + i + ')" title="Duplicate" style="background:none;border:none;cursor:pointer;font-size:0.9rem;">&#128203;</button>' +
+      '<button onclick="deleteRule(' + i + ')" title="Delete" style="background:none;border:none;cursor:pointer;font-size:0.9rem;color:var(--critical);">&times;</button>' +
+    '</div>';
+  }).join('');
+}
+
+function populateRuleFieldSelect() {
+  const sel = document.getElementById('rule-field');
+  if (!sel) return;
+  const fields = sourceSchema.map(s => s.field);
+  const extra = schema.map(s => s.field).filter(f => !fields.includes(f));
+  sel.innerHTML = '<option value="">Select field...</option>' +
+    fields.concat(extra).map(f => '<option value="' + esc(f) + '">' + esc(f) + '</option>').join('');
+}
+
+function onRuleConditionChange() {
+  const cond = document.getElementById('rule-condition').value;
+  const params = document.getElementById('rule-params');
+  if (!params) return;
+
+  const input = (id, label, placeholder, type) =>
+    '<div><label style="font-size:0.78rem;font-weight:600;display:block;margin-bottom:4px;">' + label + '</label>' +
+    '<input type="' + (type||'text') + '" id="' + id + '" placeholder="' + (placeholder||'') + '" ' +
+    'style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:0.85rem;"></div>';
+
+  const fieldSelect = (id, label) =>
+    '<div><label style="font-size:0.78rem;font-weight:600;display:block;margin-bottom:4px;">' + label + '</label>' +
+    '<select id="' + id + '" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:0.85rem;">' +
+    '<option value="">Select field...</option>' +
+    sourceSchema.map(s => '<option value="' + esc(s.field) + '">' + esc(s.field) + '</option>').join('') +
+    '</select></div>';
+
+  const templates = {
+    required: '',
+    regex: input('rule-p-pattern', 'Regex Pattern', 'e.g. ^[A-Z]{2}\\d{4}$'),
+    not_regex: input('rule-p-pattern', 'Regex Pattern', 'e.g. ^\\s*$'),
+    min_length: input('rule-p-min', 'Minimum Length', 'e.g. 3', 'number'),
+    max_length: input('rule-p-max', 'Maximum Length', 'e.g. 10', 'number'),
+    in_list: input('rule-p-list', 'Allowed Values (comma-separated)', 'e.g. USD,EUR,GBP'),
+    not_in_list: input('rule-p-list', 'Blocked Values (comma-separated)', 'e.g. TEST,DUMMY'),
+    numeric_range:
+      '<div style="display:flex;gap:8px;">' +
+      input('rule-p-min', 'Min Value', '0', 'number') +
+      input('rule-p-max', 'Max Value', '999999', 'number') + '</div>',
+    date_range:
+      '<div style="display:flex;gap:8px;">' +
+      input('rule-p-min', 'From Date', '', 'date') +
+      input('rule-p-max', 'To Date', '', 'date') + '</div>',
+    cross_field:
+      fieldSelect('rule-p-other', 'Compare With Field') +
+      '<div><label style="font-size:0.78rem;font-weight:600;display:block;margin-bottom:4px;">Operator</label>' +
+      '<select id="rule-p-op" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:0.85rem;">' +
+      '<option value="eq">Equals</option><option value="neq">Not equals</option>' +
+      '<option value="gt">Greater than</option><option value="lt">Less than</option>' +
+      '<option value="gte">Greater or equal</option><option value="lte">Less or equal</option>' +
+      '</select></div>',
+    custom_js:
+      '<div><label style="font-size:0.78rem;font-weight:600;display:block;margin-bottom:4px;">JS Expression (return true if valid)</label>' +
+      '<textarea id="rule-p-expr" rows="3" placeholder="e.g. parseFloat(row.tax_amount) <= parseFloat(row.gross_amount)" ' +
+      'style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:0.85rem;font-family:monospace;resize:vertical;"></textarea>' +
+      '<div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Available: <code>row</code> (the data row object), <code>value</code> (current field value)</div></div>'
+  };
+
+  params.innerHTML = templates[cond] || '';
+}
+
+function addCustomRule() {
+  _editingRuleIdx = -1;
+  document.getElementById('rule-editor-title').textContent = 'Add Validation Rule';
+  document.getElementById('rule-name').value = '';
+  document.getElementById('rule-severity').value = 'ERROR';
+  document.getElementById('rule-condition').value = 'required';
+  document.getElementById('rule-message').value = '';
+  document.getElementById('rule-resolution').value = '';
+  document.getElementById('rule-enabled').checked = true;
+  populateRuleFieldSelect();
+  document.getElementById('rule-field').value = '';
+  onRuleConditionChange();
+  document.getElementById('rule-editor-overlay').style.display = 'flex';
+}
+
+function editRule(idx) {
+  const r = customRules[idx];
+  if (!r) return;
+  _editingRuleIdx = idx;
+  document.getElementById('rule-editor-title').textContent = 'Edit Validation Rule';
+  document.getElementById('rule-name').value = r.name || '';
+  document.getElementById('rule-severity').value = r.severity || 'ERROR';
+  populateRuleFieldSelect();
+  document.getElementById('rule-field').value = r.field || '';
+  document.getElementById('rule-condition').value = r.condition || 'required';
+  document.getElementById('rule-message').value = r.message || '';
+  document.getElementById('rule-resolution').value = r.resolution || '';
+  document.getElementById('rule-enabled').checked = r.enabled !== false;
+  onRuleConditionChange();
+
+  // Populate params
+  const p = r.params || {};
+  setTimeout(() => {
+    if (p.pattern) { const el = document.getElementById('rule-p-pattern'); if (el) el.value = p.pattern; }
+    if (p.min != null) { const el = document.getElementById('rule-p-min'); if (el) el.value = p.min; }
+    if (p.max != null) { const el = document.getElementById('rule-p-max'); if (el) el.value = p.max; }
+    if (p.list) { const el = document.getElementById('rule-p-list'); if (el) el.value = p.list; }
+    if (p.otherField) { const el = document.getElementById('rule-p-other'); if (el) el.value = p.otherField; }
+    if (p.op) { const el = document.getElementById('rule-p-op'); if (el) el.value = p.op; }
+    if (p.expr) { const el = document.getElementById('rule-p-expr'); if (el) el.value = p.expr; }
+  }, 0);
+
+  document.getElementById('rule-editor-overlay').style.display = 'flex';
+}
+
+function closeRuleEditor() {
+  document.getElementById('rule-editor-overlay').style.display = 'none';
+  _editingRuleIdx = -1;
+}
+
+function saveRule() {
+  const name = document.getElementById('rule-name').value.trim();
+  const field = document.getElementById('rule-field').value;
+  const severity = document.getElementById('rule-severity').value;
+  const condition = document.getElementById('rule-condition').value;
+  const message = document.getElementById('rule-message').value.trim();
+  const resolution = document.getElementById('rule-resolution').value.trim();
+  const enabled = document.getElementById('rule-enabled').checked;
+
+  if (!name) { alert('Please enter a rule name.'); return; }
+  if (!field) { alert('Please select a target field.'); return; }
+  if (!message) { alert('Please enter an error message.'); return; }
+
+  // Gather params
+  const params = {};
+  const pPattern = document.getElementById('rule-p-pattern');
+  const pMin = document.getElementById('rule-p-min');
+  const pMax = document.getElementById('rule-p-max');
+  const pList = document.getElementById('rule-p-list');
+  const pOther = document.getElementById('rule-p-other');
+  const pOp = document.getElementById('rule-p-op');
+  const pExpr = document.getElementById('rule-p-expr');
+
+  if (pPattern) params.pattern = pPattern.value;
+  if (pMin) params.min = pMin.value;
+  if (pMax) params.max = pMax.value;
+  if (pList) params.list = pList.value;
+  if (pOther) params.otherField = pOther.value;
+  if (pOp) params.op = pOp.value;
+  if (pExpr) params.expr = pExpr.value;
+
+  // Validate regex if needed
+  if ((condition === 'regex' || condition === 'not_regex') && params.pattern) {
+    try { new RegExp(params.pattern); } catch (e) { alert('Invalid regex: ' + e.message); return; }
+  }
+
+  const rule = { name, field, severity, condition, params, message, resolution, enabled };
+
+  if (_editingRuleIdx >= 0) {
+    customRules[_editingRuleIdx] = rule;
+    logChange('rule_updated', { name, field, condition });
+  } else {
+    customRules.push(rule);
+    logChange('rule_added', { name, field, condition });
+  }
+
+  closeRuleEditor();
+  renderRulesList();
+  saveState();
+}
+
+function deleteRule(idx) {
+  if (!confirm('Delete rule "' + (customRules[idx].name || 'Unnamed') + '"?')) return;
+  logChange('rule_deleted', { name: customRules[idx].name });
+  customRules.splice(idx, 1);
+  renderRulesList();
+  saveState();
+}
+
+function duplicateRule(idx) {
+  const copy = JSON.parse(JSON.stringify(customRules[idx]));
+  copy.name += ' (copy)';
+  customRules.splice(idx + 1, 0, copy);
+  logChange('rule_duplicated', { name: copy.name });
+  renderRulesList();
+  saveState();
+}
+
+function toggleRuleEnabled(idx) {
+  customRules[idx].enabled = !customRules[idx].enabled;
+  logChange('rule_toggled', { name: customRules[idx].name, enabled: customRules[idx].enabled });
+  renderRulesList();
+  saveState();
+}
+
+function exportCustomRules() {
+  if (customRules.length === 0) { alert('No rules to export.'); return; }
+  const blob = new Blob([JSON.stringify(customRules, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'validation-rules.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function importCustomRules() {
+  document.getElementById('rules-import-file').click();
+}
+
+function handleRulesImport(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (!Array.isArray(imported)) throw new Error('Expected an array of rules');
+      imported.forEach(r => {
+        if (r.name && r.field && r.condition) customRules.push(r);
+      });
+      logChange('rules_imported', { count: imported.length });
+      renderRulesList();
+      saveState();
+    } catch (err) { alert('Failed to import rules: ' + err.message); }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+// Execute custom rules during validation
+function runCustomRules(row) {
+  const issues = [];
+  const inv = row.invoice_ref || 'UNKNOWN';
+
+  customRules.filter(r => r.enabled).forEach(r => {
+    const value = (row[r.field] || '').trim();
+    let valid = true;
+
+    switch (r.condition) {
+      case 'required':
+        valid = value.length > 0;
+        break;
+      case 'regex':
+        try { valid = !value || new RegExp(r.params.pattern).test(value); } catch { valid = true; }
+        break;
+      case 'not_regex':
+        try { valid = !value || !new RegExp(r.params.pattern).test(value); } catch { valid = true; }
+        break;
+      case 'min_length':
+        valid = !value || value.length >= parseInt(r.params.min || 0);
+        break;
+      case 'max_length':
+        valid = !value || value.length <= parseInt(r.params.max || 9999);
+        break;
+      case 'in_list': {
+        const allowed = (r.params.list || '').split(',').map(s => s.trim().toUpperCase());
+        valid = !value || allowed.includes(value.toUpperCase());
+        break;
+      }
+      case 'not_in_list': {
+        const blocked = (r.params.list || '').split(',').map(s => s.trim().toUpperCase());
+        valid = !value || !blocked.includes(value.toUpperCase());
+        break;
+      }
+      case 'numeric_range': {
+        const n = parseFloat(value);
+        if (!isNaN(n)) {
+          const min = r.params.min !== '' ? parseFloat(r.params.min) : -Infinity;
+          const max = r.params.max !== '' ? parseFloat(r.params.max) : Infinity;
+          valid = n >= min && n <= max;
+        }
+        break;
+      }
+      case 'date_range':
+        if (value && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+          if (r.params.min && value < r.params.min) valid = false;
+          if (r.params.max && value > r.params.max) valid = false;
+        }
+        break;
+      case 'cross_field': {
+        const other = (row[r.params.otherField] || '').trim();
+        const ops = { eq: value===other, neq: value!==other, gt: value>other, lt: value<other, gte: value>=other, lte: value<=other };
+        valid = !value || !other || (ops[r.params.op] !== undefined ? ops[r.params.op] : true);
+        break;
+      }
+      case 'custom_js':
+        try {
+          const fn = new Function('row', 'value', 'return (' + r.params.expr + ')');
+          valid = !!fn(row, value);
+        } catch { valid = true; }
+        break;
+    }
+
+    if (!valid) {
+      issues.push({
+        severity: r.severity, invoice_ref: inv, field_name: r.field,
+        supplied_value: value || '(blank)',
+        message: r.message,
+        resolution: r.resolution || 'Fix the value to comply with the validation rule.',
+        sap_transaction: '', responsible_team: 'Data Migration Team'
+      });
+    }
+  });
+
+  return issues;
+}
+
+// Patch the validate function to include custom rules
+const _origValidate = validate;
+validate = function(row, md) {
+  const issues = _origValidate(row, md);
+  return issues.concat(runCustomRules(row));
+};
+
+// ════════════════════════════════════════════
 // ── Drag-and-Drop Mapping Builder ──
 // ════════════════════════════════════════════
 let _dndDragField = null;
@@ -6373,6 +6820,7 @@ function getSerializableState() {
     hierarchies: hierarchies,
     externalDatasets: serializeExtDatasets(),
     auditLog: auditLog,
+    customRules: customRules,
     savedAt: new Date().toISOString(),
   };
 }
@@ -6476,6 +6924,9 @@ function restoreState() {
 
     // Restore audit log
     if (s.auditLog && Array.isArray(s.auditLog)) auditLog = s.auditLog;
+
+    // Restore custom validation rules
+    if (s.customRules && Array.isArray(s.customRules)) customRules = s.customRules;
 
     return s.savedAt || true;
   } catch (e) {
