@@ -2991,6 +2991,7 @@ tbody tr:hover { background: #f9fafb; }
         <div class="card-body open" id="results-summary-card-body" style="padding-top:12px;">
           <div class="stats-row" id="stats-row"></div>
           <div class="progress-bar"><div class="fill" id="pass-bar"></div></div>
+          <div id="md-source-banner"></div>
         </div>
       </div>
 
@@ -5096,8 +5097,12 @@ function runMigration() {
     return SAMPLE_MD_ROWS[type] || [];
   }
   const md = {};
+  const mdSources = {};
   Object.keys(MD_TYPES).forEach(t => {
     md[t] = resolveMd(t, MD_TYPES[t].key);
+    if (mdEdits[activeEnv][t] && mdEdits[activeEnv][t].length > 0) mdSources[t] = 'edited';
+    else if (getFiles()[t] && getFiles()[t].rows && getFiles()[t].rows.length > 0) mdSources[t] = 'uploaded';
+    else mdSources[t] = 'sample';
   });
 
   // Always apply mappings pipeline (handles direct copy when no transforms exist)
@@ -5215,6 +5220,7 @@ function runMigration() {
     summary_by_field: fieldCount,
     summary_by_responsible_team: teamCount,
     remediation_steps: remediationSteps,
+    md_sources: mdSources,
   };
 
   renderResults(lastReport, passedRows);
@@ -5239,6 +5245,29 @@ function renderResults(r, passedRows) {
   const bar = document.getElementById('pass-bar');
   bar.style.width = pct + '%';
   bar.className = 'fill ' + (pct >= 80 ? 'green' : 'red');
+
+  // MD source banner
+  const mdBanner = document.getElementById('md-source-banner');
+  if (mdBanner && r.md_sources) {
+    const sources = r.md_sources;
+    const sampleTypes = Object.entries(sources).filter(([, v]) => v === 'sample').map(([k]) => k.replace(/_/g, ' '));
+    const uploadedCount = Object.values(sources).filter(v => v === 'uploaded').length;
+    const editedCount = Object.values(sources).filter(v => v === 'edited').length;
+    const totalMd = Object.keys(sources).length;
+
+    if (sampleTypes.length > 0) {
+      mdBanner.innerHTML = '<div style="margin-top:10px;padding:8px 12px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;font-size:0.78rem;color:#92400e;">' +
+        '<strong>Note:</strong> ' + sampleTypes.length + '/' + totalMd + ' master data types validated against <strong>sample data</strong>' +
+        (uploadedCount + editedCount > 0 ? ' (' + (uploadedCount + editedCount) + ' loaded/edited)' : '') +
+        '. Upload environment-specific master data for accurate results.' +
+        '<div style="margin-top:4px;font-size:0.72rem;color:#a16207;">Using sample: ' + sampleTypes.join(', ') + '</div>' +
+      '</div>';
+    } else {
+      mdBanner.innerHTML = '<div style="margin-top:10px;padding:8px 12px;background:#d1fae5;border:1px solid #6ee7b7;border-radius:6px;font-size:0.78rem;color:#065f46;">' +
+        'All ' + totalMd + ' master data types loaded (' + uploadedCount + ' uploaded, ' + editedCount + ' edited). Results reflect your environment data.' +
+      '</div>';
+    }
+  }
 
   // Summaries
   const grid = document.getElementById('summary-grid');
@@ -5915,7 +5944,9 @@ function renderDashboard() {
     '<svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:' + envColor + ';fill:none;stroke-width:2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
     'Upload Files for <span style="color:' + envColor + '">' + envLabel + '</span></h3>' +
     '<p>AP invoices: ' + (apLoaded ? '<span style="color:var(--success);font-weight:600">' + ef.ap.rows.length + ' rows loaded</span>' : '<span style="color:var(--text-muted)">not loaded</span>') +
-    ' &middot; Master data: <span style="font-weight:600">' + mdLoaded + '/' + mdTotal + '</span> types loaded</p>' +
+    ' &middot; Master data: <span style="font-weight:600">' + mdLoaded + '/' + mdTotal + '</span> types loaded' +
+    (mdLoaded < mdTotal ? ' <span style="font-size:0.78rem;color:var(--warning,#d97706);">(' + (mdTotal - mdLoaded) + ' using sample data)</span>' : '') +
+    '</p>' +
     '<div class="dash-upload-actions">' +
       '<label class="dash-upload-btn primary-upload">' +
         '<svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M12 18v-6M9 15h6"/></svg>' +
@@ -5973,9 +6004,25 @@ function renderDashboard() {
       });
       const validPct = Math.round((validCount / apRows.length) * 100);
       const validColor = validPct >= 80 ? 'var(--success,#059669)' : validPct >= 50 ? 'var(--warning,#d97706)' : 'var(--critical,#dc2626)';
+
+      // Count how many MD types are using sample vs uploaded/edited data
+      const mdTypes = Object.keys(MD_TYPES);
+      let mdUploaded = 0, mdEdited = 0, mdSample = 0;
+      mdTypes.forEach(t => {
+        if (mdEdits[env][t] && mdEdits[env][t].length > 0) mdEdited++;
+        else if (envFiles[env][t] && envFiles[env][t].rows && envFiles[env][t].rows.length > 0) mdUploaded++;
+        else mdSample++;
+      });
+      const mdSource = mdSample === mdTypes.length
+        ? '<span style="color:var(--warning,#d97706);">validated against sample data</span>'
+        : mdSample > 0
+          ? '<span style="color:var(--text-muted);">' + (mdUploaded + mdEdited) + '/' + mdTypes.length + ' MD loaded, ' + mdSample + ' using sample</span>'
+          : '<span style="color:var(--success,#059669);">all MD loaded</span>';
+
       validInfo = '<div style="margin-top:6px;padding:6px 8px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:4px;font-size:0.75rem;">' +
         '<span style="color:' + validColor + ';font-weight:700;">' + validCount + '/' + apRows.length + '</span>' +
         ' rows valid for LSMW (' + validPct + '%)' +
+        '<div style="font-size:0.7rem;margin-top:2px;">' + mdSource + '</div>' +
       '</div>';
     }
 
