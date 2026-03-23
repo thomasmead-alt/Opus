@@ -2732,7 +2732,7 @@ tbody tr:hover { background: #f9fafb; }
       <div id="rules-list"></div>
 
       <!-- Rule Editor Modal -->
-      <div id="rule-editor-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;display:none;align-items:center;justify-content:center;">
+      <div id="rule-editor-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;align-items:center;justify-content:center;">
         <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;width:560px;max-width:90vw;max-height:85vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.15);">
           <h3 style="margin:0 0 16px;font-size:1rem;">
             <span id="rule-editor-title">Add Validation Rule</span>
@@ -6996,7 +6996,7 @@ function audit(action, detail, icon) {
     ts: new Date().toISOString(),
     env: activeEnv,
     action: action,
-    detail: detail || '',
+    detail: typeof detail === 'object' ? JSON.stringify(detail) : (detail || ''),
     icon: icon || '\u2022',
   });
   if (auditLog.length > AUDIT_MAX) auditLog.length = AUDIT_MAX;
@@ -7007,6 +7007,7 @@ function audit(action, detail, icon) {
   const panel = document.getElementById('audit-panel');
   if (panel && panel.closest('.section-visible')) renderAuditLog();
 }
+const logChange = audit;
 
 function renderAuditLog() {
   const panel = document.getElementById('audit-panel');
