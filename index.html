@@ -2479,6 +2479,30 @@ tbody tr:hover { background: #f9fafb; }
         <div class="dash-quality-grid" id="dash-quality-grid"></div>
       </div>
 
+      <!-- Environment Comparison -->
+      <div style="margin-top:20px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <h2 style="font-size:1.1rem;font-weight:700;margin:0;">Environment Comparison</h2>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <select id="env-compare-a" style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:0.8rem;">
+              <option value="dev">DEV</option>
+              <option value="sit">SIT</option>
+              <option value="uat">UAT</option>
+              <option value="prod">PROD</option>
+            </select>
+            <span style="font-size:0.8rem;color:var(--text-muted);">vs</span>
+            <select id="env-compare-b" style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:0.8rem;">
+              <option value="dev">DEV</option>
+              <option value="sit" selected>SIT</option>
+              <option value="uat">UAT</option>
+              <option value="prod">PROD</option>
+            </select>
+            <button class="primary" style="font-size:0.78rem;padding:4px 12px;" onclick="runEnvComparison()">Compare</button>
+          </div>
+        </div>
+        <div id="env-compare-result"></div>
+      </div>
+
       <!-- LSMW Download Footer -->
       <div class="dash-download-footer" id="dash-download-footer"></div>
     </div>
@@ -7289,6 +7313,153 @@ function showRecoveryBanner(savedAt) {
     '<button onclick="clearSavedState();location.reload()" style="background:rgba(255,255,255,0.2);border:none;color:white;padding:3px 10px;border-radius:4px;cursor:pointer;font-size:0.78rem;">Start Fresh</button>';
   document.body.prepend(banner);
   setTimeout(() => { if (document.getElementById('recovery-banner')) banner.remove(); }, 8000);
+}
+
+// ════════════════════════════════════════════
+// ── Environment Comparison ──
+// ════════════════════════════════════════════
+function runEnvComparison() {
+  const envA = document.getElementById('env-compare-a').value;
+  const envB = document.getElementById('env-compare-b').value;
+  const container = document.getElementById('env-compare-result');
+  if (!container) return;
+
+  if (envA === envB) {
+    container.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:0.85rem;">Select two different environments to compare.</div>';
+    return;
+  }
+
+  const labelA = ENV_LABELS[envA], labelB = ENV_LABELS[envB];
+  const filesA = envFiles[envA], filesB = envFiles[envB];
+
+  let html = '';
+
+  // File readiness comparison table
+  html += '<table style="width:100%;border-collapse:collapse;font-size:0.8rem;margin-bottom:16px;">' +
+    '<thead><tr style="background:var(--bg-alt,#f9fafb);">' +
+    '<th style="text-align:left;padding:6px 10px;border:1px solid var(--border);">Data File</th>' +
+    '<th style="text-align:center;padding:6px 10px;border:1px solid var(--border);">' + esc(labelA) + '</th>' +
+    '<th style="text-align:center;padding:6px 10px;border:1px solid var(--border);">' + esc(labelB) + '</th>' +
+    '<th style="text-align:center;padding:6px 10px;border:1px solid var(--border);">Diff</th>' +
+    '</tr></thead><tbody>';
+
+  FILE_KEYS.forEach(key => {
+    const fA = filesA[key], fB = filesB[key];
+    const rowsA = fA && fA.rows ? fA.rows.length : 0;
+    const rowsB = fB && fB.rows ? fB.rows.length : 0;
+    const nameA = fA ? fA.name : '--';
+    const nameB = fB ? fB.name : '--';
+    const vA = fA ? 'v' + fA.version : '--';
+    const vB = fB ? 'v' + fB.version : '--';
+
+    let diffText = '';
+    let diffColor = '#6b7280';
+    if (!fA && !fB) { diffText = 'Both empty'; }
+    else if (!fA) { diffText = 'Only in ' + labelB; diffColor = '#d97706'; }
+    else if (!fB) { diffText = 'Only in ' + labelA; diffColor = '#d97706'; }
+    else if (rowsA === rowsB) { diffText = 'Same count'; diffColor = '#059669'; }
+    else { diffText = (rowsA > rowsB ? '+' : '') + (rowsA - rowsB) + ' rows'; diffColor = '#dc2626'; }
+
+    const keyLabel = key === 'ap' ? 'AP Invoices' : key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+    html += '<tr>' +
+      '<td style="padding:6px 10px;border:1px solid var(--border);font-weight:600;">' + esc(keyLabel) + '</td>' +
+      '<td style="padding:6px 10px;border:1px solid var(--border);text-align:center;">' +
+        (fA ? esc(nameA) + ' (' + rowsA + ' rows, ' + vA + ')' : '<span style="color:var(--text-muted);">Not loaded</span>') + '</td>' +
+      '<td style="padding:6px 10px;border:1px solid var(--border);text-align:center;">' +
+        (fB ? esc(nameB) + ' (' + rowsB + ' rows, ' + vB + ')' : '<span style="color:var(--text-muted);">Not loaded</span>') + '</td>' +
+      '<td style="padding:6px 10px;border:1px solid var(--border);text-align:center;color:' + diffColor + ';font-weight:600;">' + diffText + '</td>' +
+    '</tr>';
+  });
+  html += '</tbody></table>';
+
+  // Master data edits comparison
+  const editsA = mdEdits[envA] || {}, editsB = mdEdits[envB] || {};
+  const allMdTypes = new Set([...Object.keys(editsA), ...Object.keys(editsB)]);
+  if (allMdTypes.size > 0) {
+    html += '<div style="margin-bottom:16px;">';
+    html += '<h4 style="font-size:0.85rem;font-weight:600;margin-bottom:8px;">Master Data Edits</h4>';
+    allMdTypes.forEach(type => {
+      const eA = editsA[type] ? editsA[type].length : 0;
+      const eB = editsB[type] ? editsB[type].length : 0;
+      if (eA === 0 && eB === 0) return;
+      html += '<div style="display:flex;gap:12px;align-items:center;font-size:0.8rem;margin-bottom:4px;">' +
+        '<span style="min-width:120px;font-weight:600;">' + esc(type) + '</span>' +
+        '<span>' + labelA + ': ' + eA + ' edits</span>' +
+        '<span>' + labelB + ': ' + eB + ' edits</span>' +
+        (eA !== eB ? '<span style="color:#d97706;font-weight:600;">differs</span>' : '<span style="color:#059669;">same</span>') +
+      '</div>';
+    });
+    html += '</div>';
+  }
+
+  // Record-level diff for AP data
+  const apA = filesA.ap, apB = filesB.ap;
+  if (apA && apA.rows && apB && apB.rows) {
+    const keysA = new Set(apA.rows.map(r => r.invoice_ref));
+    const keysB = new Set(apB.rows.map(r => r.invoice_ref));
+    const onlyA = [...keysA].filter(k => !keysB.has(k));
+    const onlyB = [...keysB].filter(k => !keysA.has(k));
+    const common = [...keysA].filter(k => keysB.has(k));
+
+    // Check for value differences in common records
+    const mapB = {};
+    apB.rows.forEach(r => { mapB[r.invoice_ref] = r; });
+    let modifiedCount = 0;
+    common.forEach(ref => {
+      const rowA = apA.rows.find(r => r.invoice_ref === ref);
+      const rowB = mapB[ref];
+      if (rowA && rowB) {
+        const changed = Object.keys(rowA).some(f => String(rowA[f] || '') !== String(rowB[f] || ''));
+        if (changed) modifiedCount++;
+      }
+    });
+
+    html += '<div style="margin-bottom:16px;">';
+    html += '<h4 style="font-size:0.85rem;font-weight:600;margin-bottom:8px;">AP Invoice Records</h4>';
+    html += '<div style="display:flex;gap:10px;flex-wrap:wrap;">' +
+      diffStatBadge(common.length + ' shared', '#059669') +
+      diffStatBadge(modifiedCount + ' differ', modifiedCount > 0 ? '#d97706' : '#059669') +
+      diffStatBadge(onlyA.length + ' only in ' + labelA, onlyA.length > 0 ? '#dc2626' : '#6b7280') +
+      diffStatBadge(onlyB.length + ' only in ' + labelB, onlyB.length > 0 ? '#dc2626' : '#6b7280') +
+    '</div>';
+
+    if (onlyA.length > 0 && onlyA.length <= 10) {
+      html += '<div style="font-size:0.75rem;color:#dc2626;margin-top:6px;">Only in ' + labelA + ': ' + onlyA.map(esc).join(', ') + '</div>';
+    }
+    if (onlyB.length > 0 && onlyB.length <= 10) {
+      html += '<div style="font-size:0.75rem;color:#dc2626;margin-top:4px;">Only in ' + labelB + ': ' + onlyB.map(esc).join(', ') + '</div>';
+    }
+    html += '</div>';
+  }
+
+  // Hierarchy comparison
+  const hierA = hierarchies[envA] || {}, hierB = hierarchies[envB] || {};
+  const hierTypes = new Set([...Object.keys(hierA), ...Object.keys(hierB)]);
+  if (hierTypes.size > 0) {
+    html += '<h4 style="font-size:0.85rem;font-weight:600;margin-bottom:8px;">Hierarchies</h4>';
+    html += '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">';
+    hierTypes.forEach(type => {
+      const nodesA = hierA[type] ? countHierNodes(hierA[type]) : 0;
+      const nodesB = hierB[type] ? countHierNodes(hierB[type]) : 0;
+      const match = nodesA === nodesB;
+      html += '<span style="font-size:0.78rem;padding:3px 8px;border-radius:4px;background:' +
+        (match ? '#05966915' : '#d9770615') + ';border:1px solid ' + (match ? '#05966930' : '#d9770630') + ';">' +
+        esc(type) + ': ' + nodesA + ' vs ' + nodesB + '</span>';
+    });
+    html += '</div>';
+  }
+
+  if (!html) {
+    html = '<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:0.85rem;">No data loaded in either environment.</div>';
+  }
+
+  container.innerHTML = html;
+}
+
+function countHierNodes(nodes) {
+  if (!Array.isArray(nodes)) return 0;
+  return nodes.reduce((s, n) => s + 1 + countHierNodes(n.children || []), 0);
 }
 
 // ════════════════════════════════════════════
